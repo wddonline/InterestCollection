@@ -1,6 +1,5 @@
 package org.wdd.app.android.interestcollection.ui.jokes.fragment;
 
-
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +11,7 @@ import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
+import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter.LoadStatus;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
 import org.wdd.app.android.interestcollection.ui.jokes.adapter.DirtyJodeAdapter;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
@@ -79,7 +79,7 @@ public class DirtyJokesFragment extends BaseFragment {
         mPresenter.getDirtyJokesListData(false, host);
     }
 
-    public void showDirtyJokesListView(List<DirtyJoke> data, boolean isAppend) {
+    public void showDirtyJokesListView(List<DirtyJoke> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
             jokes = new ArrayList<>();
             jokes.addAll(data);
@@ -94,28 +94,25 @@ public class DirtyJokesFragment extends BaseFragment {
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
         } else {
-
             if (isAppend) {
                 int start = jokes.size();
                 jokes.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
             } else {
                 jokes.clear();
                 jokes.addAll(data);
                 mAdapter.notifyDataSetChanged();
                 mRefreshLayout.setRefreshing(false);
             }
-
-
         }
+        mAdapter.setLoadStatus(isLastPage ? LoadStatus.NoMore : LoadStatus.Normal);
     }
 
     public void showNetworkError(boolean isAppend) {
         if (mAdapter != null) {
             AppToaster.show(R.string.no_connection_error);
             if (isAppend) {
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
+                mAdapter.setLoadStatus(LoadStatus.Normal);
             } else {
                 mRefreshLayout.setRefreshing(false);
             }
@@ -128,7 +125,7 @@ public class DirtyJokesFragment extends BaseFragment {
         if (mAdapter != null) {
             AppToaster.show(TextUtils.isEmpty(error) ? getString(R.string.unknown_error) : error);
             if (isAppend) {
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
+                mAdapter.setLoadStatus(LoadStatus.Normal);
             } else {
                 mRefreshLayout.setRefreshing(false);
             }
@@ -141,7 +138,7 @@ public class DirtyJokesFragment extends BaseFragment {
         if (mAdapter != null) {
             AppToaster.show(R.string.no_data_error);
             if (isAppend) {
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
+                mAdapter.setLoadStatus(LoadStatus.Normal);
             } else {
                 mRefreshLayout.setRefreshing(false);
             }

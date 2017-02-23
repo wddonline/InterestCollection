@@ -33,12 +33,12 @@ public class ImagesPresenter implements BasePresenter, ImagesDataGetter.DataCall
     }
 
     @Override
-    public void onRequestOk(List<Image> data, boolean isAppend) {
+    public void onRequestOk(List<Image> data, boolean isAppend, boolean isLastPage) {
         if (data == null || data.size() == 0) {
             mView.showNoDataView(isAppend);
             return;
         }
-        mView.showImagesListView(data, isAppend);
+        mView.showImagesListView(data, isAppend, isLastPage);
     }
 
     @Override

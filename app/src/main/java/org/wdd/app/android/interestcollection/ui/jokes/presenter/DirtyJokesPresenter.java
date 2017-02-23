@@ -33,12 +33,12 @@ public class DirtyJokesPresenter implements BasePresenter, DirtyJokesDataGetter.
     }
 
     @Override
-    public void onRequestOk(List<DirtyJoke> data, boolean isAppend) {
+    public void onRequestOk(List<DirtyJoke> data, boolean isAppend, boolean isLastPage) {
         if (data == null || data.size() == 0) {
             mView.showNoDataView(isAppend);
             return;
         }
-        mView.showDirtyJokesListView(data, isAppend);
+        mView.showDirtyJokesListView(data, isAppend, isLastPage);
     }
 
     @Override

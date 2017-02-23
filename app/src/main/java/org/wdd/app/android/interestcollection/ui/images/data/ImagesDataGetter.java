@@ -14,7 +14,6 @@ import org.wdd.app.android.interestcollection.http.error.ErrorCode;
 import org.wdd.app.android.interestcollection.http.error.HttpError;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.images.model.Image;
-import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
 import org.wdd.app.android.interestcollection.utils.HttpUtils;
 import org.wdd.app.android.interestcollection.utils.ServerApis;
 
@@ -56,26 +55,57 @@ public class ImagesDataGetter {
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
                 Document document = (Document) res.getData();
-                Elements rootNode = document.getElementsByAttributeValue("class", "box_wrap ajz");
+                Elements rootNode = document.getElementsByAttributeValue("id", "content-c");
                 if (rootNode.size() == 0) {
-                    mCallback.onRequestOk(null, isAppend);
+                    mCallback.onRequestOk(null, isAppend, true);
                     return;
                 }
-                Elements postNodes = rootNode.first().getElementsByAttributeValue("class", "post");
-                if (postNodes.size() == 0) {
-                    mCallback.onRequestOk(null, isAppend);
+                Elements articleNodes = rootNode.first().getElementsByTag("article");
+                if (articleNodes.size() == 0) {
+                    mCallback.onRequestOk(null, isAppend, true);
                     return;
                 }
                 List<Image> images = new ArrayList<>();
-                Element postNode;
+                Element articleNode;
+                Element aNode;
+                Element imgNode;
+                Element countNode;
+                Element titleNode;
                 Image image;
-                for (int i = 0; i < postNodes.size(); i++) {
-                    postNode = postNodes.get(i);
+                for (int i = 0; i < articleNodes.size(); i++) {
+                    articleNode = articleNodes.get(i);
                     image = new Image();
-
+                    aNode = articleNode.getElementsByTag("a").first();
+                    image.url = aNode.attr("href");
+                    imgNode = articleNode.getElementsByTag("img").first();
+                    image.imgUrl = imgNode.attr("src");
+                    image.title = imgNode.attr("alt");
+                    countNode = articleNode.getElementsByAttributeValue("class", "pics-info").first();
+                    image.imgCount = countNode.text().trim();
+                    image.isGif = articleNode.getElementsByAttributeValue("class", "pic-gif").size() > 0;
+                    titleNode = articleNode.getElementsByTag("time").first();
+                    image.date = titleNode.text();
                     images.add(image);
                 }
-                mCallback.onRequestOk(images, isAppend);
+
+                boolean isLastPage;
+                Elements pageNodes = rootNode.first().getElementsByAttributeValue("class", "pagenavi");
+                if (pageNodes.size() == 0) {
+                    isLastPage = true;
+                } else {
+                    Elements aNodes = pageNodes.first().getElementsByTag("a");
+                    if (aNodes.size() == 0) {
+                        isLastPage = true;
+                    } else {
+                        String navText = aNodes.last().text();
+                        if ("下一页".equals(navText)) {
+                            isLastPage = false;
+                        } else {
+                            isLastPage = true;
+                        }
+                    }
+                }
+                mCallback.onRequestOk(images, isAppend, isLastPage);
             }
 
             @Override
@@ -98,7 +128,7 @@ public class ImagesDataGetter {
 
     public interface DataCallback {
 
-        void onRequestOk(List<Image> data, boolean isAppend);
+        void onRequestOk(List<Image> data, boolean isAppend, boolean isLastPage);
         void onRequestError(String error, boolean isAppend);
         void onNetworkError(boolean isAppend);
 

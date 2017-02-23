@@ -14,7 +14,6 @@ import org.wdd.app.android.interestcollection.http.error.ErrorCode;
 import org.wdd.app.android.interestcollection.http.error.HttpError;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
-import org.wdd.app.android.interestcollection.ui.main.model.HtmlHref;
 import org.wdd.app.android.interestcollection.utils.HttpUtils;
 import org.wdd.app.android.interestcollection.utils.ServerApis;
 
@@ -56,35 +55,53 @@ public class DirtyJokesDataGetter {
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
                 Document document = (Document) res.getData();
-                Elements rootNode = document.getElementsByAttributeValue("class", "box_wrap ajz");
+                Elements rootNode = document.getElementsByAttributeValue("id", "content-c");
                 if (rootNode.size() == 0) {
-                    mCallback.onRequestOk(null, isAppend);
+                    mCallback.onRequestOk(null, isAppend, true);
                     return;
                 }
-                Elements postNodes = rootNode.first().getElementsByAttributeValue("class", "post");
-                if (postNodes.size() == 0) {
-                    mCallback.onRequestOk(null, isAppend);
+                Elements articleNodes = rootNode.first().getElementsByTag("article");
+                if (articleNodes.size() == 0) {
+                    mCallback.onRequestOk(null, isAppend, true);
                     return;
                 }
                 List<DirtyJoke> jokes = new ArrayList<>();
-                Element postNode;
+                Element articleNode;
                 Element aNode;
                 Element imgNode;
-                Element spanNode;
+                Element titleNode;
                 DirtyJoke joke;
-                for (int i = 0; i < postNodes.size(); i++) {
-                    postNode = postNodes.get(i);
+                for (int i = 0; i < articleNodes.size(); i++) {
+                    articleNode = articleNodes.get(i);
                     joke = new DirtyJoke();
-                    aNode = postNode.getElementsByTag("a").first();
+                    aNode = articleNode.getElementsByTag("a").first();
                     joke.url = aNode.attr("href");
-                    imgNode = postNode.getElementsByTag("img").first();
-                    joke.imgUrl = imgNode.attr("data-original");
+                    imgNode = articleNode.getElementsByTag("img").first();
+                    joke.imgUrl = imgNode.attr("src");
                     joke.title = imgNode.attr("alt");
-                    spanNode = postNode.getElementsByTag("span").first();
-                    joke.date = spanNode.text();
+                    titleNode = articleNode.getElementsByTag("time").first();
+                    joke.date = titleNode.text();
                     jokes.add(joke);
                 }
-                mCallback.onRequestOk(jokes, isAppend);
+
+                boolean isLastPage;
+                Elements pageNodes = rootNode.first().getElementsByAttributeValue("class", "pagenavi");
+                if (pageNodes.size() == 0) {
+                    isLastPage = true;
+                } else {
+                    Elements aNodes = pageNodes.first().getElementsByTag("a");
+                    if (aNodes.size() == 0) {
+                        isLastPage = true;
+                    } else {
+                        String navText = aNodes.last().text();
+                        if ("下一页".equals(navText)) {
+                            isLastPage = false;
+                        } else {
+                            isLastPage = true;
+                        }
+                    }
+                }
+                mCallback.onRequestOk(jokes, isAppend, isLastPage);
             }
 
             @Override
@@ -107,7 +124,7 @@ public class DirtyJokesDataGetter {
 
     public interface DataCallback {
 
-        void onRequestOk(List<DirtyJoke> data, boolean isAppend);
+        void onRequestOk(List<DirtyJoke> data, boolean isAppend, boolean isLastPage);
         void onRequestError(String error, boolean isAppend);
         void onNetworkError(boolean isAppend);
 

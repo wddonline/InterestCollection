@@ -5,4 +5,11 @@ package org.wdd.app.android.interestcollection.ui.images.model;
  */
 
 public class Image {
+
+    public String url;
+    public String title;
+    public String imgUrl;
+    public String imgCount;
+    public boolean isGif;
+    public String date;
 }

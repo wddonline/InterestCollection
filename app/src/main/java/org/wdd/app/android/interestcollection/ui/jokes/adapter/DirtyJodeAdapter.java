@@ -2,6 +2,7 @@ package org.wdd.app.android.interestcollection.ui.jokes.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -19,13 +20,16 @@ import java.util.List;
 
 public class DirtyJodeAdapter extends AbstractCommonAdapter<DirtyJoke> {
 
+    private LayoutInflater mInflater;
+
     public DirtyJodeAdapter(Context context, List<DirtyJoke> data) {
         super(context, data);
+        mInflater = LayoutInflater.from(context);
     }
 
     @Override
     protected RecyclerView.ViewHolder onCreateDataViewHolder(ViewGroup parent, int viewType) {
-        View view = View.inflate(context, R.layout.item_dirty_jokes_list, null);
+        View view = mInflater.inflate(R.layout.item_dirty_jokes_list, parent, false);
         JokeViewHolder viewHolder = new JokeViewHolder(view);
         return viewHolder;
     }

@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
+import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter.LoadStatus;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
 import org.wdd.app.android.interestcollection.ui.images.adapter.ImageAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.Image;
@@ -79,7 +80,7 @@ public class ImagesFragment extends BaseFragment {
         mPresenter.getImagesListData(false, host);
     }
 
-    public void showImagesListView(List<Image> data, boolean isAppend) {
+    public void showImagesListView(List<Image> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
             images = new ArrayList<>();
             images.addAll(data);
@@ -99,7 +100,6 @@ public class ImagesFragment extends BaseFragment {
                 int start = images.size();
                 images.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
             } else {
                 images.clear();
                 images.addAll(data);
@@ -108,13 +108,14 @@ public class ImagesFragment extends BaseFragment {
             }
 
         }
+        mAdapter.setLoadStatus(isLastPage ? LoadStatus.NoMore : LoadStatus.Normal);
     }
 
     public void showNetworkError(boolean isAppend) {
         if (mAdapter != null) {
             AppToaster.show(R.string.no_connection_error);
             if (isAppend) {
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
+                mAdapter.setLoadStatus(LoadStatus.Normal);
             } else {
                 mRefreshLayout.setRefreshing(false);
             }
@@ -127,7 +128,7 @@ public class ImagesFragment extends BaseFragment {
         if (mAdapter != null) {
             AppToaster.show(TextUtils.isEmpty(error) ? getString(R.string.unknown_error) : error);
             if (isAppend) {
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
+                mAdapter.setLoadStatus(LoadStatus.Normal);
             } else {
                 mRefreshLayout.setRefreshing(false);
             }
@@ -140,7 +141,7 @@ public class ImagesFragment extends BaseFragment {
         if (mAdapter != null) {
             AppToaster.show(R.string.no_data_error);
             if (isAppend) {
-                mAdapter.setLoadStatus(AbstractCommonAdapter.LoadStatus.Normal);
+                mAdapter.setLoadStatus(LoadStatus.Normal);
             } else {
                 mRefreshLayout.setRefreshing(false);
             }
