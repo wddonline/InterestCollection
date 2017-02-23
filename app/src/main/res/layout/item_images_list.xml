@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:background="@drawable/common_list_item_bg"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin">
+
+    <TextView
+        android:id="@+id/item_images_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLength="2"
+        android:ellipsize="end"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/colorItemTitle"
+        android:textSize="@dimen/textSizeItemTitle"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <org.wdd.app.android.interestcollection.views.NetworkImageView
+            android:id="@+id/item_images_list_img"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/default_img"/>
+
+        <TextView
+            android:id="@+id/item_images_list_img_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/white"
+            android:layout_margin="8dp"
+            android:background="@drawable/image_count_bg"/>
+
+        <TextView
+            android:id="@+id/item_images_list_gif_sign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GIF"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/white"
+            android:layout_margin="8dp"
+            android:layout_gravity="right"
+            android:visibility="gone"
+            android:background="@drawable/gif_sign_bg"/>
+
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentBottom="true">
+
+        <ImageView
+            android:id="@+id/item_dirty_jokes_list_clock"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:src="@drawable/ic_clock_small"/>
+
+        <TextView
+            android:id="@+id/item_images_list_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lines="1"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/colorItemExtra"
+            android:textSize="@dimen/textSizeItemExtra"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3dabda</color>
+    <color name="colorPrimaryDark">#3dabda</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorBackground">#f3f3f3</color>
+    <color name="activityBackground">#eeeeee</color>
+    <color name="colorNavigationBar">#34393d</color>
+
+    <color name="white">#ffffff</color>
+    <color name="blue">#0079ff</color>
+    <color name="red">#ff0000</color>
+    <color name="colorItemTitle">#2b2b2b</color>
+    <color name="colorItemContent">#666666</color>
+    <color name="colorItemExtra">#999999</color>
+
+    <color name="colorItemRipple">#e2e2e2</color>
+    <color name="colorItem">#f0f0f0</color>
+
+    <color name="colorCommonDivider">#d8d8d8</color>
+    <color name="colorDialogBorder">#e1e1e1</color>
+    <color name="partTranslucent">#39000000</color>
+
+</resources>

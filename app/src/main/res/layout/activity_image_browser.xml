@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:context="org.wdd.app.android.interestcollection.ui.gallery.activity.ImageBrowserActivity">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/activity_image_browser_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/activity_image_browser_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/textSizeItemContent"
+        android:textColor="@color/white"
+        android:fitsSystemWindows="true"
+        android:gravity="center"
+        android:layout_marginTop="15dp"/>
+
+</FrameLayout>

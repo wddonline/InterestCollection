@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">趣味集</string>
+
+    <!-- 通用 -->
+    <string name="loading">数据加载中...</string>
+    <string name="loading_more_data">更多数据加载中...</string>
+    <string name="load_more_data">点击加载更多数据</string>
+    <string name="back_to_exit">再按一次返回键退出好妹子</string>
+    <string name="tip">提示</string>
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+    <string name="click_to_refresh">点击页面刷新</string>
+
+    <!-- 错误 -->
+    <string name="unknown_error">未知错误</string>
+    <string name="auth_failure_error">HTTP身份验证错误</string>
+    <string name="network_error">服务器通信失败</string>
+    <string name="no_connection_error">网络未连接</string>
+    <string name="parse_error">数据错误</string>
+    <string name="server_error">服务器处理错误</string>
+    <string name="timeout_error">连接服务器超时</string>
+    <string name="no_data_error">没有数据返回</string>
+
+    <string name="dirty_joke">段子</string>
+    <string name="image">图片</string>
+    <string name="video">视频</string>
+    <string name="audio">音频</string>
+    <string name="news">资讯</string>
+
+    <!-- 设置 -->
+    <string name="settings">设置</string>
+    <string name="version_update">版本更新</string>
+    <string name="cache_clean">缓存清理</string>
+    <string name="about">关于</string>
+    <string name="about_us">关于我们</string>
+    <string name="about_app">关于好妹子</string>
+    <string name="contact_us">联系我们</string>
+    <string name="disclaimer">免责声明</string>
+    <string name="bit_cat_owner">比特猫(BitCat)工作室</string>
+    <string name="mail_client_choose">请选择邮件类应用</string>
+    <string name="app_qq_group">好妹子App交流QQ群号：467321786</string>
+    <string name="disk_cache_clean_result">恭喜你清除掉了%1$sM的垃圾，再接再厉！</string>
+    <string name="bmob_update_lastest_already">已是最新版本，无需更新</string>
+    <string name="bmob_update_field_error">请检查你AppVersion表的必填项，1、target_size（文件大小）是否填写；2、path或者android_url两者必填其中一项。</string>
+    <string name="bmob_update_version_ignore">该版本已被忽略更新</string>
+    <string name="bmob_update_apk_size_error">请检查target_size填写的格式，请使用file.length()方法获取apk大小。</string>
+    <string name="bmob_update_error">查询出错或查询超时</string>
+
+    <!-- 广告 -->
+    <string name="view_detail">查看详情</string>
+    <string name="click_to_download">点击下载</string>
+    <string name="click_to_start">点击启动</string>
+    <string name="click_to_update">点击更新</string>
+    <string name="downloading">下载中</string>
+    <string name="download_completely">下载完成</string>
+    <string name="download_failure">下载失败,点击重试</string>
+    <string name="click_to_skip">点击跳过 %ds</string>
+
+    <!-- 权限申请 -->
+    <string name="permission_cancel">取消</string>
+    <string name="permission_setting">设置</string>
+    <string name="permission_title_permission_failed">权限申请失败</string>
+    <string name="permission_message_permission_failed">我们需要的一些权限被您拒绝或者系统发生错误申请失败，请您到设置页面手动授权，否则功能无法正常使用！</string>
+
+    <string name="permission_resume">继续</string>
+    <string name="permission_title_permission_rationale">权限已被拒绝</string>
+    <string name="permission_message_permission_rationale">您已经拒绝过我们申请授权，请您同意授权，否则功能无法正常使用！</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>
