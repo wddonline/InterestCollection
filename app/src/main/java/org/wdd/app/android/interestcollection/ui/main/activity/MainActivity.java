@@ -20,7 +20,7 @@ import org.wdd.app.android.interestcollection.ui.audios.fragment.AudiosFragment;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.images.fragment.ImagesFragment;
 import org.wdd.app.android.interestcollection.ui.jokes.fragment.DirtyJokesFragment;
-import org.wdd.app.android.interestcollection.ui.news.fragment.NewsFragment;
+import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.views.FragmentTabHost;
@@ -56,7 +56,12 @@ public class MainActivity extends BaseActivity implements Runnable {
     private void initTitles() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setLogo(R.mipmap.ic_launcher);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -81,10 +86,10 @@ public class MainActivity extends BaseActivity implements Runnable {
 
         int[] tabIcons = {R.mipmap.ic_paper, R.mipmap.ic_paper, R.mipmap.ic_paper, R.mipmap.ic_paper,
                 R.mipmap.ic_paper};
-        int[] tabTxts = {R.string.dirty_joke, R.string.image, R.string.video, R.string.audio, R.string.news};
+        int[] tabTxts = {R.string.dirty_joke, R.string.image, R.string.video, R.string.audio, R.string.share};
         String[] tabTags = {"dirty_joke", "image", "video", "audio", "news"};
         Class[] tabClasses = {DirtyJokesFragment.class, ImagesFragment.class, VideosFragment.class,
-                AudiosFragment.class, NewsFragment.class};
+                AudiosFragment.class, SharesFragment.class};
 
         int tabCount = tabIcons.length;
 

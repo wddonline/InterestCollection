@@ -2,6 +2,7 @@ package org.wdd.app.android.interestcollection.ui.images.fragment;
 
 
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +15,7 @@ import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter.LoadStatus;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
+import org.wdd.app.android.interestcollection.ui.images.activity.ImageDetailActivity;
 import org.wdd.app.android.interestcollection.ui.images.adapter.ImageAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.Image;
 import org.wdd.app.android.interestcollection.ui.images.presenter.ImagesPresenter;
@@ -55,6 +57,8 @@ public class ImagesFragment extends BaseFragment {
 
     private void initViews() {
         mRefreshLayout = (SwipeRefreshLayout) mRootView.findViewById(R.id.fragment_images_refreshlayout);
+        int color = ContextCompat.getColor(getContext(), R.color.colorPrimary);
+        mRefreshLayout.setColorSchemeColors(color, color);
         mRecyclerView = (RecyclerView) mRootView.findViewById(R.id.fragment_images_recyclerview);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setHasFixedSize(true);
@@ -80,6 +84,12 @@ public class ImagesFragment extends BaseFragment {
         mPresenter.getImagesListData(false, host);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mPresenter.cancelRequest();
+    }
+
     public void showImagesListView(List<Image> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
             images = new ArrayList<>();
@@ -89,6 +99,12 @@ public class ImagesFragment extends BaseFragment {
                 @Override
                 public void onLoadMore() {
                     mPresenter.getImagesListData(true, host);
+                }
+            });
+            mAdapter.setOnItemClickedListener(new ImageAdapter.OnItemClickedListener() {
+                @Override
+                public void onItemClicked(int position, Image item) {
+                    ImageDetailActivity.show(getActivity(), item.url, item.title, item.isGif);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

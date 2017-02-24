@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_images_list_click"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -34,11 +35,8 @@
             android:id="@+id/item_images_list_img_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/textSizeItemContent"
-            android:paddingLeft="6dp"
-            android:paddingRight="6dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="10dp"
+            android:textSize="@dimen/textSizeItemExtra"
+            android:padding="4dp"
             android:textColor="@color/white"
             android:layout_margin="8dp"
             android:background="@drawable/image_count_bg"/>
@@ -47,12 +45,9 @@
             android:id="@+id/item_images_list_gif_sign"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/textSizeItemContent"
+            android:textSize="@dimen/textSizeItemExtra"
             android:text="GIF"
-            android:paddingLeft="6dp"
-            android:paddingRight="6dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="10dp"
+            android:padding="4dp"
             android:textColor="@color/white"
             android:layout_margin="8dp"
             android:layout_alignParentRight="true"
@@ -71,9 +66,8 @@
         android:layout_alignParentBottom="true">
 
         <ImageView
-            android:id="@+id/item_dirty_jokes_list_clock"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:src="@drawable/ic_clock_small"/>
 
         <TextView

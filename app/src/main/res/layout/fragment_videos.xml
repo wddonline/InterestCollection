@@ -4,9 +4,22 @@
     android:layout_height="match_parent"
     tools:context="org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment">
 
-    <TextView
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/fragment_videos_refreshlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="video" />
+        android:visibility="gone">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/fragment_videos_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <org.wdd.app.android.interestcollection.views.LoadView
+        android:id="@+id/fragment_videos_loadview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </FrameLayout>

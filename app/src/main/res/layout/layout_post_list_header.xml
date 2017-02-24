@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/layout_post_list_header_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorItemTitle"
+        android:paddingBottom="15dp"
+        android:layout_marginTop="20dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:src="@drawable/ic_clock_small"/>
+
+        <TextView
+            android:id="@+id/layout_post_list_header_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/colorItemExtra"
+            android:textSize="@dimen/textSizeItemExtra"/>
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginLeft="20dp"
+            android:src="@drawable/ic_tag"/>
+
+        <TextView
+            android:id="@+id/layout_post_list_header_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/colorItemExtra"
+            android:textSize="@dimen/textSizeItemExtra"/>
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginLeft="20dp"
+            android:src="@drawable/ic_comment_bubble"/>
+
+        <TextView
+            android:id="@+id/layout_post_list_header_comment_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:textColor="@color/colorItemExtra"
+            android:textSize="@dimen/textSizeItemExtra"/>
+
+    </LinearLayout>
+
+    <org.wdd.app.android.interestcollection.views.NetworkImageView
+        android:id="@+id/layout_post_list_header_img"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/default_img"
+        android:scaleType="centerCrop"
+        android:visibility="visible"
+        android:adjustViewBounds="true"/>
+</LinearLayout>

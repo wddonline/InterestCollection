@@ -2,11 +2,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.wdd.app.android.interestcollection.ui.audios.fragment.AudiosFragment">
+    tools:context="org.wdd.app.android.interestcollection.ui.jokes.fragment.DirtyJokesFragment">
 
-    <TextView
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/fragment_audios_refreshlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="audio" />
+        android:visibility="gone">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/fragment_audios_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <org.wdd.app.android.interestcollection.views.LoadView
+        android:id="@+id/fragment_audios_loadview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </FrameLayout>

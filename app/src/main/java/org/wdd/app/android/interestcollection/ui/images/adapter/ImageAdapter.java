@@ -5,8 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
@@ -24,6 +22,7 @@ import java.util.List;
 public class ImageAdapter extends AbstractCommonAdapter<Image> {
 
     private LayoutInflater mInflater;
+    private OnItemClickedListener mListener;
 
     private int mItemWidth;
     private int mItemHeight;
@@ -44,9 +43,9 @@ public class ImageAdapter extends AbstractCommonAdapter<Image> {
     }
 
     @Override
-    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, Image item, int position) {
+    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, final Image item, final int position) {
         ImageViewHolder viewHolder = (ImageViewHolder) holder;
-        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) viewHolder.imageView.getLayoutParams();
+        ViewGroup.LayoutParams lp = viewHolder.imageView.getLayoutParams();
         lp.width = mItemWidth;
         lp.height = mItemHeight;
         viewHolder.titleView.setText(item.title);
@@ -54,10 +53,18 @@ public class ImageAdapter extends AbstractCommonAdapter<Image> {
         viewHolder.countView.setText(item.imgCount);
         viewHolder.gifView.setVisibility(item.isGif ? View.VISIBLE : View.GONE);
         viewHolder.dateView.setText(item.date);
+        viewHolder.clickView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener == null) return;
+                mListener.onItemClicked(position, item);
+            }
+        });
     }
 
     private class ImageViewHolder extends RecyclerView.ViewHolder {
 
+        View clickView;
         TextView titleView;
         NetworkImageView imageView;
         TextView countView;
@@ -66,11 +73,22 @@ public class ImageAdapter extends AbstractCommonAdapter<Image> {
 
         public ImageViewHolder(View itemView) {
             super(itemView);
+            clickView = itemView.findViewById(R.id.item_images_list_click);
             titleView = (TextView) itemView.findViewById(R.id.item_images_list_title);
             imageView = (NetworkImageView) itemView.findViewById(R.id.item_images_list_img);
             countView = (TextView) itemView.findViewById(R.id.item_images_list_img_count);
             gifView = itemView.findViewById(R.id.item_images_list_gif_sign);
             dateView = (TextView) itemView.findViewById(R.id.item_images_list_date);
         }
+    }
+
+    public void setOnItemClickedListener(OnItemClickedListener listener) {
+        this.mListener = listener;
+    }
+
+    public interface OnItemClickedListener {
+
+        void onItemClicked(int position, Image item);
+
     }
 }

@@ -21,11 +21,14 @@
     <string name="timeout_error">连接服务器超时</string>
     <string name="no_data_error">没有数据返回</string>
 
+    <!-- Splash -->
+    <string name="splash_text">发现精彩，分享快乐！</string>
+
     <string name="dirty_joke">段子</string>
     <string name="image">图片</string>
     <string name="video">视频</string>
     <string name="audio">音频</string>
-    <string name="news">资讯</string>
+    <string name="share">分享</string>
 
     <!-- 设置 -->
     <string name="settings">设置</string>

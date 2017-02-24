@@ -21,6 +21,7 @@ import java.util.List;
 public class DirtyJodeAdapter extends AbstractCommonAdapter<DirtyJoke> {
 
     private LayoutInflater mInflater;
+    private OnItemClickedListener mListener;
 
     public DirtyJodeAdapter(Context context, List<DirtyJoke> data) {
         super(context, data);
@@ -35,24 +36,43 @@ public class DirtyJodeAdapter extends AbstractCommonAdapter<DirtyJoke> {
     }
 
     @Override
-    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, DirtyJoke item, int position) {
+    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, final DirtyJoke item, final int position) {
         JokeViewHolder viewHolder = (JokeViewHolder) holder;
         viewHolder.titleView.setText(item.title);
         viewHolder.dateView.setText(item.date);
         viewHolder.imageView.setImageUrl(item.imgUrl);
+        viewHolder.clickView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener == null) return;
+                mListener.onItemClicked(position, item);
+            }
+        });
     }
 
     private class JokeViewHolder extends RecyclerView.ViewHolder {
 
+        View clickView;
         TextView titleView;
         TextView dateView;
         NetworkImageView imageView;
 
         public JokeViewHolder(View itemView) {
             super(itemView);
+            clickView = itemView.findViewById(R.id.item_dirty_jokes_list_click);
             titleView = (TextView) itemView.findViewById(R.id.item_dirty_jokes_list_title);
             dateView = (TextView) itemView.findViewById(R.id.item_dirty_jokes_list_date);
             imageView = (NetworkImageView) itemView.findViewById(R.id.item_dirty_jokes_list_img);
         }
+    }
+
+    public void setOnItemClickedListener(OnItemClickedListener listener) {
+        this.mListener = listener;
+    }
+
+    public interface OnItemClickedListener {
+
+        void onItemClicked(int position, DirtyJoke item);
+
     }
 }

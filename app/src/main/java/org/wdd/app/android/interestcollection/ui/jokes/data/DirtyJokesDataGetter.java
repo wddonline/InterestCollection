@@ -46,7 +46,7 @@ public class DirtyJokesDataGetter {
             mPage = 1;
         }
         HttpRequestEntry requestEntry = new HttpRequestEntry();
-        requestEntry.addRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG SM-J7108 Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/44.0.2403.133 Mobile Safari/537.36");
+        requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.setUrl(ServerApis.DIRTY_JOKE_URL + mPage);
         mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {

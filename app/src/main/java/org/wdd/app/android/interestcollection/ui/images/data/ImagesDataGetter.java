@@ -47,7 +47,7 @@ public class ImagesDataGetter {
         }
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
-        requestEntry.addRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG SM-J7108 Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/44.0.2403.133 Mobile Safari/537.36");
+        requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setUrl(ServerApis.IMAGE_URL + mPage);
         mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
 
