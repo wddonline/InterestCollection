@@ -1,7 +1,5 @@
 package org.wdd.app.android.interestcollection.ui.images.model;
 
-import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
-
 import java.util.List;
 
 /**
@@ -15,22 +13,19 @@ public class ImageDetail {
     public String tag;
     public String commentCount;
     public String imgUrl;
-    public List<DirtyJokeDetail.Post> posts;
+    public String summary;
+    public List<Node> nodes;
     public String source;
 
-    public static class Post {
+    public static class Node {
 
-        public String content;
-        public List<DirtyJokeDetail.Comment> comments;
+        public boolean isImg;
+        public String data;
 
-    }
-
-    public static class Comment {
-
-        public String type;
-        public String author;
-        public String comment;
-
+        public Node(boolean isImg, String data) {
+            this.isImg = isImg;
+            this.data = data;
+        }
     }
 
 }

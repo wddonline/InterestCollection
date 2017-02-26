@@ -31,11 +31,11 @@ public class ImageDetailPresenter implements BasePresenter, ImageDetailDateGette
 
     @Override
     public void onRequestOk(ImageDetail data) {
-        if (data == null) {
+        if (data == null || data.nodes.size() == 0) {
             mView.showNoDataView();
             return;
         }
-        mView.showDirtyJokesDetailViews(data);
+        mView.showImageDetailViews(data);
     }
 
     @Override

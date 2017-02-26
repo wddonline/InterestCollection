@@ -58,9 +58,9 @@ public class DirtyJokeDetailDateGetter {
                 detail.title = articleNode.getElementsByAttributeValue("class", "post-title").first().text();
 
                 Elements postMetaNodes = articleNode.getElementsByAttributeValue("class", "post-meta");
-                detail.time = postMetaNodes.get(0).getElementsByTag("time").first().text();
-                detail.tag = postMetaNodes.get(1).getElementsByAttributeValue("rel", "tag").first().text();
-                detail.commentCount = postMetaNodes.get(2).getElementsByTag("a").first().text();
+                detail.time = postMetaNodes.get(0).text();
+                detail.tag = postMetaNodes.get(1).text();
+                detail.commentCount = postMetaNodes.get(2).text();
 
                 Elements contentNodes = articleNode.getElementsByAttributeValue("class", "single-post-content");
                 if (contentNodes.size() == 0) {
@@ -99,7 +99,6 @@ public class DirtyJokeDetailDateGetter {
                         }
                     }
                 }
-
 
                 mCallback.onRequestOk(detail);
             }

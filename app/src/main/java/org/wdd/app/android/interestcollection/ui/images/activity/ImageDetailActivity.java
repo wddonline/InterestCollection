@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.ui.images.adapter.ImageDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
 import org.wdd.app.android.interestcollection.ui.images.presenter.ImageDetailPresenter;
 import org.wdd.app.android.interestcollection.views.LoadView;
@@ -74,30 +77,36 @@ public class ImageDetailActivity extends BaseActivity {
         mPresenter.getImageDetailData(mUrl, host);
     }
 
-    public void showDirtyJokesDetailViews(ImageDetail data) {
+    public void showImageDetailViews(ImageDetail data) {
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
         mListView.setVisibility(View.VISIBLE);
 
-//        View headerView = View.inflate(this, R.layout.layout_post_list_header, null);
-//        TextView titleView = (TextView) headerView.findViewById(R.id.layout_post_list_header_title);
-//        titleView.setText(data.title);
-//        TextView timeView = (TextView) headerView.findViewById(R.id.layout_post_list_header_date);
-//        timeView.setText(data.time);
-//        TextView tagView = (TextView) headerView.findViewById(R.id.layout_post_list_header_tag);
-//        tagView.setText(data.tag);
-//        TextView commentCountView = (TextView) headerView.findViewById(R.id.layout_post_list_header_comment_count);
-//        commentCountView.setText(data.commentCount);
-//        NetworkImageView imageView = (NetworkImageView) headerView.findViewById(R.id.layout_post_list_header_img);
-//        imageView.setImageUrl(data.imgUrl);
-//        mListView.addHeaderView(headerView);
-//
-//        View footerView = View.inflate(this, R.layout.layout_post_list_footer, null);
-//        TextView sourceView = (TextView) footerView.findViewById(R.id.layout_post_list_footer_source);
-//        sourceView.setText(data.source);
-//        mListView.addFooterView(footerView);
-//
-//        ImageDetailAdapter adapter = new ImageDetailAdapter(this, data.posts);
-//        mListView.setAdapter(adapter);
+        View headerView = View.inflate(this, R.layout.layout_post_list_header, null);
+        TextView titleView = (TextView) headerView.findViewById(R.id.layout_post_list_header_title);
+        titleView.setText(data.title);
+        TextView timeView = (TextView) headerView.findViewById(R.id.layout_post_list_header_date);
+        timeView.setText(data.time);
+        TextView tagView = (TextView) headerView.findViewById(R.id.layout_post_list_header_tag);
+        tagView.setText(data.tag);
+        TextView commentCountView = (TextView) headerView.findViewById(R.id.layout_post_list_header_comment_count);
+        commentCountView.setText(data.commentCount);
+        View imgView = headerView.findViewById(R.id.layout_post_list_header_img);
+        imgView.setVisibility(View.GONE);
+        if (!TextUtils.isEmpty(data.summary)) {
+            View summaryLayout = headerView.findViewById(R.id.layout_post_list_header_summary_container);
+            summaryLayout.setVisibility(View.VISIBLE);
+            TextView summaryView = (TextView) headerView.findViewById(R.id.layout_post_list_header_summary);
+            summaryView.setText(data.summary);
+        }
+        mListView.addHeaderView(headerView);
+
+        View footerView = View.inflate(this, R.layout.layout_post_list_footer, null);
+        TextView sourceView = (TextView) footerView.findViewById(R.id.layout_post_list_footer_source);
+        sourceView.setText(data.source);
+        mListView.addFooterView(footerView);
+
+        ImageDetailAdapter adapter = new ImageDetailAdapter(this, data.nodes);
+        mListView.setAdapter(adapter);
 
     }
 
@@ -112,4 +121,5 @@ public class ImageDetailActivity extends BaseActivity {
     public void showNetworkError() {
         mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
     }
+
 }

@@ -76,4 +76,35 @@
         android:scaleType="centerCrop"
         android:visibility="visible"
         android:adjustViewBounds="true"/>
+
+    <LinearLayout
+        android:id="@+id/layout_post_list_header_summary_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#f6f6f6"
+        android:visibility="gone"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin">
+
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"
+            android:background="#e1e2e4"/>
+
+        <TextView
+            android:id="@+id/layout_post_list_header_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#acacbb"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:lineSpacingExtra="6dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:text="11111111111111111111111111111111111111111111111111"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
 </LinearLayout>

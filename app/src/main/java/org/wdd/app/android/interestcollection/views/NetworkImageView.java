@@ -243,6 +243,10 @@ public class NetworkImageView extends ImageView {
         }
     }
 
+    public String getUrl() {
+        return mUrl;
+    }
+
     public void setImageLoaderListener(ImageLoaderListener loaderListener) {
         this.mLoaderListener = loaderListener;
     }

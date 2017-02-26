@@ -22,4 +22,6 @@
         <item name="android:activityCloseExitAnimation">@anim/slide_right_out</item>
     </style>
 
+    <style name="Widget.GifView" parent="@android:style/Widget"/>
+
 </resources>
