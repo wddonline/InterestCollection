@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ui.audios.activity.AudioDetailActivity;
 import org.wdd.app.android.interestcollection.ui.audios.adapter.AudioAdapter;
 import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.audios.presenter.AudiosPresenter;
@@ -97,6 +98,12 @@ public class AudiosFragment extends BaseFragment {
                 @Override
                 public void onLoadMore() {
                     mPresenter.getAudiosListData(true, host);
+                }
+            });
+            mAdapter.setOnItemClickedListener(new AudioAdapter.OnItemClickedListener() {
+                @Override
+                public void onItemClicked(int position, Audio item) {
+                    AudioDetailActivity.show(getContext(), item.url, item.title);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

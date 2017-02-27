@@ -22,6 +22,7 @@ import java.util.List;
 public class VideoAdapter extends AbstractCommonAdapter<Video> {
 
     private LayoutInflater mInflater;
+    private OnItemClickedListener mListener;
 
     private int mItemWidth;
     private int mItemHeight;
@@ -42,7 +43,7 @@ public class VideoAdapter extends AbstractCommonAdapter<Video> {
     }
 
     @Override
-    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, Video item, int position) {
+    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, final Video item, final int position) {
         VideoViewHolder viewHolder = (VideoViewHolder) holder;
         ViewGroup.LayoutParams lp = viewHolder.imageView.getLayoutParams();
         lp.width = mItemWidth;
@@ -50,19 +51,37 @@ public class VideoAdapter extends AbstractCommonAdapter<Video> {
         viewHolder.titleView.setText(item.title);
         viewHolder.imageView.setImageUrl(item.imgUrl);
         viewHolder.dateView.setText(item.date);
+        viewHolder.clickView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) mListener.onItemClicked(position, item);
+            }
+        });
+    }
+
+    public void setOnItemClickedListener(OnItemClickedListener listener) {
+        this.mListener = listener;
     }
 
     private class VideoViewHolder extends RecyclerView.ViewHolder {
 
+        View clickView;
         TextView titleView;
         NetworkImageView imageView;
         TextView dateView;
 
         public VideoViewHolder(View itemView) {
             super(itemView);
+            clickView = itemView.findViewById(R.id.item_videos_list_click);
             titleView = (TextView) itemView.findViewById(R.id.item_videos_list_title);
             imageView = (NetworkImageView) itemView.findViewById(R.id.item_videos_list_img);
             dateView = (TextView) itemView.findViewById(R.id.item_videos_list_date);
         }
+    }
+
+    public interface OnItemClickedListener {
+
+        void onItemClicked(int position, Video item);
+
     }
 }

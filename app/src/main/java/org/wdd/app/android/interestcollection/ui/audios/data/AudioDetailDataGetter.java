@@ -1,4 +1,4 @@
-package org.wdd.app.android.interestcollection.ui.images.data;
+package org.wdd.app.android.interestcollection.ui.audios.data;
 
 import android.content.Context;
 
@@ -12,31 +12,34 @@ import org.wdd.app.android.interestcollection.http.HttpResponseEntry;
 import org.wdd.app.android.interestcollection.http.HttpSession;
 import org.wdd.app.android.interestcollection.http.error.ErrorCode;
 import org.wdd.app.android.interestcollection.http.error.HttpError;
+import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
+import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
-import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
+import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
 import org.wdd.app.android.interestcollection.utils.HttpUtils;
 import org.wdd.app.android.interestcollection.utils.ServerApis;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Created by richard on 2/24/17.
+ * Created by richard on 2/23/17.
  */
 
-public class ImageDetailDateGetter {
+public class AudioDetailDataGetter {
 
     private Context mContext;
     private HttpSession mSession;
     private HttpManager mManager;
     private DataCallback mCallback;
 
-    public ImageDetailDateGetter(Context context, DataCallback callback) {
+    public AudioDetailDataGetter(Context context, DataCallback callback) {
         this.mContext = context;
         this.mCallback = callback;
         mManager = HttpManager.getInstance(context);
     }
 
-    public void requestImageDetailData(String url, ActivityFragmentAvaliable host) {
+    public void requestAudioDetailData(String url, ActivityFragmentAvaliable host) {
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
@@ -47,46 +50,36 @@ public class ImageDetailDateGetter {
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
                 Document document = (Document) res.getData();
-                Elements articleNodes = document.getElementsByAttributeValue("id", "content-c");
-                if (articleNodes.size() == 0) {
+                Elements rootNodes = document.getElementsByAttributeValue("id", "content-c");
+                if (rootNodes.size() == 0) {
                     mCallback.onRequestOk(null);
                     return;
                 }
-                Element articleNode = articleNodes.first();
-                ImageDetail detail = new ImageDetail();
-                detail.title = articleNode.getElementsByAttributeValue("class", "post-title").first().text();
+                Element rootNode = rootNodes.first();
+                AudioDetail detail = new AudioDetail();
+                detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
 
-                Elements postMetaNodes = articleNode.getElementsByAttributeValue("class", "post-meta");
+                Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
                 detail.time = postMetaNodes.get(0).text();
                 detail.tag = postMetaNodes.get(1).text();
                 detail.commentCount = postMetaNodes.get(2).text();
 
-                Elements contentNodes = articleNode.getElementsByAttributeValue("class", "single-post-content");
+                Elements contentNodes = rootNode.getElementsByAttributeValue("class", "single-post-content");
                 if (contentNodes.size() == 0) {
                     mCallback.onRequestOk(null);
                     return;
                 }
                 Element contentNode = contentNodes.first();
-                Elements elements = contentNode.getAllElements();
-                detail.nodes = new ArrayList<>();
-                Element element;
-                for (int i = 0; i < elements.size(); i++) {
-                    element = elements.get(i);
-                    if(element.hasAttr("data-original")) {
-                        detail.nodes.add(new ImageDetail.Node(true, element.attr("data-original")));
-                    } else if("p".equalsIgnoreCase(element.tagName())) {
-                        if (element.hasClass("source")) {
-                            detail.source = element.text();
-                            break;
-                        }
-                        String p = element.text();
-                        if (p.length() == 0) continue;
-                        detail.nodes.add(new ImageDetail.Node(false, p));
-                    } else if (element.hasClass("summary")) {
-                        detail.summary = element.text();
-                    }
+                String p = contentNode.getElementsByTag("p").first().text();
+                String[] ps = p.split("：");
+                if (ps == null || ps.length < 4) {
+                    mCallback.onRequestOk(null);
+                    return;
                 }
-
+                detail.anchor = ps[1];
+                detail.column = ps[3];
+                detail.audioUrl = contentNode.getElementsByTag("audio").first().attr("src");
+                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
                 mCallback.onRequestOk(detail);
             }
 
@@ -110,7 +103,7 @@ public class ImageDetailDateGetter {
 
     public interface DataCallback {
 
-        void onRequestOk(ImageDetail detail);
+        void onRequestOk(AudioDetail detail);
         void onRequestError(String error);
         void onNetworkError();
 

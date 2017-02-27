@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
+import org.wdd.app.android.interestcollection.views.GifNetworkImageView;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 import java.util.ArrayList;
@@ -20,9 +21,9 @@ import java.util.List;
 
 public class ImageDetailAdapter extends BaseAdapter {
 
-    private final int TYPE_TEXT = 1;
-    private final int TYPE_IMAGE_NORMAL = 2;
-    private final int TYPE_IMAGE_GIF = 3;
+    private final int TYPE_TEXT = 0;
+    private final int TYPE_IMAGE_NORMAL = 1;
+    private final int TYPE_IMAGE_GIF = 2;
 
     private LayoutInflater mInflater;
     private List<Item> mData;
@@ -32,11 +33,11 @@ public class ImageDetailAdapter extends BaseAdapter {
         mData = new ArrayList<>();
         for (ImageDetail.Node node : nodes) {
             if (node.isImg) {
-//                if (node.data.endsWith(".gif")) {
-//                    mData.add(new Item(TYPE_IMAGE_GIF, node.data));
-//                } else {
+                if (node.data.endsWith(".gif")) {
+                    mData.add(new Item(TYPE_IMAGE_GIF, node.data));
+                } else {
                     mData.add(new Item(TYPE_IMAGE_NORMAL, node.data));
-//                }
+                }
             } else {
                 mData.add(new Item(TYPE_TEXT, node.data));
             }
@@ -137,13 +138,14 @@ public class ImageDetailAdapter extends BaseAdapter {
 
     private class GifViewHolder {
 
-        NetworkImageView gifView;
+        GifNetworkImageView gifView;
 
         GifViewHolder(View itemView) {
-            gifView = (NetworkImageView) itemView.findViewById(R.id.item_images_detail_gif_img);
+            gifView = (GifNetworkImageView) itemView.findViewById(R.id.item_images_detail_gif_img);
         }
 
         public void bindData(Item item) {
+            gifView.setImageUrl(item.data);
         }
     }
 

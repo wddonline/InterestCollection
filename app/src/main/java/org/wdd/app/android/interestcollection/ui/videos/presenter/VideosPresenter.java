@@ -2,7 +2,6 @@ package org.wdd.app.android.interestcollection.ui.videos.presenter;
 
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.base.BasePresenter;
-import org.wdd.app.android.interestcollection.ui.images.model.Image;
 import org.wdd.app.android.interestcollection.ui.videos.data.VideosDataGetter;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
@@ -14,6 +13,7 @@ import java.util.List;
  */
 
 public class VideosPresenter implements BasePresenter, VideosDataGetter.DataCallback {
+
     private VideosFragment mView;
     private VideosDataGetter mGetter;
 
@@ -38,7 +38,7 @@ public class VideosPresenter implements BasePresenter, VideosDataGetter.DataCall
             mView.showNoDataView(isAppend);
             return;
         }
-        mView.showImagesListView(data, isAppend, isLastPage);
+        mView.showVideosListView(data, isAppend, isLastPage);
     }
 
     @Override

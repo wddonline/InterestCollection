@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
+import org.wdd.app.android.interestcollection.ui.videos.activity.VideoDetailActivity;
 import org.wdd.app.android.interestcollection.ui.videos.adapter.VideoAdapter;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
 import org.wdd.app.android.interestcollection.ui.videos.presenter.VideosPresenter;
@@ -88,7 +89,7 @@ public class VideosFragment extends BaseFragment {
         mPresenter.cancelRequest();
     }
 
-    public void showImagesListView(List<Video> data, boolean isAppend, boolean isLastPage) {
+    public void showVideosListView(List<Video> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
             images = new ArrayList<>();
             images.addAll(data);
@@ -97,6 +98,12 @@ public class VideosFragment extends BaseFragment {
                 @Override
                 public void onLoadMore() {
                     mPresenter.getVideosListData(true, host);
+                }
+            });
+            mAdapter.setOnItemClickedListener(new VideoAdapter.OnItemClickedListener() {
+                @Override
+                public void onItemClicked(int position, Video item) {
+                    VideoDetailActivity.show(getContext(), item.url, item.title);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

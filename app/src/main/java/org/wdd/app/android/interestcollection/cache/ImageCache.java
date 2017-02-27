@@ -182,8 +182,9 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 			Bitmap bitmap = mStrongRefs.remove(key);
 			if (bitmap != null) bitmap.recycle();
 			SoftReference<Bitmap> reference = mSoftRefs.remove(key);
+			if (reference == null) return;
 			bitmap = reference.get();
-			if (reference != null && bitmap != null) {
+			if (bitmap != null) {
 				bitmap.recycle();
 			}
 		}

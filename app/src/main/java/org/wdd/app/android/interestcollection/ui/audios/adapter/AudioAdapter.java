@@ -21,6 +21,7 @@ import java.util.List;
 public class AudioAdapter extends AbstractCommonAdapter<Audio> {
 
     private LayoutInflater mInflater;
+    private OnItemClickedListener mListener;
 
     public AudioAdapter(Context context, List<Audio> data) {
         super(context, data);
@@ -35,24 +36,42 @@ public class AudioAdapter extends AbstractCommonAdapter<Audio> {
     }
 
     @Override
-    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, Audio item, int position) {
+    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, final Audio item, final int position) {
         AudioViewHolder viewHolder = (AudioViewHolder) holder;
         viewHolder.titleView.setText(item.title);
         viewHolder.dateView.setText(item.date);
         viewHolder.imageView.setImageUrl(item.imgUrl);
+        viewHolder.clickView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) mListener.onItemClicked(position, item);
+            }
+        });
+    }
+
+    public void setOnItemClickedListener(OnItemClickedListener listener) {
+        this.mListener = listener;
     }
 
     private class AudioViewHolder extends RecyclerView.ViewHolder {
 
+        View clickView;
         TextView titleView;
         TextView dateView;
         NetworkImageView imageView;
 
         public AudioViewHolder(View itemView) {
             super(itemView);
+            clickView = itemView.findViewById(R.id.item_audios_list_click);
             titleView = (TextView) itemView.findViewById(R.id.item_audios_list_title);
             dateView = (TextView) itemView.findViewById(R.id.item_audios_list_date);
             imageView = (NetworkImageView) itemView.findViewById(R.id.item_audios_list_img);
         }
+    }
+
+    public interface OnItemClickedListener {
+
+        void onItemClicked(int position, Audio item);
+
     }
 }
