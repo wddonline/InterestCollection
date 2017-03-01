@@ -68,7 +68,8 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".ui.videos.activity.VideoDetailActivity" />
-        <activity android:name=".ui.audios.activity.AudioDetailActivity"></activity>
+        <activity android:name=".ui.audios.activity.AudioDetailActivity" />
+        <activity android:name=".ui.shares.activity.ShareDetailActivity"></activity>
     </application>
 
 </manifest>

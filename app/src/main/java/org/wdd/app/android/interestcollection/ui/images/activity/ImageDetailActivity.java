@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.cache.GifImageCache;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.images.adapter.ImageDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
@@ -77,6 +78,13 @@ public class ImageDetailActivity extends BaseActivity {
         mPresenter.getImageDetailData(mUrl, host);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mPresenter.cancelRequest();
+        GifImageCache.getInstance().clear();
+    }
+
     public void showImageDetailViews(ImageDetail data) {
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
         mListView.setVisibility(View.VISIBLE);
@@ -105,7 +113,7 @@ public class ImageDetailActivity extends BaseActivity {
         sourceView.setText(data.source);
         mListView.addFooterView(footerView);
 
-        ImageDetailAdapter adapter = new ImageDetailAdapter(this, data.nodes);
+        ImageDetailAdapter adapter = new ImageDetailAdapter(mListView, data.nodes);
         mListView.setAdapter(adapter);
 
     }

@@ -1,25 +1,20 @@
 package org.wdd.app.android.interestcollection.views;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 
 import com.android.volley.Cache;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.DrawableLoader;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
-import org.wdd.app.android.interestcollection.cache.ImageCache;
+import org.wdd.app.android.interestcollection.cache.GifImageCache;
 import org.wdd.app.android.interestcollection.http.impl.VolleyTool;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 
 import pl.droidsonroids.gif.GifDrawable;
@@ -45,11 +40,11 @@ public class GifNetworkImageView extends GifImageView {
     private int mErrorImageId;
 
     /** Local copy of the ImageLoader. */
-    private ImageLoader mImageLoader;
+    private DrawableLoader mDrawableLoader;
     private NetworkImageView.ImageLoaderListener mLoaderListener;
 
     /** Current ImageContainer. (either in-flight or finished) */
-    private ImageLoader.ImageContainer mImageContainer;
+    private DrawableLoader.DrawableContainer mDrawableContainer;
 
     public GifNetworkImageView(Context context) {
         this(context, null);
@@ -61,7 +56,7 @@ public class GifNetworkImageView extends GifImageView {
 
     public GifNetworkImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        mImageLoader = new ImageLoader(VolleyTool.getInstance(InterestCollectionApplication.getInstance()).getRequestQueue(), ImageCache.getInstance());
+        mDrawableLoader = new DrawableLoader(VolleyTool.getInstance(InterestCollectionApplication.getInstance()).getRequestQueue(), GifImageCache.getInstance());
         setDefaultImageResId(R.drawable.default_img);
         setErrorImageResId(R.drawable.default_img);
     }
@@ -78,9 +73,9 @@ public class GifNetworkImageView extends GifImageView {
      * @param url The URL that should be loaded into this ImageView.
      * @param imageLoader ImageLoader that will be used to make the request.
      */
-    public void setImageUrl(String url, ImageLoader imageLoader) {
+    public void setImageUrl(String url, DrawableLoader imageLoader) {
         mUrl = url;
-        mImageLoader = imageLoader;
+        mDrawableLoader = imageLoader;
         // The URL has potentially changed. See if we need to load it.
         loadImageIfNecessary(false);
     }
@@ -141,22 +136,22 @@ public class GifNetworkImageView extends GifImageView {
         // if the URL to be loaded in this view is empty, cancel any old requests and clear the
         // currently loaded image.
         if (TextUtils.isEmpty(mUrl)) {
-            if (mImageContainer != null) {
-                mImageContainer.cancelRequest();
-                mImageContainer = null;
+            if (mDrawableContainer != null) {
+                mDrawableContainer.cancelRequest();
+                mDrawableContainer = null;
             }
             setDefaultImageOrNull();
             return;
         }
 
         // if there was an old request in this view, check if it needs to be canceled.
-        if (mImageContainer != null && mImageContainer.getRequestUrl() != null) {
-            if (mImageContainer.getRequestUrl().equals(mUrl)) {
+        if (mDrawableContainer != null && mDrawableContainer.getRequestUrl() != null) {
+            if (mDrawableContainer.getRequestUrl().equals(mUrl)) {
                 // if the request is from the same URL, return.
                 return;
             } else {
                 // if there is a pre-existing request, cancel it if it's fetching a different URL.
-                mImageContainer.cancelRequest();
+                mDrawableContainer.cancelRequest();
                 setDefaultImageOrNull();
             }
         }
@@ -167,11 +162,11 @@ public class GifNetworkImageView extends GifImageView {
 
         // The pre-existing content of this view didn't match the current URL. Load the new image
         // from the network.
-        ImageLoader.ImageContainer newContainer = mImageLoader.get(mUrl,
-                new ImageLoader.ImageListener() {
+        DrawableLoader.DrawableContainer newContainer = mDrawableLoader.get(mUrl,
+                new DrawableLoader.DrawableListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        mImageContainer = null;
+                        mDrawableContainer = null;
                         if (mLoaderListener != null) mLoaderListener.onLoadError();
                         if (mErrorImageId != 0) {
                             setImageResource(mErrorImageId);
@@ -179,7 +174,7 @@ public class GifNetworkImageView extends GifImageView {
                     }
 
                     @Override
-                    public void onResponse(final ImageLoader.ImageContainer response, boolean isImmediate) {
+                    public void onResponse(final DrawableLoader.DrawableContainer response, boolean isImmediate) {
                         if (mLoaderListener != null) mLoaderListener.onLoadCompleted();
                         // If this was an immediate response that was delivered inside of a layout
                         // pass do not set the image immediately as it will trigger a requestLayout
@@ -194,25 +189,8 @@ public class GifNetworkImageView extends GifImageView {
                             });
                             return;
                         }
-                        if (response.getBitmap() != null) {
-                            ImageCache.getInstance().removeBitmap(getCacheKey(mUrl, maxWidth, maxHeight));
-                            response.getBitmap().recycle();
-                            if (mUrl.endsWith(".gif")) {
-                                Cache.Entry entry = VolleyTool.getInstance(getContext()).getRequestQueue().getCache().get(mUrl);
-                                if (entry != null) {
-                                    try {
-                                        GifDrawable drawable = new GifDrawable(entry.data);
-                                        setImageDrawable(drawable);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                        setImageResource(mDefaultImageId);
-                                    }
-                                } else {
-                                    setImageResource(mDefaultImageId);
-                                }
-                            } else {
-                                setImageBitmap(response.getBitmap());
-                            }
+                        if (response.getDrawable() != null) {
+                            setImageDrawable(response.getDrawable());
                         } else if (mDefaultImageId != 0) {
                             setImageResource(mDefaultImageId);
                         }
@@ -220,11 +198,7 @@ public class GifNetworkImageView extends GifImageView {
                 }, maxWidth, maxHeight);
 
         // update the ImageContainer to be the new bitmap container.
-        mImageContainer = newContainer;
-    }
-
-    private static String getCacheKey(String url, int maxWidth, int maxHeight) {
-        return (new StringBuilder(url.length() + 12)).append("#W").append(maxWidth).append("#H").append(maxHeight).append(url).toString();
+        mDrawableContainer = newContainer;
     }
 
     private void setDefaultImageOrNull() {
@@ -244,13 +218,13 @@ public class GifNetworkImageView extends GifImageView {
 
     @Override
     protected void onDetachedFromWindow() {
-        if (mImageContainer != null) {
+        if (mDrawableContainer != null) {
             // If the view was bound to an image request, cancel it and clear
             // out the image from the view.
-            mImageContainer.cancelRequest();
+            mDrawableContainer.cancelRequest();
             setImageBitmap(null);
             // also clear out the container so we can reload the image if necessary.
-            mImageContainer = null;
+            mDrawableContainer = null;
         }
         super.onDetachedFromWindow();
     }
@@ -266,7 +240,7 @@ public class GifNetworkImageView extends GifImageView {
         try {
             super.onDraw(canvas);
         } catch (IllegalStateException e) {
-            mImageContainer = null;
+            mDrawableContainer = null;
             setImageResource(R.drawable.default_img);
             e.printStackTrace();
         } catch (Exception e) {

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ui.audios.adapter.AudioAdapter;
 import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.shares.model.Share;
@@ -22,6 +23,7 @@ import java.util.List;
 public class SharesAdapter extends AbstractCommonAdapter<Share> {
 
     private LayoutInflater mInflater;
+    private OnItemClickedListener mListener;
 
     public SharesAdapter(Context context, List<Share> data) {
         super(context, data);
@@ -36,24 +38,42 @@ public class SharesAdapter extends AbstractCommonAdapter<Share> {
     }
 
     @Override
-    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, Share item, int position) {
+    protected void onBindDataViewHolder(RecyclerView.ViewHolder holder, final Share item, final int position) {
         ShareViewHolder viewHolder = (ShareViewHolder) holder;
         viewHolder.titleView.setText(item.title);
         viewHolder.dateView.setText(item.date);
         viewHolder.imageView.setImageUrl(item.imgUrl);
+        viewHolder.clickView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) mListener.onItemClicked(position, item);
+            }
+        });
+    }
+
+    public void setOnItemClickedListener(OnItemClickedListener listener) {
+        this.mListener = listener;
     }
 
     private class ShareViewHolder extends RecyclerView.ViewHolder {
 
+        View clickView;
         TextView titleView;
         TextView dateView;
         NetworkImageView imageView;
 
         public ShareViewHolder(View itemView) {
             super(itemView);
+            clickView = itemView.findViewById(R.id.item_shares_list_click);
             titleView = (TextView) itemView.findViewById(R.id.item_shares_list_title);
             dateView = (TextView) itemView.findViewById(R.id.item_shares_list_date);
             imageView = (NetworkImageView) itemView.findViewById(R.id.item_shares_list_img);
         }
+    }
+
+    public interface OnItemClickedListener {
+
+        void onItemClicked(int position, Share item);
+
     }
 }

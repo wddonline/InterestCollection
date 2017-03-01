@@ -1,43 +1,37 @@
-package org.wdd.app.android.interestcollection.ui.images.adapter;
+package org.wdd.app.android.interestcollection.ui.shares.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
-import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
+import org.wdd.app.android.interestcollection.ui.shares.model.ShareDetail;
 import org.wdd.app.android.interestcollection.views.GifNetworkImageView;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import pl.droidsonroids.gif.GifDrawable;
-
 /**
- * Created by wangdd on 17-2-24.
+ * Created by richard on 2/24/17.
  */
 
-public class ImageDetailAdapter extends BaseAdapter {
+public class ShareDetailAdapter extends BaseAdapter {
 
     private final int TYPE_TEXT = 0;
     private final int TYPE_IMAGE_NORMAL = 1;
     private final int TYPE_IMAGE_GIF = 2;
 
     private LayoutInflater mInflater;
-    private List<Item> mData;
-    private List<SoftReference<GifDrawable>> mGifCache;
+    private List<ShareDetailAdapter.Item> mData;
 
-    public ImageDetailAdapter(ListView listView, List<ImageDetail.Node> nodes) {
-        mInflater = LayoutInflater.from(listView.getContext());
-        mGifCache = new ArrayList<>();
+    public ShareDetailAdapter(Context context, List<ShareDetail.Node> nodes) {
+        mInflater = LayoutInflater.from(context);
         mData = new ArrayList<>();
-        for (ImageDetail.Node node : nodes) {
+        for (ShareDetail.Node node : nodes) {
             if (node.isImg) {
                 if (node.data.endsWith(".gif")) {
                     mData.add(new Item(TYPE_IMAGE_GIF, node.data));
@@ -48,16 +42,6 @@ public class ImageDetailAdapter extends BaseAdapter {
                 mData.add(new Item(TYPE_TEXT, node.data));
             }
         }
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-            }
-        });
     }
 
     @Override
@@ -87,7 +71,7 @@ public class ImageDetailAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Item item = mData.get(position);
+        ShareDetailAdapter.Item item = mData.get(position);
         switch (item.type) {
             case TYPE_TEXT:
                 TextViewHolder textViewHolder;
@@ -109,7 +93,7 @@ public class ImageDetailAdapter extends BaseAdapter {
                 } else {
                     imageViewHolder = (ImageViewHolder) convertView.getTag();
                 }
-                imageViewHolder.bindData(item.data);
+                imageViewHolder.bindData(item);
                 break;
             case TYPE_IMAGE_GIF:
                 GifViewHolder gifViewHolder;
@@ -120,7 +104,7 @@ public class ImageDetailAdapter extends BaseAdapter {
                 } else {
                     gifViewHolder = (GifViewHolder) convertView.getTag();
                 }
-                gifViewHolder.bindData(item.data);
+                gifViewHolder.bindData(item);
                 break;
         }
         return convertView;
@@ -147,8 +131,8 @@ public class ImageDetailAdapter extends BaseAdapter {
             imageView = (NetworkImageView) itemView.findViewById(R.id.item_images_detail_image_img);
         }
 
-        public void bindData(String imgUrl) {
-            imageView.setImageUrl(imgUrl);
+        public void bindData(Item item) {
+            imageView.setImageUrl(item.data);
         }
     }
 
@@ -160,8 +144,8 @@ public class ImageDetailAdapter extends BaseAdapter {
             gifView = (GifNetworkImageView) itemView.findViewById(R.id.item_images_detail_gif_img);
         }
 
-        public void bindData(String imgUrl) {
-            gifView.setImageUrl(imgUrl);
+        public void bindData(Item item) {
+            gifView.setImageUrl(item.data);
         }
     }
 
@@ -175,4 +159,5 @@ public class ImageDetailAdapter extends BaseAdapter {
             this.data = data;
         }
     }
+
 }

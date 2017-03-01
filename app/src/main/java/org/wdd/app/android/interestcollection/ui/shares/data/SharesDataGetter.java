@@ -129,4 +129,10 @@ public class SharesDataGetter {
         void onNetworkError(boolean isAppend);
 
     }
+
+    public interface OnItemClickedListener {
+
+        void onItemClicked(int position, Share item);
+
+    }
 }

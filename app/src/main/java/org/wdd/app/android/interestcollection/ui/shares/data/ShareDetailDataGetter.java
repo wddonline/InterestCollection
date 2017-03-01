@@ -1,4 +1,4 @@
-package org.wdd.app.android.interestcollection.ui.audios.data;
+package org.wdd.app.android.interestcollection.ui.shares.data;
 
 import android.content.Context;
 
@@ -12,34 +12,31 @@ import org.wdd.app.android.interestcollection.http.HttpResponseEntry;
 import org.wdd.app.android.interestcollection.http.HttpSession;
 import org.wdd.app.android.interestcollection.http.error.ErrorCode;
 import org.wdd.app.android.interestcollection.http.error.HttpError;
-import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
-import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
-import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
+import org.wdd.app.android.interestcollection.ui.shares.model.ShareDetail;
 import org.wdd.app.android.interestcollection.utils.HttpUtils;
 import org.wdd.app.android.interestcollection.utils.ServerApis;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by richard on 2/23/17.
  */
 
-public class AudioDetailDataGetter {
+public class ShareDetailDataGetter {
 
     private Context mContext;
     private HttpSession mSession;
     private HttpManager mManager;
     private DataCallback mCallback;
 
-    public AudioDetailDataGetter(Context context, DataCallback callback) {
+    public ShareDetailDataGetter(Context context, DataCallback callback) {
         this.mContext = context;
         this.mCallback = callback;
         mManager = HttpManager.getInstance(context);
     }
 
-    public void requestAudioDetailData(String url, ActivityFragmentAvaliable host) {
+    public void requestShareDetailData(String url, ActivityFragmentAvaliable host) {
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
@@ -56,7 +53,7 @@ public class AudioDetailDataGetter {
                     return;
                 }
                 Element rootNode = rootNodes.first();
-                AudioDetail detail = new AudioDetail();
+                ShareDetail detail = new ShareDetail();
                 detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
 
                 Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
@@ -70,19 +67,25 @@ public class AudioDetailDataGetter {
                     return;
                 }
                 Element contentNode = contentNodes.first();
-                String pHtml = contentNode.getElementsByTag("p").first().html();
-                try {
-                    detail.anchor = pHtml.substring(pHtml.indexOf("：") + 1, pHtml.indexOf("<span>"));
-                } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                Elements elements = contentNode.getAllElements();
+                detail.nodes = new ArrayList<>();
+                Element element;
+                for (int i = 0; i < elements.size(); i++) {
+                    element = elements.get(i);
+                    if(element.hasAttr("data-original")) {
+                        detail.nodes.add(new ShareDetail.Node(true, element.attr("data-original")));
+                    } else if("p".equalsIgnoreCase(element.tagName())) {
+                        if (element.hasClass("source")) {
+                            detail.source = element.text();
+                            break;
+                        }
+                        String p = element.text();
+                        if (p.length() == 0) continue;
+                        detail.nodes.add(new ShareDetail.Node(false, p));
+                    } else if (element.hasClass("summary")) {
+                        detail.summary = element.text();
+                    }
                 }
-                try {
-                    detail.column = pHtml.substring(pHtml.lastIndexOf("：") + 1, pHtml.indexOf("</span>"));
-                } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
-                }
-                detail.audioUrl = contentNode.getElementsByTag("audio").first().attr("src");
-                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
                 mCallback.onRequestOk(detail);
             }
 
@@ -106,7 +109,7 @@ public class AudioDetailDataGetter {
 
     public interface DataCallback {
 
-        void onRequestOk(AudioDetail detail);
+        void onRequestOk(ShareDetail detail);
         void onRequestError(String error);
         void onNetworkError();
 

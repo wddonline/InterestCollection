@@ -86,6 +86,12 @@ public class VideoDetailActivity extends BaseActivity {
         mPresenter.getVideoDetailData(mUrl, host);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mPresenter.cancelRequest();
+    }
+
     public void showNoDataView() {
         mLoadView.setStatus(LoadView.LoadStatus.No_Data);
     }

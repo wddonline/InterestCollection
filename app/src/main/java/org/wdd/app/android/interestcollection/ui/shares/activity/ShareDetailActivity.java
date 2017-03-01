@@ -1,6 +1,7 @@
-package org.wdd.app.android.interestcollection.ui.jokes.activity;
+package org.wdd.app.android.interestcollection.ui.shares.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -10,46 +11,47 @@ import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
-import org.wdd.app.android.interestcollection.ui.jokes.adapter.DirtyJokeDetailAdapter;
-import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
-import org.wdd.app.android.interestcollection.ui.jokes.presenter.DirtyJokeDetailPresenter;
+import org.wdd.app.android.interestcollection.ui.shares.adapter.ShareDetailAdapter;
+import org.wdd.app.android.interestcollection.ui.shares.model.ShareDetail;
+import org.wdd.app.android.interestcollection.ui.shares.presenter.ShareDetailPresenter;
 import org.wdd.app.android.interestcollection.views.LoadView;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
-public class DirtyJokeDetailActivity extends BaseActivity {
+public class ShareDetailActivity extends BaseActivity {
 
-    public static void show(Activity activity, String url, String title) {
-        Intent intent = new Intent(activity, DirtyJokeDetailActivity.class);
+    public static void show(Context context, String url, String title) {
+        Intent intent = new Intent(context, ShareDetailActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("url", url);
         intent.putExtra("title", title);
-        activity.startActivity(intent);
+        context.startActivity(intent);
     }
 
     private ListView mListView;
     private LoadView mLoadView;
 
-    private DirtyJokeDetailPresenter mPresenter;
+    private ShareDetailPresenter mPresenter;
     private String mUrl;
     private String mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dirty_joke_detail);
+        setContentView(R.layout.activity_share_detail);
         initData();
         initTitles();
         initViews();
     }
 
     private void initData() {
-        mPresenter = new DirtyJokeDetailPresenter(this);
+        mPresenter = new ShareDetailPresenter(this);
 
         mUrl = getIntent().getStringExtra("url");
         mTitle = getIntent().getStringExtra("title");
     }
 
     private void initTitles() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dirty_joke_detail_toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_share_detail_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -62,16 +64,16 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     }
 
     private void initViews() {
-        mListView = (ListView) findViewById(R.id.activity_dirty_joke_detail_listview);
-        mLoadView = (LoadView) findViewById(R.id.activity_dirty_joke_detail_loadview);
+        mListView = (ListView) findViewById(R.id.activity_share_detail_listview);
+        mLoadView = (LoadView) findViewById(R.id.activity_share_detail_loadview);
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
             public void onReloadClicked() {
-                mPresenter.getDirtyJokeDetailData(mUrl, host);
+                mPresenter.getShareDetailData(mUrl, host);
             }
         });
 
-        mPresenter.getDirtyJokeDetailData(mUrl, host);
+        mPresenter.getShareDetailData(mUrl, host);
     }
 
     @Override
@@ -80,7 +82,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         mPresenter.cancelRequest();
     }
 
-    public void showDirtyJokesDetailViews(DirtyJokeDetail data) {
+    public void showShareDetailViews(ShareDetail data) {
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
         mListView.setVisibility(View.VISIBLE);
 
@@ -94,7 +96,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         TextView commentCountView = (TextView) headerView.findViewById(R.id.layout_post_list_header_comment_count);
         commentCountView.setText(data.commentCount);
         NetworkImageView imageView = (NetworkImageView) headerView.findViewById(R.id.layout_post_list_header_img);
-        imageView.setImageUrl(data.imgUrl);
+        imageView.setVisibility(View.GONE);
         mListView.addHeaderView(headerView);
 
         View footerView = View.inflate(this, R.layout.layout_post_list_footer, null);
@@ -102,7 +104,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         sourceView.setText(data.source);
         mListView.addFooterView(footerView);
 
-        DirtyJokeDetailAdapter adapter = new DirtyJokeDetailAdapter(this, data.posts);
+        ShareDetailAdapter adapter = new ShareDetailAdapter(this, data.nodes);
         mListView.setAdapter(adapter);
 
     }

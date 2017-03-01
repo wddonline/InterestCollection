@@ -46,7 +46,7 @@ android {
 }
 
 dependencies {
-    compile(name: "gifDrawable", ext: "aar")
+    compile(name: "gif-drawable", ext: "aar")
     compile(name: "volley", ext: "aar")
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

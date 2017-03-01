@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
+import org.wdd.app.android.interestcollection.ui.shares.activity.ShareDetailActivity;
 import org.wdd.app.android.interestcollection.ui.shares.adapter.SharesAdapter;
 import org.wdd.app.android.interestcollection.ui.shares.model.Share;
 import org.wdd.app.android.interestcollection.ui.shares.presenter.SharesPresenter;
@@ -97,6 +98,12 @@ public class SharesFragment extends BaseFragment {
                 @Override
                 public void onLoadMore() {
                     mPresenter.getSharesListData(true, host);
+                }
+            });
+            mAdapter.setOnItemClickedListener(new SharesAdapter.OnItemClickedListener() {
+                @Override
+                public void onItemClicked(int position, Share item) {
+                    ShareDetailActivity.show(getContext(), item.url, item.title);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

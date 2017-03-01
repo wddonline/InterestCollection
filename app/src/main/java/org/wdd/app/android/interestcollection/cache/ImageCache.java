@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 图片缓存
@@ -36,8 +37,9 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 	private final boolean ACCESS_ORDER = true;// LinkedHashMap排序模式
 
 
-	private static LruCache<String, Bitmap> mStrongRefs;// 硬引用缓存
-	private static LinkedHashMap<String, SoftReference<Bitmap>> mSoftRefs;// 软引用缓存
+	private LruCache<String, Bitmap> mStrongRefs;// 硬引用缓存
+	private LinkedHashMap<String, SoftReference<Bitmap>> mSoftRefs;// 软引用缓存
+	private ReentrantReadWriteLock mLock;
 
 	private ImageCache() {
 		// 获取单个进程可用内存的最大值
@@ -75,10 +77,12 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 			@Override
 			protected boolean removeEldestEntry(Entry<String, SoftReference<Bitmap>> eldest) {
 				if (size() > MAX_SIZE) {
+					mLock.writeLock().lock();
 					Bitmap bitmap = eldest.getValue().get();
 					if (bitmap != null) {
 						bitmap.recycle();
 					}
+					mLock.writeLock().unlock();
 					return true;
 				}
 				return false;
@@ -99,14 +103,12 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		}
 		Bitmap bitmap = mStrongRefs.get(url);
 		if (bitmap != null) {
-			// 找到该Bitmap之后，将其移到LinkedHashMap的最前面，保证它在LRU算法中将被最后删除。
-			mStrongRefs.remove(url);
-			mStrongRefs.put(url, bitmap);
 			return bitmap;
 		}
 
 		SoftReference<Bitmap> ref = mSoftRefs.get(url);
 		if (ref != null) {
+			mLock.writeLock().lock();
 			bitmap = ref.get();
 			if (bitmap != null) {
 				// 找到该Bitmap之后，将它移到硬引用缓存。并从软引用缓存中删除。
@@ -116,6 +118,7 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 			} else {
 				mSoftRefs.remove(url);
 			}
+			mLock.writeLock().unlock();
 		}
 		return null;
 	}
@@ -140,54 +143,53 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 	}
 
 	private void clearLruCache() {
-		synchronized (this) {
-			Map<String, Bitmap> snapshot = mStrongRefs.snapshot();
-			Set<String> keys = snapshot.keySet();
-			Iterator<String> it = keys.iterator();
-			String key;
-			Bitmap bitmap;
-			while (it.hasNext()) {
-				key = it.next();
-				bitmap = snapshot.get(key);
-				bitmap.recycle();
-				if (bitmap != null) {
-					bitmap.recycle();
-				}
-			}
-			keys.clear();
-			snapshot.clear();
-			mStrongRefs.evictAll();
-		}
-	}
-
-	private void clearSoftCache() {
-		synchronized (this) {
-			Set<String> keys = mSoftRefs.keySet();
-			String[] arr = new String[keys.size()];
-			keys.toArray(arr);
-			Bitmap bitmap;
-			for (String key : arr) {
-				bitmap = mSoftRefs.get(key).get();
-				if (bitmap != null) {
-					bitmap.recycle();
-				}
-			}
-			keys.clear();
-			mSoftRefs.clear();
-		}
-	}
-
-	public void removeBitmap(String key) {
-		synchronized (this) {
-			Bitmap bitmap = mStrongRefs.remove(key);
-			if (bitmap != null) bitmap.recycle();
-			SoftReference<Bitmap> reference = mSoftRefs.remove(key);
-			if (reference == null) return;
-			bitmap = reference.get();
+		mLock.writeLock().lock();
+		Map<String, Bitmap> snapshot = mStrongRefs.snapshot();
+		Set<String> keys = snapshot.keySet();
+		Iterator<String> it = keys.iterator();
+		String key;
+		Bitmap bitmap;
+		while (it.hasNext()) {
+			key = it.next();
+			bitmap = snapshot.get(key);
 			if (bitmap != null) {
 				bitmap.recycle();
 			}
 		}
+		keys.clear();
+		snapshot.clear();
+		mStrongRefs.evictAll();
+		mLock.writeLock().unlock();
+	}
+
+	private void clearSoftCache() {
+		mLock.writeLock().lock();
+		Set<String> keys = mSoftRefs.keySet();
+		String[] arr = new String[keys.size()];
+		keys.toArray(arr);
+		Bitmap bitmap;
+		for (String key : arr) {
+			bitmap = mSoftRefs.get(key).get();
+			if (bitmap != null) {
+				bitmap.recycle();
+			}
+		}
+		keys.clear();
+		mSoftRefs.clear();
+		mLock.writeLock().unlock();
+	}
+
+	public void removeBitmap(String key) {
+		mLock.writeLock().lock();
+		Bitmap bitmap = mStrongRefs.remove(key);
+		if (bitmap != null) bitmap.recycle();
+		SoftReference<Bitmap> reference = mSoftRefs.remove(key);
+		if (reference == null) return;
+		bitmap = reference.get();
+		if (bitmap != null) {
+			bitmap.recycle();
+		}
+		mLock.writeLock().unlock();
 	}
 
 }
