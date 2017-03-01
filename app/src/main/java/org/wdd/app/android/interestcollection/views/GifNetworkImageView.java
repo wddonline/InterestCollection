@@ -6,18 +6,14 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 
-import com.android.volley.Cache;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.DrawableLoader;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
-import org.wdd.app.android.interestcollection.cache.GifImageCache;
+import org.wdd.app.android.interestcollection.cache.DrawableCache;
 import org.wdd.app.android.interestcollection.http.impl.VolleyTool;
 
-import java.io.IOException;
-
-import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
 /**
@@ -56,7 +52,7 @@ public class GifNetworkImageView extends GifImageView {
 
     public GifNetworkImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        mDrawableLoader = new DrawableLoader(VolleyTool.getInstance(InterestCollectionApplication.getInstance()).getRequestQueue(), GifImageCache.getInstance());
+        mDrawableLoader = new DrawableLoader(VolleyTool.getInstance(InterestCollectionApplication.getInstance()).getRequestQueue(), DrawableCache.getInstance());
         setDefaultImageResId(R.drawable.default_img);
         setErrorImageResId(R.drawable.default_img);
     }

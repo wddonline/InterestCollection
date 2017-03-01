@@ -10,7 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
-import org.wdd.app.android.interestcollection.cache.GifImageCache;
+import org.wdd.app.android.interestcollection.cache.DrawableCache;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.images.adapter.ImageDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
@@ -82,7 +82,7 @@ public class ImageDetailActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         mPresenter.cancelRequest();
-        GifImageCache.getInstance().clear();
+        DrawableCache.getInstance().clear();
     }
 
     public void showImageDetailViews(ImageDetail data) {

@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.android.volley.toolbox.DrawableLoader;
 
-import java.lang.ref.SoftReference;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -22,61 +21,57 @@ import pl.droidsonroids.gif.GifDrawable;
  * @author richard wang
  *
  */
-public class GifImageCache implements DrawableLoader.DrawableCache {
+public class DrawableCache implements DrawableLoader.DrawableCache {
 
-	private static GifImageCache cache;
+	private static DrawableCache cache;
 
-	public static GifImageCache getInstance() {
+	public static DrawableCache getInstance() {
 		if(cache == null) {
-			synchronized (GifImageCache.class) {
+			synchronized (DrawableCache.class) {
 				if(cache == null) {
-					cache = new GifImageCache();
+					cache = new DrawableCache();
 				}
 			}
 		}
 		return cache;
 	}
 
-	private LruCache<String, SoftReference<Drawable>> mLruCache;// 硬引用缓存
+	private LruCache<String, Drawable> mLruCache;
 	private ReentrantReadWriteLock mLock;
 
-	private GifImageCache() {
+	private DrawableCache() {
 		mLock = new ReentrantReadWriteLock();
 		// 获取单个进程可用内存的最大值
 		final int avaliableSize = (int) Runtime.getRuntime().maxMemory();
+		Log.e("#########", avaliableSize / 1024 / 1024 + "");
 		// 设置为可用内存的1/4（按Byte计算）
-		final int useableSize = avaliableSize / 5;
-		mLruCache = new LruCache<String, SoftReference<Drawable>>(useableSize) {
+		final int useableSize = avaliableSize / 3;
+		mLruCache = new LruCache<String, Drawable>(useableSize) {
 			@Override
-			protected int sizeOf(String key, SoftReference<Drawable> value) {
-				Drawable d = value.get();
-				if (d != null) {
-					if (d instanceof GifDrawable) {
-						GifDrawable drawable = (GifDrawable) d;
+			protected int sizeOf(String key, Drawable value) {
+				if (value != null) {
+					if (value instanceof GifDrawable) {
+						GifDrawable drawable = (GifDrawable) value;
 						if (drawable.getBuffer() != null) {
 							// 计算存储bitmap所占用的字节数
 							Bitmap bitmap = drawable.getBuffer();
 							Log.e("####", "gif" + bitmap.getRowBytes() * bitmap.getHeight());
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
-							mLock.writeLock().lock();
 							Log.e("####", "clear");
 							mLruCache.remove(key);
-							mLock.writeLock().unlock();
 							return 0;
 						}
-					} else if (d instanceof BitmapDrawable) {
-						BitmapDrawable drawable = (BitmapDrawable) d;
+					} else if (value instanceof BitmapDrawable) {
+						BitmapDrawable drawable = (BitmapDrawable) value;
 						if (drawable.getBitmap() != null) {
 							// 计算存储bitmap所占用的字节数
 							Bitmap bitmap = drawable.getBitmap();
 							Log.e("####", "img" + bitmap.getRowBytes() * bitmap.getHeight());
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
-							mLock.writeLock().lock();
 							Log.e("####", "clear");
 							mLruCache.remove(key);
-							mLock.writeLock().unlock();
 							return 0;
 						}
 					} else {
@@ -84,29 +79,24 @@ public class GifImageCache implements DrawableLoader.DrawableCache {
 					}
 
 				} else {
-					mLock.writeLock().lock();
 					Log.e("####", "clear");
 					mLruCache.remove(key);
-					mLock.writeLock().unlock();
 					return 0;
 				}
 			}
 
 			@Override
-			protected void entryRemoved(boolean evicted, String key, SoftReference<Drawable> oldValue, SoftReference<Drawable> newValue) {
+			protected void entryRemoved(boolean evicted, String key, Drawable oldValue, Drawable newValue) {
 				if (evicted) {
 					if (oldValue != null) {
-						mLock.writeLock().lock();
 						Log.e("####", "recycled");
-						Drawable drawable = oldValue.get();
-						if (drawable != null) {
-							if (drawable instanceof GifDrawable) {
-								((GifDrawable)drawable).recycle();
-							} else if(drawable instanceof BitmapDrawable) {
-								((BitmapDrawable)drawable).getBitmap().recycle();
+						if (oldValue != null) {
+							if (oldValue instanceof GifDrawable) {
+								((GifDrawable)oldValue).recycle();
+							} else if(oldValue instanceof BitmapDrawable) {
+								((BitmapDrawable)oldValue).getBitmap().recycle();
 							}
 						}
-						mLock.writeLock().unlock();
 					}
 				}
 			}
@@ -124,7 +114,7 @@ public class GifImageCache implements DrawableLoader.DrawableCache {
 		if(TextUtils.isEmpty(url)) {
 			return null;
 		}
-		Drawable drawable = mLruCache.get(url).get();
+		Drawable drawable = mLruCache.get(url);
 		if (drawable != null) {
 			return drawable;
 		}
@@ -142,7 +132,9 @@ public class GifImageCache implements DrawableLoader.DrawableCache {
 		if (drawable == null) {
 			return;
 		}
-		mLruCache.put(url, new SoftReference<>(drawable));
+		mLock.writeLock().lock();
+		mLruCache.put(url, drawable);
+		mLock.writeLock().unlock();
 	}
 
 	public void clear() {
@@ -151,14 +143,14 @@ public class GifImageCache implements DrawableLoader.DrawableCache {
 
 	private void clearLruCache() {
 		mLock.writeLock().lock();
-		Map<String, SoftReference<Drawable>> snapshot = mLruCache.snapshot();
+		Map<String, Drawable> snapshot = mLruCache.snapshot();
 		Set<String> keys = snapshot.keySet();
 		Iterator<String> it = keys.iterator();
 		String key;
 		Drawable drawable;
 		while (it.hasNext()) {
 			key = it.next();
-			drawable = snapshot.get(key).get();
+			drawable = snapshot.get(key);
 			if (drawable != null) {
 				Log.e("####", "recycled");
 				if (drawable instanceof GifDrawable) {
@@ -176,7 +168,7 @@ public class GifImageCache implements DrawableLoader.DrawableCache {
 
 	public void removeDrawable(String key) {
 		mLock.writeLock().lock();
-		Drawable drawable = mLruCache.remove(key).get();
+		Drawable drawable = mLruCache.remove(key);
 		if (drawable != null) {
 			if (drawable instanceof GifDrawable) {
 				((GifDrawable)drawable).recycle();

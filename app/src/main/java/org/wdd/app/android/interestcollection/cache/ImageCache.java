@@ -42,6 +42,7 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 	private ReentrantReadWriteLock mLock;
 
 	private ImageCache() {
+		mLock = new ReentrantReadWriteLock();
 		// 获取单个进程可用内存的最大值
 		final int avaliableSize = (int) Runtime.getRuntime().maxMemory();
 		// 设置为可用内存的1/4（按Byte计算）
@@ -77,12 +78,10 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 			@Override
 			protected boolean removeEldestEntry(Entry<String, SoftReference<Bitmap>> eldest) {
 				if (size() > MAX_SIZE) {
-					mLock.writeLock().lock();
 					Bitmap bitmap = eldest.getValue().get();
 					if (bitmap != null) {
 						bitmap.recycle();
 					}
-					mLock.writeLock().unlock();
 					return true;
 				}
 				return false;
@@ -134,16 +133,19 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		if (bitmap == null) {
 			return;
 		}
+		mLock.writeLock().lock();
 		mStrongRefs.put(url, bitmap);
+		mLock.writeLock().unlock();
 	}
 
 	public void clear() {
+		mLock.writeLock().lock();
 		clearLruCache();
 		clearSoftCache();
+		mLock.writeLock().unlock();
 	}
 
 	private void clearLruCache() {
-		mLock.writeLock().lock();
 		Map<String, Bitmap> snapshot = mStrongRefs.snapshot();
 		Set<String> keys = snapshot.keySet();
 		Iterator<String> it = keys.iterator();
@@ -159,11 +161,9 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		keys.clear();
 		snapshot.clear();
 		mStrongRefs.evictAll();
-		mLock.writeLock().unlock();
 	}
 
 	private void clearSoftCache() {
-		mLock.writeLock().lock();
 		Set<String> keys = mSoftRefs.keySet();
 		String[] arr = new String[keys.size()];
 		keys.toArray(arr);
@@ -176,7 +176,6 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		}
 		keys.clear();
 		mSoftRefs.clear();
-		mLock.writeLock().unlock();
 	}
 
 	public void removeBitmap(String key) {
