@@ -27,8 +27,11 @@ public class DirtyJokeDetailActivity extends BaseActivity {
 
     private ListView mListView;
     private LoadView mLoadView;
+    private View mHeaderView;
+    private View mFooterView;
 
     private DirtyJokeDetailPresenter mPresenter;
+    private DirtyJokeDetailAdapter mAdapter;
     private String mUrl;
     private String mTitle;
 
@@ -84,26 +87,34 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
         mListView.setVisibility(View.VISIBLE);
 
-        View headerView = View.inflate(this, R.layout.layout_post_list_header, null);
-        TextView titleView = (TextView) headerView.findViewById(R.id.layout_post_list_header_title);
+        if (mHeaderView == null) {
+            mHeaderView = View.inflate(this, R.layout.layout_post_list_header, null);
+            mListView.addHeaderView(mHeaderView);
+        }
+        TextView titleView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_title);
         titleView.setText(data.title);
-        TextView timeView = (TextView) headerView.findViewById(R.id.layout_post_list_header_date);
+        TextView timeView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_date);
         timeView.setText(data.time);
-        TextView tagView = (TextView) headerView.findViewById(R.id.layout_post_list_header_tag);
+        TextView tagView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_tag);
         tagView.setText(data.tag);
-        TextView commentCountView = (TextView) headerView.findViewById(R.id.layout_post_list_header_comment_count);
+        TextView commentCountView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_comment_count);
         commentCountView.setText(data.commentCount);
-        NetworkImageView imageView = (NetworkImageView) headerView.findViewById(R.id.layout_post_list_header_img);
+        NetworkImageView imageView = (NetworkImageView) mHeaderView.findViewById(R.id.layout_post_list_header_img);
         imageView.setImageUrl(data.imgUrl);
-        mListView.addHeaderView(headerView);
 
-        View footerView = View.inflate(this, R.layout.layout_post_list_footer, null);
-        TextView sourceView = (TextView) footerView.findViewById(R.id.layout_post_list_footer_source);
+        if (mFooterView == null) {
+            mFooterView = View.inflate(this, R.layout.layout_post_list_footer, null);
+            mListView.addFooterView(mFooterView);
+        }
+        TextView sourceView = (TextView) mFooterView.findViewById(R.id.layout_post_list_footer_source);
         sourceView.setText(data.source);
-        mListView.addFooterView(footerView);
 
-        DirtyJokeDetailAdapter adapter = new DirtyJokeDetailAdapter(this, data.posts);
-        mListView.setAdapter(adapter);
+        if (mAdapter == null) {
+            mAdapter = new DirtyJokeDetailAdapter(this, data.posts);
+            mListView.setAdapter(mAdapter);
+        } else {
+            mAdapter.refreshData(data.posts);
+        }
 
     }
 

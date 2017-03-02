@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.images.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,8 +34,8 @@ public class ImageDetailAdapter extends BaseAdapter {
     private List<Item> mData;
     private List<SoftReference<GifDrawable>> mGifCache;
 
-    public ImageDetailAdapter(ListView listView, List<ImageDetail.Node> nodes) {
-        mInflater = LayoutInflater.from(listView.getContext());
+    public ImageDetailAdapter(Context context, List<ImageDetail.Node> nodes) {
+        mInflater = LayoutInflater.from(context);
         mGifCache = new ArrayList<>();
         mData = new ArrayList<>();
         for (ImageDetail.Node node : nodes) {
@@ -48,16 +49,22 @@ public class ImageDetailAdapter extends BaseAdapter {
                 mData.add(new Item(TYPE_TEXT, node.data));
             }
         }
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
+    }
 
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
+    public void refreshData(List<ImageDetail.Node> nodes) {
+        mData.clear();
+        for (ImageDetail.Node node : nodes) {
+            if (node.isImg) {
+                if (node.data.endsWith(".gif")) {
+                    mData.add(new Item(TYPE_IMAGE_GIF, node.data));
+                } else {
+                    mData.add(new Item(TYPE_IMAGE_NORMAL, node.data));
+                }
+            } else {
+                mData.add(new Item(TYPE_TEXT, node.data));
             }
-        });
+        }
+        notifyDataSetChanged();
     }
 
     @Override

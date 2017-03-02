@@ -44,6 +44,22 @@ public class ShareDetailAdapter extends BaseAdapter {
         }
     }
 
+    public void refreshData(List<ShareDetail.Node> nodes) {
+        mData.clear();
+        for (ShareDetail.Node node : nodes) {
+            if (node.isImg) {
+                if (node.data.endsWith(".gif")) {
+                    mData.add(new Item(TYPE_IMAGE_GIF, node.data));
+                } else {
+                    mData.add(new Item(TYPE_IMAGE_NORMAL, node.data));
+                }
+            } else {
+                mData.add(new Item(TYPE_TEXT, node.data));
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getItemViewType(int position) {
         return mData.get(position).type;

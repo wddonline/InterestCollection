@@ -42,6 +42,22 @@ public class DirtyJokeDetailAdapter extends BaseAdapter {
         }
     }
 
+    public void refreshData(List<DirtyJokeDetail.Post> posts) {
+        mData.clear();
+        DirtyJokeDetail.Post post;
+        for (int i = 0; i < posts.size(); i++) {
+            post = posts.get(i);
+            mData.add(post);
+            if (post.comments != null) {
+                for (int j = 0; j < post.comments.size(); j++) {
+                    mData.add(post.comments.get(j));
+                }
+            }
+
+        }
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getCount() {
         return mData.size();

@@ -19,21 +19,22 @@ import org.wdd.app.android.interestcollection.views.LoadView;
 
 public class ImageDetailActivity extends BaseActivity {
 
-    public static void show(Activity activity, String url, String title, boolean isGif) {
+    public static void show(Activity activity, String url, String title) {
         Intent intent = new Intent(activity, ImageDetailActivity.class);
         intent.putExtra("url", url);
         intent.putExtra("title", title);
-        intent.putExtra("isGif", isGif);
         activity.startActivity(intent);
     }
 
     private ListView mListView;
     private LoadView mLoadView;
+    private View mHeaderView;
+    private View mFooterView;
 
     private ImageDetailPresenter mPresenter;
+    private ImageDetailAdapter mAdapter;
     private String mUrl;
     private String mTitle;
-    private boolean isGif;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,6 @@ public class ImageDetailActivity extends BaseActivity {
 
         mUrl = getIntent().getStringExtra("url");
         mTitle = getIntent().getStringExtra("title");
-        isGif = getIntent().getBooleanExtra("isGif", false);
     }
 
     private void initTitles() {
@@ -89,33 +89,40 @@ public class ImageDetailActivity extends BaseActivity {
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
         mListView.setVisibility(View.VISIBLE);
 
-        View headerView = View.inflate(this, R.layout.layout_post_list_header, null);
-        TextView titleView = (TextView) headerView.findViewById(R.id.layout_post_list_header_title);
+        if (mHeaderView == null) {
+            mHeaderView = View.inflate(this, R.layout.layout_post_list_header, null);
+            mListView.addHeaderView(mHeaderView);
+        }
+        TextView titleView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_title);
         titleView.setText(data.title);
-        TextView timeView = (TextView) headerView.findViewById(R.id.layout_post_list_header_date);
+        TextView timeView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_date);
         timeView.setText(data.time);
-        TextView tagView = (TextView) headerView.findViewById(R.id.layout_post_list_header_tag);
+        TextView tagView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_tag);
         tagView.setText(data.tag);
-        TextView commentCountView = (TextView) headerView.findViewById(R.id.layout_post_list_header_comment_count);
+        TextView commentCountView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_comment_count);
         commentCountView.setText(data.commentCount);
-        View imgView = headerView.findViewById(R.id.layout_post_list_header_img);
+        View imgView = mHeaderView.findViewById(R.id.layout_post_list_header_img);
         imgView.setVisibility(View.GONE);
         if (!TextUtils.isEmpty(data.summary)) {
-            View summaryLayout = headerView.findViewById(R.id.layout_post_list_header_summary_container);
+            View summaryLayout = mHeaderView.findViewById(R.id.layout_post_list_header_summary_container);
             summaryLayout.setVisibility(View.VISIBLE);
-            TextView summaryView = (TextView) headerView.findViewById(R.id.layout_post_list_header_summary);
+            TextView summaryView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_summary);
             summaryView.setText(data.summary);
         }
-        mListView.addHeaderView(headerView);
 
-        View footerView = View.inflate(this, R.layout.layout_post_list_footer, null);
-        TextView sourceView = (TextView) footerView.findViewById(R.id.layout_post_list_footer_source);
+        if (mFooterView == null) {
+            mFooterView = View.inflate(this, R.layout.layout_post_list_footer, null);
+            mListView.addFooterView(mFooterView);
+        }
+        TextView sourceView = (TextView) mFooterView.findViewById(R.id.layout_post_list_footer_source);
         sourceView.setText(data.source);
-        mListView.addFooterView(footerView);
 
-        ImageDetailAdapter adapter = new ImageDetailAdapter(mListView, data.nodes);
-        mListView.setAdapter(adapter);
-
+        if (mAdapter == null) {
+            mAdapter = new ImageDetailAdapter(this, data.nodes);
+            mListView.setAdapter(mAdapter);
+        } else {
+            mAdapter.refreshData(data.nodes);
+        }
     }
 
     public void showNoDataView() {
