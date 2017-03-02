@@ -1,7 +1,10 @@
 package org.wdd.app.android.interestcollection.views;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
@@ -143,6 +146,15 @@ public class NetworkImageView extends ImageView {
         if (mImageContainer != null && mImageContainer.getRequestUrl() != null) {
             if (mImageContainer.getRequestUrl().equals(mUrl)) {
                 // if the request is from the same URL, return.
+                Drawable drawable = getDrawable();
+                if (drawable != null) {
+                    if (drawable instanceof BitmapDrawable) {
+                        BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                        if (!bitmapDrawable.getBitmap().isRecycled()) {
+                            return;
+                        }
+                    }
+                }
                 return;
             } else {
                 // if there is a pre-existing request, cancel it if it's fetching a different URL.

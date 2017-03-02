@@ -27,7 +27,7 @@ public class VolleyTool {
     private RequestQueue requestQueue;
 
     private VolleyTool(Context context) {
-        int maxDiskCacheBytes = 1024 * 1024 * 1024;
+        int maxDiskCacheBytes = 541065216;//516 * 1024 * 1024
         requestQueue = Volley.newRequestQueue(context, maxDiskCacheBytes);
     }
 

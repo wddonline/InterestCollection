@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.android.volley.toolbox.DrawableLoader;
 
+import org.wdd.app.android.interestcollection.utils.LogUtils;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -43,9 +45,9 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 		mLock = new ReentrantReadWriteLock();
 		// 获取单个进程可用内存的最大值
 		final int avaliableSize = (int) Runtime.getRuntime().maxMemory();
-		Log.e("#########", avaliableSize / 1024 / 1024 + "");
 		// 设置为可用内存的1/4（按Byte计算）
-		final int useableSize = avaliableSize / 3;
+		final int useableSize = avaliableSize / 20;
+		LogUtils.e("###", useableSize / 1024 / 1024f + "m");
 		mLruCache = new LruCache<String, Drawable>(useableSize) {
 			@Override
 			protected int sizeOf(String key, Drawable value) {
@@ -55,10 +57,10 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 						if (drawable.getBuffer() != null) {
 							// 计算存储bitmap所占用的字节数
 							Bitmap bitmap = drawable.getBuffer();
-							Log.e("####", "gif" + bitmap.getRowBytes() * bitmap.getHeight());
+							LogUtils.e("####", "gif" + bitmap.getRowBytes() * bitmap.getHeight());
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
-							Log.e("####", "clear");
+							LogUtils.e("####", "clear");
 							mLruCache.remove(key);
 							return 0;
 						}
@@ -67,10 +69,10 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 						if (drawable.getBitmap() != null) {
 							// 计算存储bitmap所占用的字节数
 							Bitmap bitmap = drawable.getBitmap();
-							Log.e("####", "img" + bitmap.getRowBytes() * bitmap.getHeight());
+							LogUtils.e("####", "img" + bitmap.getRowBytes() * bitmap.getHeight());
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
-							Log.e("####", "clear");
+							LogUtils.e("####", "clear");
 							mLruCache.remove(key);
 							return 0;
 						}
@@ -79,7 +81,7 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 					}
 
 				} else {
-					Log.e("####", "clear");
+					LogUtils.e("####", "clear");
 					mLruCache.remove(key);
 					return 0;
 				}
@@ -89,7 +91,7 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 			protected void entryRemoved(boolean evicted, String key, Drawable oldValue, Drawable newValue) {
 				if (evicted) {
 					if (oldValue != null) {
-						Log.e("####", "recycled");
+						LogUtils.e("####", "recycled");
 						if (oldValue != null) {
 							if (oldValue instanceof GifDrawable) {
 								((GifDrawable)oldValue).recycle();
@@ -152,7 +154,7 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 			key = it.next();
 			drawable = snapshot.get(key);
 			if (drawable != null) {
-				Log.e("####", "recycled");
+				LogUtils.e("####", "all recycled");
 				if (drawable instanceof GifDrawable) {
 					((GifDrawable)drawable).recycle();
 				} else if(drawable instanceof BitmapDrawable) {

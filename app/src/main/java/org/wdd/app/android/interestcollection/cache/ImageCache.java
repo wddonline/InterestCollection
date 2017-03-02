@@ -46,7 +46,7 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		// 获取单个进程可用内存的最大值
 		final int avaliableSize = (int) Runtime.getRuntime().maxMemory();
 		// 设置为可用内存的1/4（按Byte计算）
-		final int useableSize = avaliableSize / 4;
+		final int useableSize = avaliableSize / 20;
 		mStrongRefs = new LruCache<String, Bitmap>(useableSize) {
 			@Override
 			protected int sizeOf(String key, Bitmap value) {

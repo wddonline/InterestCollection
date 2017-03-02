@@ -2,6 +2,8 @@ package org.wdd.app.android.interestcollection.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.cache.DrawableCache;
 import org.wdd.app.android.interestcollection.http.impl.VolleyTool;
 
+import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
 /**
@@ -144,7 +147,20 @@ public class GifNetworkImageView extends GifImageView {
         if (mDrawableContainer != null && mDrawableContainer.getRequestUrl() != null) {
             if (mDrawableContainer.getRequestUrl().equals(mUrl)) {
                 // if the request is from the same URL, return.
-                return;
+                Drawable drawable = getDrawable();
+                if (drawable != null) {
+                    if (drawable instanceof GifDrawable) {
+                        GifDrawable gifDrawable = (GifDrawable) drawable;
+                        if (!gifDrawable.isRecycled()) {
+                            return;
+                        }
+                    } else if (drawable instanceof BitmapDrawable) {
+                        BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                        if (!bitmapDrawable.getBitmap().isRecycled()) {
+                            return;
+                        }
+                    }
+                }
             } else {
                 // if there is a pre-existing request, cancel it if it's fetching a different URL.
                 mDrawableContainer.cancelRequest();
