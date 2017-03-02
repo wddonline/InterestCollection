@@ -1,25 +1,38 @@
 package org.wdd.app.android.interestcollection.ui.audios.activity;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.service.music.OnPlayerEventListener;
+import org.wdd.app.android.interestcollection.service.music.PlayService;
+import org.wdd.app.android.interestcollection.service.music.model.Music;
+import org.wdd.app.android.interestcollection.service.music.receiver.RemoteControlReceiver;
+import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.audios.presenter.AudioDetailPresenter;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.utils.SystemUtils;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
-public class AudioDetailActivity extends BaseActivity {
+public class AudioDetailActivity extends BaseActivity implements View.OnClickListener, OnPlayerEventListener {
 
-    public static void show(Context context, String url, String title) {
+    public static void show(Context context, Audio audio) {
         Intent intent = new Intent(context, AudioDetailActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("url", url);
-        intent.putExtra("title", title);
+        intent.putExtra("url", audio.url);
+        intent.putExtra("title", audio.title);
+        intent.putExtra("imgUrl", audio.imgUrl);
         context.startActivity(intent);
     }
 
@@ -31,11 +44,42 @@ public class AudioDetailActivity extends BaseActivity {
     private View mImageView;
     private TextView mSourceView;
     private LoadView mLoadView;
-
-    private AudioDetailPresenter mPresenter;
+    private SeekBar mSeekBar;
+    private ImageView mPlayBtn;
+    private TextView mTimerView;
 
     private String mUrl;
     private String mTitle;
+    private String mImgUrl;
+    private AudioDetail mDetail;
+
+    private AudioDetailPresenter mPresenter;
+    private PlayService mPlayService;
+    private AudioManager mAudioManager;
+    private ComponentName mRemoteReceiver;
+
+    private ServiceConnection mConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mPlayService = ((PlayService.PlayBinder) service).getService();
+            mPlayService.setOnPlayEventListener(AudioDetailActivity.this);
+
+            registerReceiver();
+
+            Music music = new Music();
+            music.setType(Music.Type.ONLINE);
+            music.setTitle(mTitle);
+            music.setUri(mDetail.audioUrl);
+            music.setType(Music.Type.ONLINE);
+            music.setCoverUri(mImgUrl);
+            mPlayService.play(music);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +93,7 @@ public class AudioDetailActivity extends BaseActivity {
     private void initData() {
         mUrl = getIntent().getStringExtra("url");
         mTitle = getIntent().getStringExtra("title");
+        mImgUrl = getIntent().getStringExtra("imgUrl");
 
         mPresenter = new AudioDetailPresenter(this);
     }
@@ -82,14 +127,33 @@ public class AudioDetailActivity extends BaseActivity {
                 mPresenter.getAudioDetailData(mUrl, host);
             }
         });
+        mSeekBar = (SeekBar) findViewById(R.id.activity_audio_detail_seekbar);
+        mPlayBtn = (ImageView) findViewById(R.id.activity_audio_detail_play);
+        mTimerView = (TextView) findViewById(R.id.activity_audio_detail_timer);
 
+        mPlayBtn.setOnClickListener(this);
         mPresenter.getAudioDetailData(mUrl, host);
+    }
+
+    private void registerReceiver() {
+        mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        mRemoteReceiver = new ComponentName(getPackageName(), RemoteControlReceiver.class.getName());
+        mAudioManager.registerMediaButtonEventReceiver(mRemoteReceiver);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mPresenter.cancelRequest();
+
+        if (mRemoteReceiver != null) {
+            mAudioManager.unregisterMediaButtonEventReceiver(mRemoteReceiver);
+        }
+        if (mPlayService != null) {
+            mPlayService.setOnPlayEventListener(null);
+            unbindService(mConn);
+            mPlayService = null;
+        }
     }
 
     public void showNoDataView() {
@@ -97,6 +161,7 @@ public class AudioDetailActivity extends BaseActivity {
     }
 
     public void showAudioDetailViews(AudioDetail data) {
+        this.mDetail = data;
         mScrollView.setVisibility(View.VISIBLE);
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
@@ -113,5 +178,46 @@ public class AudioDetailActivity extends BaseActivity {
 
     public void showNetworkError() {
         mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.activity_audio_detail_play:
+                mPlayBtn.setSelected(true);
+                if (mPlayService == null) {
+                    Intent intent = new Intent(this, PlayService.class);
+                    bindService(intent, mConn, Context.BIND_AUTO_CREATE);
+                } else {
+                    mPlayService.playPause();
+                }
+                break;
+        }
+    }
+
+    //音频播放交互
+    @Override
+    public void onPublish(int progress) {
+        mSeekBar.setProgress(progress);
+    }
+
+    @Override
+    public void onChange(Music music) {
+
+    }
+
+    @Override
+    public void onPlayerPause() {
+        mPlayBtn.setSelected(false);
+    }
+
+    @Override
+    public void onPlayerResume() {
+        mPlayBtn.setSelected(true);
+    }
+
+    @Override
+    public void onTimer(long remain) {
+        mTimerView.setText(SystemUtils.formatTime("(mm:ss)", remain));
     }
 }

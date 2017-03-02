@@ -103,7 +103,7 @@ public class AudiosFragment extends BaseFragment {
             mAdapter.setOnItemClickedListener(new AudioAdapter.OnItemClickedListener() {
                 @Override
                 public void onItemClicked(int position, Audio item) {
-                    AudioDetailActivity.show(getContext(), item.url, item.title);
+                    AudioDetailActivity.show(getContext(), item);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

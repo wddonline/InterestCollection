@@ -35,6 +35,20 @@
         <activity android:name=".ui.settings.activity.AboutAppActivity" />
         <activity android:name=".ui.web.activity.WebActivity" />
         <activity android:name=".ui.gallery.activity.ImageBrowserActivity" />
+        <activity android:name=".ui.jokes.activity.DirtyJokeDetailActivity" />
+        <activity android:name=".ui.images.activity.ImageDetailActivity" />
+        <activity android:name=".ui.videos.activity.VideoDetailActivity" />
+        <activity android:name=".ui.audios.activity.AudioDetailActivity" />
+        <activity android:name=".ui.shares.activity.ShareDetailActivity"/>
+
+        <service android:name="org.wdd.app.android.interestcollection.service.music.PlayService" />
+
+        <receiver android:name="org.wdd.app.android.interestcollection.service.music.RemoteControlReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name="cn.bmob.v3.update.UpdateDialogActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
@@ -57,19 +71,6 @@
             android:name="BMOB_CHANNEL"
             android:value="${UMENG_CHANNEL_VALUE}" />
 
-        <activity android:name=".ui.jokes.activity.DirtyJokeDetailActivity" />
-        <activity android:name=".ui.images.activity.ImageDetailActivity" />
-        <!--
- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-        -->
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-
-        <activity android:name=".ui.videos.activity.VideoDetailActivity" />
-        <activity android:name=".ui.audios.activity.AudioDetailActivity" />
-        <activity android:name=".ui.shares.activity.ShareDetailActivity"></activity>
     </application>
 
 </manifest>

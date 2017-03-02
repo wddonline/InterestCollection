@@ -30,7 +30,32 @@
 
             <include layout="@layout/layout_post_list_header"/>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <SeekBar
+                    android:id="@+id/activity_audio_detail_seekbar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/activity_audio_detail_play"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@null"
+                    android:src="@drawable/play_bar_btn_play_pause_selector" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/activity_audio_detail_timer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
             <include layout="@layout/layout_post_list_footer" />
 
