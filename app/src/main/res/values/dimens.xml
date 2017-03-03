@@ -14,4 +14,5 @@
     <dimen name="WheelItemSpace">12dp</dimen>
     <dimen name="WheelIndicatorSize">2dp</dimen>
     <dimen name="WheelMargins">8dp</dimen>
+    <dimen name="slidingmenu_offset">100dp</dimen>
 </resources>

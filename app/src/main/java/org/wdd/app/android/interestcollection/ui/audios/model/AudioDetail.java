@@ -14,5 +14,6 @@ public class AudioDetail {
     public String column;
     public String audioUrl;
     public String source;
+    public String html;
 
 }

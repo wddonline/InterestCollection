@@ -81,8 +81,32 @@ public class AudioDetailDataGetter {
                 } catch (IndexOutOfBoundsException e) {
                     e.printStackTrace();
                 }
-                detail.audioUrl = contentNode.getElementsByTag("audio").first().attr("src");
+                Elements audioNodes = contentNode.getElementsByTag("audio");
+                if (audioNodes.size() > 0) {
+                    detail.audioUrl = audioNodes.first().attr("src");
+                } else {
+                    document.getElementsByTag("script").remove();
+                    document.getElementsByAttributeValue("id", "sidemenu-container").remove();
+                    document.getElementsByTag("header").remove();
+                    document.getElementsByAttributeValue("role", "search").remove();
+                    Elements articles = document.getElementsByTag("article");
+                    Elements divs = articles.first().getElementsByTag("div");
+                    if (divs.size() > 0) {
+                        divs = divs.last().getElementsByTag("div");
+                        if (divs.size() > 0) {
+                            divs.last().remove();
+                        }
+                    }
+                    document.getElementsByAttributeValue("id", "pageGo").remove();
+                    document.getElementsByClass("post-xg clear").remove();
+                    document.getElementsByTag("footer").remove();
+                    document.getElementsByClass("comments-area").first().remove();
+                    document.getElementsByAttributeValue("id", "btn_top").first().remove();
+                    detail.html = document.html();
+                }
                 detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
+
+
                 mCallback.onRequestOk(detail);
             }
 

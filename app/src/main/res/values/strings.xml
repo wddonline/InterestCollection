@@ -5,7 +5,7 @@
     <string name="loading">数据加载中...</string>
     <string name="loading_more_data">更多数据加载中...</string>
     <string name="load_more_data">点击加载更多数据</string>
-    <string name="back_to_exit">再按一次返回键退出好妹子</string>
+    <string name="back_to_exit">再按一次返回键退出趣味集</string>
     <string name="tip">提示</string>
     <string name="confirm">确定</string>
     <string name="cancel">取消</string>
@@ -30,9 +30,12 @@
     <string name="audio">音频</string>
     <string name="share">分享</string>
 
+    <!-- 个人中心 -->
+    <string name="favorites">收藏</string>
+    <string name="version_update">版本更新</string>
+
     <!-- 设置 -->
     <string name="settings">设置</string>
-    <string name="version_update">版本更新</string>
     <string name="cache_clean">缓存清理</string>
     <string name="about">关于</string>
     <string name="about_us">关于我们</string>

@@ -2,16 +2,20 @@ package org.wdd.app.android.interestcollection.ui.main.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TabWidget;
 import android.widget.TextView;
 
+import com.jeremyfeinstein.slidingmenu.SlidingMenu;
 import com.umeng.analytics.MobclickAgent;
 
 import org.wdd.app.android.interestcollection.R;
@@ -23,6 +27,8 @@ import org.wdd.app.android.interestcollection.ui.jokes.fragment.DirtyJokesFragme
 import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.AppUtils;
+import org.wdd.app.android.interestcollection.utils.DensityUtils;
 import org.wdd.app.android.interestcollection.views.FragmentTabHost;
 
 /**
@@ -37,6 +43,7 @@ public class MainActivity extends BaseActivity implements Runnable {
     }
 
     private FragmentTabHost mTabHost;
+    private SlidingMenu mSlidingMenu;
 
     private Handler handler = new Handler();
 
@@ -47,6 +54,10 @@ public class MainActivity extends BaseActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            //透明状态栏
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        }
         MobclickAgent.openActivityDurationTrack(false);
         initData();
         initTitles();
@@ -56,17 +67,11 @@ public class MainActivity extends BaseActivity implements Runnable {
     private void initTitles() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_menu);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-            }
-        });
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-
-                return false;
+                mSlidingMenu.showMenu();
             }
         });
     }
@@ -76,6 +81,27 @@ public class MainActivity extends BaseActivity implements Runnable {
     }
 
     private void initViews() {
+        mSlidingMenu = new SlidingMenu(this);
+        mSlidingMenu.setMode(SlidingMenu.LEFT);
+        mSlidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        mSlidingMenu.setShadowDrawable(R.drawable.shadow);
+        int shadowWidth = DensityUtils.dip2px(this, 3);
+        mSlidingMenu.setShadowWidth(shadowWidth);
+        mSlidingMenu.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+        mSlidingMenu.setFadeDegree(0.35f);
+        mSlidingMenu.attachToActivity(this, SlidingMenu.SLIDING_CONTENT);
+        mSlidingMenu.setMenu(R.layout.layout_home_menu);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            int statusHeight = AppUtils.getStatusHeight(this);
+            View statusBar = findViewById(R.id.activity_main_statusbar);
+            statusBar.setVisibility(View.VISIBLE);
+            statusBar.getLayoutParams().height = statusHeight;
+            View menuStatusBar = findViewById(R.id.layout_home_menu_statusbar);
+            menuStatusBar.setVisibility(View.VISIBLE);
+            menuStatusBar.getLayoutParams().height = statusHeight;
+        }
+
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         mTabHost.getTabWidget().setDividerDrawable(null);
@@ -109,8 +135,13 @@ public class MainActivity extends BaseActivity implements Runnable {
             tabWidget.getChildTabViewAt(i).getLayoutParams().width = tabWidth;
         }
     }
+
     @Override
     public void onBackPressed() {
+        if (mSlidingMenu.isMenuShowing()) {
+            mSlidingMenu.toggle();
+            return;
+        }
         if (backPressedCount < 1) {
             handler.postDelayed(this, TIME_LIMIT);
             AppToaster.show(R.string.back_to_exit);

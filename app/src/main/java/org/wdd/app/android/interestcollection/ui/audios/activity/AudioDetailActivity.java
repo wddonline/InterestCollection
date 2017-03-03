@@ -4,16 +4,23 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -44,6 +51,8 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     private View mScrollView;
+    private WebView mWebView;
+    private ProgressBar mProgressBar;
     private TextView mTitleView;
     private TextView mTimeView;
     private TextView mTagView;
@@ -123,6 +132,37 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initViews() {
+        mWebView = (WebView) findViewById(R.id.activity_audio_detail_webview);
+        mProgressBar = (ProgressBar) findViewById(R.id.activity_audio_detail_progress);
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+        mWebView.getSettings().setSupportZoom(false); // 支持缩放
+        mWebView.getSettings().setUseWideViewPort(true);
+        mWebView.setWebChromeClient(new WebChromeClient() {
+
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                mProgressBar.setProgress(newProgress);
+            }
+
+        });
+
+        mWebView.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mProgressBar.setVisibility(View.GONE);
+            }
+        });
+
         mScrollView = findViewById(R.id.activity_audio_detail_scrollview);
         mTitleView = (TextView) findViewById(R.id.layout_post_list_header_title);
         mTimeView = (TextView) findViewById(R.id.layout_post_list_header_date);
@@ -192,18 +232,22 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
     public void showAudioDetailViews(AudioDetail data) {
         this.mDetail = data;
-        mScrollView.setVisibility(View.VISIBLE);
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
-        mTitleView.setText(data.title);
-        mTimeView.setText(data.time);
-        mTagView.setText(data.tag);
-        mCommentCountView.setText(data.commentCount);
-        mSourceView.setText(data.source);
-
-        mCoverView.setImageUrl(mImgUrl);
-        mPastTimeView.setText(formatTime("(mm:ss)", 0));
-        mAllTimeView.setText(formatTime("(mm:ss)", 0));
+        if (TextUtils.isEmpty(mDetail.audioUrl)) {
+            mWebView.setVisibility(View.VISIBLE);
+            mWebView.loadDataWithBaseURL(null, data.html, "text/html","UTF-8", null);
+        } else {
+            mScrollView.setVisibility(View.VISIBLE);
+            mTitleView.setText(data.title);
+            mTimeView.setText(data.time);
+            mTagView.setText(data.tag);
+            mCommentCountView.setText(data.commentCount);
+            mSourceView.setText(data.source);
+            mCoverView.setImageUrl(mImgUrl);
+            mPastTimeView.setText(formatTime("(mm:ss)", 0));
+            mAllTimeView.setText(formatTime("(mm:ss)", 0));
+        }
     }
 
     //音频播放交互
