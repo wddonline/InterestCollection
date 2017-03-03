@@ -10,8 +10,6 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.text.format.DateUtils;
-import android.util.Log;
 
 import org.wdd.app.android.interestcollection.service.music.model.Music;
 import org.wdd.app.android.interestcollection.service.music.receiver.NoisyAudioStreamReceiver;
@@ -25,9 +23,10 @@ import java.io.IOException;
  * Created by wcy on 2015/11/27.
  */
 public class PlayService extends Service implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
-    private static final String TAG = "Service";
+
     private static final int NOTIFICATION_ID = 0x111;
     private static final long TIME_UPDATE = 100L;
+
     private MediaPlayer mPlayer = new MediaPlayer();
     private IntentFilter mNoisyFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private NoisyAudioStreamReceiver mNoisyReceiver = new NoisyAudioStreamReceiver();
@@ -35,18 +34,14 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
     private AudioManager mAudioManager;
     private NotificationManager mNotificationManager;
     private OnPlayerEventListener mListener;
-    // 正在播放的歌曲[本地|网络]
     private Music mPlayingMusic;
-    // 正在播放的本地歌曲的序号
-    private int mPlayingPosition;
+
     private boolean isPausing;
     private boolean isPreparing;
-    private long quitTimerRemain;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "onCreate: " + getClass().getSimpleName());
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mPlayer.setOnCompletionListener(this);
@@ -79,14 +74,17 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
         return SystemUtils.isServiceRunning(context, PlayService.class);
     }
 
+    public void setOnPlayEventListener(OnPlayerEventListener listener) {
+        mListener = listener;
+    }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-
-    }
-
-    public void setOnPlayEventListener(OnPlayerEventListener listener) {
-        mListener = listener;
+        mPlayer.seekTo(0);
+        isPausing = true;
+        mHandler.removeCallbacks(mBackgroundRunnable);
+        if (mListener == null) return;
+        mListener.onPlayeCompletion();
     }
 
     public void play(Music music) {
@@ -105,14 +103,6 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
             e.printStackTrace();
         }
     }
-
-    private MediaPlayer.OnPreparedListener mPreparedListener = new MediaPlayer.OnPreparedListener() {
-        @Override
-        public void onPrepared(MediaPlayer mp) {
-            isPreparing = false;
-            start();
-        }
-    };
 
     public void playPause() {
         if (isPreparing()) {
@@ -162,19 +152,39 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
         }
     }
 
+    public void stop() {
+        pause();
+        mPlayer.reset();
+        mPlayer.release();
+        mPlayer = null;
+        mNotificationManager.cancel(NOTIFICATION_ID);
+        stopSelf();
+    }
+
     /**
      * 跳转到指定的时间位置
      *
-     * @param msec 时间
+     * @param progress 进度
      */
-    public void seekTo(int msec) {
+    public void seekTo(int progress) {
         if (isPlaying() || isPausing()) {
+            int msec = Math.round(progress / 100f * mPlayer.getDuration());
             mPlayer.seekTo(msec);
             if (mListener != null) {
-                mListener.onPublish(msec);
+                mListener.onPublish(msec, mPlayer.getDuration());
             }
         }
     }
+
+    private MediaPlayer.OnPreparedListener mPreparedListener = new MediaPlayer.OnPreparedListener() {
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            isPreparing = false;
+            start();
+            if (mListener == null) return;
+            mListener.onPlayerPrepared(mp.getDuration());
+        }
+    };
 
     public boolean isPlaying() {
         return mPlayer != null && mPlayer.isPlaying();
@@ -199,7 +209,6 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
      * 更新通知栏
      */
     private void updateNotification(Music music) {
-        mNotificationManager.cancel(NOTIFICATION_ID);
         startForeground(NOTIFICATION_ID, SystemUtils.createNotification(this, music));
     }
 
@@ -212,8 +221,9 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
         @Override
         public void run() {
             if (isPlaying() && mListener != null) {
-                mListener.onPublish(mPlayer.getCurrentPosition());
+                mListener.onPublish(mPlayer.getCurrentPosition(), mPlayer.getDuration());
             }
+
             mHandler.postDelayed(this, TIME_UPDATE);
         }
     };
@@ -231,52 +241,9 @@ public class PlayService extends Service implements MediaPlayer.OnCompletionList
         }
     }
 
-    public void startQuitTimer(long milli) {
-        stopQuitTimer();
-        if (milli > 0) {
-            quitTimerRemain = milli + DateUtils.SECOND_IN_MILLIS;
-            mHandler.post(mQuitRunnable);
-        } else {
-            quitTimerRemain = 0;
-            if (mListener != null) {
-                mListener.onTimer(quitTimerRemain);
-            }
-        }
-    }
-
-    private void stopQuitTimer() {
-        mHandler.removeCallbacks(mQuitRunnable);
-    }
-
-    private Runnable mQuitRunnable = new Runnable() {
-        @Override
-        public void run() {
-            quitTimerRemain -= DateUtils.SECOND_IN_MILLIS;
-            if (quitTimerRemain > 0) {
-                if (mListener != null) {
-                    mListener.onTimer(quitTimerRemain);
-                }
-                mHandler.postDelayed(this, DateUtils.SECOND_IN_MILLIS);
-            } else {
-                stop();
-            }
-        }
-    };
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "onDestroy: " + getClass().getSimpleName());
-    }
-
-    public void stop() {
-        pause();
-        stopQuitTimer();
-        mPlayer.reset();
-        mPlayer.release();
-        mPlayer = null;
-        mNotificationManager.cancel(NOTIFICATION_ID);
-        stopSelf();
     }
 
     public class PlayBinder extends Binder {

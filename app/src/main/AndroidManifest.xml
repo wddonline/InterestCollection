@@ -38,12 +38,12 @@
         <activity android:name=".ui.jokes.activity.DirtyJokeDetailActivity" />
         <activity android:name=".ui.images.activity.ImageDetailActivity" />
         <activity android:name=".ui.videos.activity.VideoDetailActivity" />
-        <activity android:name=".ui.audios.activity.AudioDetailActivity" />
+        <activity android:name=".ui.audios.activity.AudioDetailActivity" android:launchMode="singleTask" />
         <activity android:name=".ui.shares.activity.ShareDetailActivity"/>
 
         <service android:name="org.wdd.app.android.interestcollection.service.music.PlayService" />
 
-        <receiver android:name="org.wdd.app.android.interestcollection.service.music.RemoteControlReceiver">
+        <receiver android:name="org.wdd.app.android.interestcollection.service.music.receiver.RemoteControlReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

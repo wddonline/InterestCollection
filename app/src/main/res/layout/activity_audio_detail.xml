@@ -33,15 +33,52 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
 
-                <SeekBar
-                    android:id="@+id/activity_audio_detail_seekbar"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="0dp"
-                    android:layout_height="2dp"
-                    android:layout_weight="1" />
+
+                <org.wdd.app.android.interestcollection.views.RoundedNetworkImageView
+                    android:id="@+id/activity_audio_detail_cover"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:scaleType="centerCrop"
+                    app:cornerRadius="100dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="30dp"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingRight="@dimen/activity_horizontal_margin">
+
+                    <TextView
+                        android:id="@+id/activity_audio_detail_playtime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp"
+                        android:textSize="@dimen/textSizeItemExtra"
+                        android:textColor="#7b7c80"/>
+
+                    <SeekBar
+                        android:id="@+id/activity_audio_detail_seekbar"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="2dp"
+                        android:layout_weight="1"
+                        android:max="100"
+                        android:progress="0"/>
+
+                    <TextView
+                        android:id="@+id/activity_audio_detail_alltime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:textSize="@dimen/textSizeItemExtra"
+                        android:textColor="#7b7c80"/>
+
+                </LinearLayout>
 
                 <ImageView
                     android:id="@+id/activity_audio_detail_play"
@@ -51,11 +88,6 @@
                     android:src="@drawable/play_bar_btn_play_pause_selector" />
 
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/activity_audio_detail_timer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
             <include layout="@layout/layout_post_list_footer" />
 

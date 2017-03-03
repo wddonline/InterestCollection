@@ -10,7 +10,7 @@ public interface OnPlayerEventListener {
     /**
      * 更新进度
      */
-    void onPublish(int progress);
+    void onPublish(long currentMillions, long duration);
 
     /**
      * 切换歌曲
@@ -27,8 +27,7 @@ public interface OnPlayerEventListener {
      */
     void onPlayerResume();
 
-    /**
-     * 更新定时停止播放时间
-     */
-    void onTimer(long remain);
+    void onPlayerPrepared(int duration);
+
+    void onPlayeCompletion();
 }

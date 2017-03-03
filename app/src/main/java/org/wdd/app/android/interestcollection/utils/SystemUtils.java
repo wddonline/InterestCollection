@@ -5,13 +5,10 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.text.format.DateUtils;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.service.music.model.Music;
 import org.wdd.app.android.interestcollection.ui.audios.activity.AudioDetailActivity;
-
-import java.util.Locale;
 
 import cn.bmob.v3.helper.NotificationCompat;
 
@@ -46,16 +43,7 @@ public class SystemUtils {
                 .setContentText(subtitle)
                 .setSmallIcon(R.mipmap.ic_launcher);
 //                .setLargeIcon(cover);
-        //
-        return builder.getNotification();
-    }
-
-    public static String formatTime(String pattern, long milli) {
-        int m = (int) (milli / DateUtils.MINUTE_IN_MILLIS);
-        int s = (int) ((milli / DateUtils.SECOND_IN_MILLIS) % 60);
-        String mm = String.format(Locale.getDefault(), "%02d", m);
-        String ss = String.format(Locale.getDefault(), "%02d", s);
-        return pattern.replace("mm", mm).replace("ss", ss);
+        return builder.build();
     }
 
 }

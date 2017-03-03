@@ -97,4 +97,15 @@
         <item name="colorControlActivated">@color/white</item>
     </style>
 
+    <declare-styleable name="RoundedNetworkImageView">
+        <attr name="cornerRadius" format="dimension" />
+        <attr name="leftTopRadius" format="dimension" />
+        <attr name="leftBottomRadius" format="dimension" />
+        <attr name="rightTopRadius" format="dimension" />
+        <attr name="rightBottomRadius" format="dimension" />
+        <attr name="borderWidth_" format="dimension" />
+        <attr name="borderColor" format="color" />
+        <attr name="android:scaleType" />
+    </declare-styleable>
+
 </resources>

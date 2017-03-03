@@ -8,7 +8,11 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,6 +28,9 @@ import org.wdd.app.android.interestcollection.ui.audios.presenter.AudioDetailPre
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.utils.SystemUtils;
 import org.wdd.app.android.interestcollection.views.LoadView;
+import org.wdd.app.android.interestcollection.views.RoundedNetworkImageView;
+
+import java.util.Locale;
 
 public class AudioDetailActivity extends BaseActivity implements View.OnClickListener, OnPlayerEventListener {
 
@@ -44,9 +51,11 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     private View mImageView;
     private TextView mSourceView;
     private LoadView mLoadView;
-    private SeekBar mSeekBar;
     private ImageView mPlayBtn;
-    private TextView mTimerView;
+    private RoundedNetworkImageView mCoverView;
+    private TextView mPastTimeView;
+    private SeekBar mSeekBar;
+    private TextView mAllTimeView;
 
     private String mUrl;
     private String mTitle;
@@ -69,6 +78,8 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             Music music = new Music();
             music.setType(Music.Type.ONLINE);
             music.setTitle(mTitle);
+            music.setAlbum(mDetail.column);
+            music.setArtist(mDetail.anchor);
             music.setUri(mDetail.audioUrl);
             music.setType(Music.Type.ONLINE);
             music.setCoverUri(mImgUrl);
@@ -127,11 +138,32 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
                 mPresenter.getAudioDetailData(mUrl, host);
             }
         });
-        mSeekBar = (SeekBar) findViewById(R.id.activity_audio_detail_seekbar);
+
         mPlayBtn = (ImageView) findViewById(R.id.activity_audio_detail_play);
-        mTimerView = (TextView) findViewById(R.id.activity_audio_detail_timer);
+        mCoverView = (RoundedNetworkImageView) findViewById(R.id.activity_audio_detail_cover);
+        mPastTimeView = (TextView) findViewById(R.id.activity_audio_detail_playtime);
+        mSeekBar = (SeekBar) findViewById(R.id.activity_audio_detail_seekbar);
+        mSeekBar.setEnabled(false);
+        mAllTimeView = (TextView) findViewById(R.id.activity_audio_detail_alltime);
 
         mPlayBtn.setOnClickListener(this);
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (mPlayService == null) return;
+                mPlayService.seekTo(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         mPresenter.getAudioDetailData(mUrl, host);
     }
 
@@ -150,14 +182,12 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             mAudioManager.unregisterMediaButtonEventReceiver(mRemoteReceiver);
         }
         if (mPlayService != null) {
+            mPlayService.stop();
             mPlayService.setOnPlayEventListener(null);
             unbindService(mConn);
+            stopPlayService();
             mPlayService = null;
         }
-    }
-
-    public void showNoDataView() {
-        mLoadView.setStatus(LoadView.LoadStatus.No_Data);
     }
 
     public void showAudioDetailViews(AudioDetail data) {
@@ -170,35 +200,18 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         mTagView.setText(data.tag);
         mCommentCountView.setText(data.commentCount);
         mSourceView.setText(data.source);
-    }
 
-    public void showErrorView(String error) {
-        mLoadView.setStatus(LoadView.LoadStatus.Request_Failure , error);
-    }
-
-    public void showNetworkError() {
-        mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.activity_audio_detail_play:
-                mPlayBtn.setSelected(true);
-                if (mPlayService == null) {
-                    Intent intent = new Intent(this, PlayService.class);
-                    bindService(intent, mConn, Context.BIND_AUTO_CREATE);
-                } else {
-                    mPlayService.playPause();
-                }
-                break;
-        }
+        mCoverView.setImageUrl(mImgUrl);
+        mPastTimeView.setText(formatTime("(mm:ss)", 0));
+        mAllTimeView.setText(formatTime("(mm:ss)", 0));
     }
 
     //音频播放交互
     @Override
-    public void onPublish(int progress) {
+    public void onPublish(long currentMillions, long duration) {
+        int progress = Math.round(1f * currentMillions / duration * 100);
         mSeekBar.setProgress(progress);
+        mPastTimeView.setText(formatTime("(mm:ss)", currentMillions));
     }
 
     @Override
@@ -217,7 +230,83 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
-    public void onTimer(long remain) {
-        mTimerView.setText(SystemUtils.formatTime("(mm:ss)", remain));
+    public void onPlayerPrepared(int duration) {
+        mAllTimeView.setText(formatTime("(mm:ss)", duration));
+        mSeekBar.setEnabled(true);
+    }
+
+    @Override
+    public void onPlayeCompletion() {
+        mPastTimeView.setText(formatTime("(mm:ss)", 0));
+        mPlayBtn.setSelected(false);
+        mSeekBar.setProgress(0);
+        mCoverView.clearAnimation();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.activity_audio_detail_play:
+                if (mPlayService == null) {
+                    startPlayService();
+                    mPlayBtn.setSelected(true);
+                    startPlayingAnim();
+                } else {
+                    if (mPlayService.isPlaying()) {
+                        mPlayBtn.setSelected(false);
+                        stopPlayingAnim();
+                    } else {
+                        mPlayBtn.setSelected(true);
+                        startPlayingAnim();
+                    }
+                    mPlayService.playPause();
+                }
+                break;
+        }
+    }
+
+    private void startPlayingAnim() {
+        RotateAnimation anim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        anim.setDuration(3000);
+        anim.setFillAfter(true);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(Animation.INFINITE);
+        anim.setRepeatMode(Animation.RESTART);
+        mCoverView.setAnimation(anim);
+    }
+
+    private void stopPlayingAnim() {
+        if (mCoverView.getAnimation() != null) mCoverView.clearAnimation();
+    }
+
+    public void showNoDataView() {
+        mLoadView.setStatus(LoadView.LoadStatus.No_Data);
+    }
+
+    public void showErrorView(String error) {
+        mLoadView.setStatus(LoadView.LoadStatus.Request_Failure , error);
+    }
+
+    public void showNetworkError() {
+        mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
+    }
+
+    private void startPlayService() {
+        Intent intent = new Intent(this, PlayService.class);
+        bindService(intent, mConn, Context.BIND_AUTO_CREATE);
+    }
+
+    private void stopPlayService() {
+        Intent intent = new Intent(this, PlayService.class);
+        stopService(intent);
+    }
+
+    private String formatTime(String pattern, long milli) {
+        int m = (int) (milli / DateUtils.MINUTE_IN_MILLIS);
+        int s = (int) ((milli / DateUtils.SECOND_IN_MILLIS) % 60);
+        String mm = String.format(Locale.getDefault(), "%02d", m);
+        String ss = String.format(Locale.getDefault(), "%02d", s);
+        return pattern.replace("mm", mm).replace("ss", ss);
     }
 }
