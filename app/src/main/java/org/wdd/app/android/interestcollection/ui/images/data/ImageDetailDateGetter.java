@@ -1,10 +1,14 @@
 package org.wdd.app.android.interestcollection.ui.images.data;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.wdd.app.android.interestcollection.database.manager.impl.ImageFavoriteDbManager;
+import org.wdd.app.android.interestcollection.database.model.ImageFavorite;
 import org.wdd.app.android.interestcollection.http.HttpConnectCallback;
 import org.wdd.app.android.interestcollection.http.HttpManager;
 import org.wdd.app.android.interestcollection.http.HttpRequestEntry;
@@ -29,11 +33,15 @@ public class ImageDetailDateGetter {
     private HttpSession mSession;
     private HttpManager mManager;
     private DataCallback mCallback;
+    private ImageFavoriteDbManager mDbManager;
+    private Handler mHandler;
 
     public ImageDetailDateGetter(Context context, DataCallback callback) {
         this.mContext = context;
         this.mCallback = callback;
         mManager = HttpManager.getInstance(context);
+        mDbManager = new ImageFavoriteDbManager(context);
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     public void requestImageDetailData(String url, ActivityFragmentAvaliable host) {
@@ -108,11 +116,78 @@ public class ImageDetailDateGetter {
         mSession = null;
     }
 
+    public void queryImageCollectStatus(final String url, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final ImageFavorite favorite = mDbManager.getFavoriteByUrl(url);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteQueried(favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void deleteFavoriteById(final int id, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int affectedRows = mDbManager.deleteById(id);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteUncollected(affectedRows > 0);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void insertFavorite(String title, String time, String url, String imgUrl, int gifFlag, final ActivityFragmentAvaliable host) {
+        final ImageFavorite favorite = new ImageFavorite();
+        favorite.title = title;
+        favorite.time = time;
+        favorite.url = url;
+        favorite.imgUrl = imgUrl;
+        favorite.gifFlag = gifFlag;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                favorite.id = (int) mDbManager.insert(favorite);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteCollected(favorite.id != -1, favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     public interface DataCallback {
 
         void onRequestOk(ImageDetail detail);
         void onRequestError(String error);
         void onNetworkError();
+
+        void onFavoriteQueried(ImageFavorite favorite);
+        void onFavoriteCollected(boolean success, ImageFavorite favorite);
+        void onFavoriteUncollected(boolean success);
 
     }
 }

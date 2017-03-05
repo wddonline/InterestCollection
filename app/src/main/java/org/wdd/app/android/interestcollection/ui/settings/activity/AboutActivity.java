@@ -26,7 +26,7 @@ public class AboutActivity extends BaseActivity {
     private void initTitles() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_about_toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("");
+        getSupportActionBar().setTitle(R.string.about);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

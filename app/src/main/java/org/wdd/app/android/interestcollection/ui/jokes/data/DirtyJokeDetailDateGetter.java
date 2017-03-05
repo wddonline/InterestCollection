@@ -1,11 +1,15 @@
 package org.wdd.app.android.interestcollection.ui.jokes.data;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.wdd.app.android.interestcollection.database.manager.impl.DirtyJokeFavoriteDbManager;
+import org.wdd.app.android.interestcollection.database.model.DirtyJokeFavorite;
 import org.wdd.app.android.interestcollection.http.HttpConnectCallback;
 import org.wdd.app.android.interestcollection.http.HttpManager;
 import org.wdd.app.android.interestcollection.http.HttpRequestEntry;
@@ -30,11 +34,15 @@ public class DirtyJokeDetailDateGetter {
     private HttpSession mSession;
     private HttpManager mManager;
     private DataCallback mCallback;
+    private DirtyJokeFavoriteDbManager mDbManager;
+    private Handler mHandler;
 
     public DirtyJokeDetailDateGetter(Context context,DataCallback callback) {
         this.mContext = context;
         this.mCallback = callback;
         mManager = HttpManager.getInstance(context);
+        mDbManager = new DirtyJokeFavoriteDbManager(context);
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     public void requestDirtyJokeDetailData(String url, ActivityFragmentAvaliable host) {
@@ -121,11 +129,78 @@ public class DirtyJokeDetailDateGetter {
         mSession = null;
     }
 
+    public void queryGirlCollectStatus(final String url, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final
+                DirtyJokeFavorite favorite = mDbManager.getFavoriteByUrl(url);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteQueried(favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void deleteFavoriteById(final int id, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int affectedRows = mDbManager.deleteById(id);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteUncollected(affectedRows > 0);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void insertFavorite(String title, String time, String url, String imgUrl, final ActivityFragmentAvaliable host) {
+        final DirtyJokeFavorite favorite = new DirtyJokeFavorite();
+        favorite.title = title;
+        favorite.time = time;
+        favorite.url = url;
+        favorite.imgUrl = imgUrl;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                favorite.id = (int) mDbManager.insert(favorite);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteCollected(favorite.id != -1, favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     public interface DataCallback {
 
         void onRequestOk(DirtyJokeDetail detail);
         void onRequestError(String error);
         void onNetworkError();
+
+        void onFavoriteQueried(DirtyJokeFavorite favorite);
+        void onFavoriteCollected(boolean success, DirtyJokeFavorite favorite);
+        void onFavoriteUncollected(boolean success);
 
     }
 }

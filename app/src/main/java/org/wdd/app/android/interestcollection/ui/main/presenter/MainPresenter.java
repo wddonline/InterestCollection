@@ -1,4 +1,4 @@
-package org.wdd.app.android.interestcollection.ui.settings.presenter;
+package org.wdd.app.android.interestcollection.ui.main.presenter;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -6,7 +6,7 @@ import android.os.Looper;
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.http.impl.VolleyTool;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
-import org.wdd.app.android.interestcollection.ui.settings.activity.SettingsActivity;
+import org.wdd.app.android.interestcollection.ui.main.activity.MainActivity;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.utils.BmobUtils;
 
@@ -15,16 +15,16 @@ import cn.bmob.v3.update.UpdateResponse;
 import cn.bmob.v3.update.UpdateStatus;
 
 /**
- * Created by richard on 2/15/17.
+ * Created by wangdd on 17-3-3.
  */
 
-public class SettingsPresenter {
+public class MainPresenter {
 
-    private SettingsActivity mView;
+    private MainActivity mView;
 
     private Handler mHandler;
 
-    public SettingsPresenter(SettingsActivity view) {
+    public MainPresenter(MainActivity view) {
         this.mView = view;
         mHandler = new Handler(Looper.getMainLooper());
     }
@@ -38,7 +38,7 @@ public class SettingsPresenter {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            mView.showCacheSize(size);
+//                            mView.showCacheSize(size);
                         }
                     });
                 }

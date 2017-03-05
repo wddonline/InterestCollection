@@ -4,13 +4,17 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.database.model.DirtyJokeFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.jokes.adapter.DirtyJokeDetailAdapter;
+import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
 import org.wdd.app.android.interestcollection.ui.jokes.presenter.DirtyJokeDetailPresenter;
 import org.wdd.app.android.interestcollection.views.LoadView;
@@ -18,22 +22,33 @@ import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 public class DirtyJokeDetailActivity extends BaseActivity {
 
-    public static void show(Activity activity, String url, String title) {
+    public static void show(Activity activity, DirtyJoke joke) {
         Intent intent = new Intent(activity, DirtyJokeDetailActivity.class);
-        intent.putExtra("url", url);
-        intent.putExtra("title", title);
+        intent.putExtra("joke", joke);
         activity.startActivity(intent);
+    }
+
+    public static void showForResult(Activity activity, int position, DirtyJoke joke, int requestCode) {
+        Intent intent = new Intent(activity, DirtyJokeDetailActivity.class);
+        intent.putExtra("position", position);
+        intent.putExtra("joke", joke);
+        activity.startActivityForResult(intent, requestCode);
     }
 
     private ListView mListView;
     private LoadView mLoadView;
     private View mHeaderView;
     private View mFooterView;
+    private Toolbar mToolbar;
 
     private DirtyJokeDetailPresenter mPresenter;
     private DirtyJokeDetailAdapter mAdapter;
-    private String mUrl;
-    private String mTitle;
+    private DirtyJokeFavorite mFavorite;
+    private DirtyJoke mJoke;
+
+    private int position;
+    private boolean initCollectStatus = false;
+    private boolean currentCollectStatus = initCollectStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,21 +62,37 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private void initData() {
         mPresenter = new DirtyJokeDetailPresenter(this);
 
-        mUrl = getIntent().getStringExtra("url");
-        mTitle = getIntent().getStringExtra("title");
+        position = getIntent().getIntExtra("position" , -1);
+        mJoke = getIntent().getParcelableExtra("joke");
     }
 
     private void initTitles() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dirty_joke_detail_toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar = (Toolbar) findViewById(R.id.activity_dirty_joke_detail_toolbar);
+        setSupportActionBar(mToolbar);
+        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-        getSupportActionBar().setTitle(mTitle);
+        getSupportActionBar().setTitle(mJoke.title);
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_favorites_collect:
+                        showLoadingDialog();
+                        mPresenter.uncollectGirl(mFavorite.id, host);
+                        return true;
+                    case R.id.menu_favorites_uncollect:
+                        showLoadingDialog();
+                        mPresenter.collectGirl(mJoke.title, mJoke.date, mJoke.url, mJoke.imgUrl, host);
+                        return false;
+                }
+                return false;
+            }
+        });
     }
 
     private void initViews() {
@@ -70,11 +101,32 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
             public void onReloadClicked() {
-                mPresenter.getDirtyJokeDetailData(mUrl, host);
+                mPresenter.getDirtyJokeDetailData(mJoke.url, host);
             }
         });
 
-        mPresenter.getDirtyJokeDetailData(mUrl, host);
+        mPresenter.getDirtyJokeDetailData(mJoke.url, host);
+    }
+
+    @Override
+    public void onBackPressed() {
+        backAction();
+        super.onBackPressed();
+    }
+
+    private void backAction() {
+        if (currentCollectStatus != initCollectStatus) {
+            Intent intent = new Intent();
+            intent.putExtra("position", position);
+            setResult(RESULT_OK, intent);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_favorites, menu);
+        mPresenter.getDirtyJokeCollectStatus(mJoke.url, host);
+        return true;
     }
 
     @Override
@@ -129,4 +181,41 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     public void showNetworkError() {
         mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
     }
+
+    public void showDirtyJokeCollectViews(DirtyJokeFavorite favorite) {
+        if (favorite == null) {
+            initCollectStatus = false;
+            currentCollectStatus = false;
+        } else {
+            initCollectStatus = true;
+            currentCollectStatus = true;
+        }
+        mFavorite = favorite;
+        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(!initCollectStatus);
+        hideLoadingDialog();
+    }
+
+    public void updateDirtyJokeCollectViews(DirtyJokeFavorite favorite) {
+        currentCollectStatus = true;
+        mFavorite = favorite;
+        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(true);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(false);
+        hideLoadingDialog();
+    }
+
+    public void showDirtyJokeCollectFinishView() {
+        hideLoadingDialog();
+    }
+
+    public void showDirtyJokeUncollectViews(boolean success) {
+        if (success) {
+            currentCollectStatus = false;
+            mFavorite = null;
+            mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(false);
+            mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(true);
+        }
+        hideLoadingDialog();
+    }
+
 }

@@ -39,18 +39,20 @@
     <string name="cache_clean">缓存清理</string>
     <string name="about">关于</string>
     <string name="about_us">关于我们</string>
-    <string name="about_app">关于好妹子</string>
+    <string name="about_app">关于趣味集</string>
     <string name="contact_us">联系我们</string>
     <string name="disclaimer">免责声明</string>
     <string name="bit_cat_owner">比特猫(BitCat)工作室</string>
     <string name="mail_client_choose">请选择邮件类应用</string>
-    <string name="app_qq_group">好妹子App交流QQ群号：467321786</string>
+    <string name="app_qq_group">趣味集App交流QQ群号：467321786</string>
     <string name="disk_cache_clean_result">恭喜你清除掉了%1$sM的垃圾，再接再厉！</string>
     <string name="bmob_update_lastest_already">已是最新版本，无需更新</string>
     <string name="bmob_update_field_error">请检查你AppVersion表的必填项，1、target_size（文件大小）是否填写；2、path或者android_url两者必填其中一项。</string>
     <string name="bmob_update_version_ignore">该版本已被忽略更新</string>
     <string name="bmob_update_apk_size_error">请检查target_size填写的格式，请使用file.length()方法获取apk大小。</string>
     <string name="bmob_update_error">查询出错或查询超时</string>
+    <string name="collect">收藏</string>
+    <string name="uncollect">取消收藏</string>
 
     <!-- 广告 -->
     <string name="view_detail">查看详情</string>
@@ -71,8 +73,5 @@
     <string name="permission_resume">继续</string>
     <string name="permission_title_permission_rationale">权限已被拒绝</string>
     <string name="permission_message_permission_rationale">您已经拒绝过我们申请授权，请您同意授权，否则功能无法正常使用！</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

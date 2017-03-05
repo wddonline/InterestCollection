@@ -28,7 +28,7 @@ public class BmobUtils {
         BmobUpdateAgent.setUpdateCheckConfig(true);
         BmobConfig.Builder builder = new BmobConfig.Builder(context);
         //设置appkey
-        builder.setApplicationId("4e422a87743139ed30c1be10f352c18f");
+        builder.setApplicationId("1a4fe80265fa960e6185cd852064cd42");
         //请求超时时间（单位为秒）：默认15s
         builder.setConnectTimeout(30);
         //文件分片上传时每片的大小（单位字节），默认512*1024

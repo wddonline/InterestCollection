@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.jokes.presenter;
 
+import org.wdd.app.android.interestcollection.database.model.DirtyJokeFavorite;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.base.BasePresenter;
 import org.wdd.app.android.interestcollection.ui.jokes.activity.DirtyJokeDetailActivity;
@@ -30,6 +31,18 @@ public class DirtyJokeDetailPresenter implements BasePresenter, DirtyJokeDetailD
         mGetter.requestDirtyJokeDetailData(url, host);
     }
 
+    public void getDirtyJokeCollectStatus(String url, ActivityFragmentAvaliable host) {
+        mGetter.queryGirlCollectStatus(url, host);
+    }
+
+    public void uncollectGirl(int id, ActivityFragmentAvaliable host) {
+        mGetter.deleteFavoriteById(id, host);
+    }
+
+    public void collectGirl(String title, String time, String url, String imgUrl, ActivityFragmentAvaliable host) {
+        mGetter.insertFavorite(title, time, url, imgUrl, host);
+    }
+
     @Override
     public void onRequestOk(DirtyJokeDetail data) {
         if (data == null) {
@@ -48,4 +61,24 @@ public class DirtyJokeDetailPresenter implements BasePresenter, DirtyJokeDetailD
     public void onNetworkError() {
         mView.showNetworkError();
     }
+
+    @Override
+    public void onFavoriteQueried(DirtyJokeFavorite favorite) {
+        mView.showDirtyJokeCollectViews(favorite);
+    }
+
+    @Override
+    public void onFavoriteCollected(boolean success, DirtyJokeFavorite favorite) {
+        if (success) {
+            mView.updateDirtyJokeCollectViews(favorite);
+        } else {
+            mView.showDirtyJokeCollectFinishView();
+        }
+    }
+
+    @Override
+    public void onFavoriteUncollected(boolean success) {
+        mView.showDirtyJokeUncollectViews(success);
+    }
+
 }

@@ -1,10 +1,14 @@
 package org.wdd.app.android.interestcollection.ui.audios.data;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.wdd.app.android.interestcollection.database.manager.impl.AudioFavoriteDbManager;
+import org.wdd.app.android.interestcollection.database.model.AudioFavorite;
 import org.wdd.app.android.interestcollection.http.HttpConnectCallback;
 import org.wdd.app.android.interestcollection.http.HttpManager;
 import org.wdd.app.android.interestcollection.http.HttpRequestEntry;
@@ -12,15 +16,10 @@ import org.wdd.app.android.interestcollection.http.HttpResponseEntry;
 import org.wdd.app.android.interestcollection.http.HttpSession;
 import org.wdd.app.android.interestcollection.http.error.ErrorCode;
 import org.wdd.app.android.interestcollection.http.error.HttpError;
-import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
-import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
 import org.wdd.app.android.interestcollection.utils.HttpUtils;
 import org.wdd.app.android.interestcollection.utils.ServerApis;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by richard on 2/23/17.
@@ -32,11 +31,15 @@ public class AudioDetailDataGetter {
     private HttpSession mSession;
     private HttpManager mManager;
     private DataCallback mCallback;
+    private AudioFavoriteDbManager mDbManager;
+    private Handler mHandler;
 
     public AudioDetailDataGetter(Context context, DataCallback callback) {
         this.mContext = context;
         this.mCallback = callback;
         mManager = HttpManager.getInstance(context);
+        mDbManager = new AudioFavoriteDbManager(context);
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     public void requestAudioDetailData(String url, ActivityFragmentAvaliable host) {
@@ -128,11 +131,77 @@ public class AudioDetailDataGetter {
         mSession = null;
     }
 
+    public void queryAudioCollectStatus(final String url, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final AudioFavorite favorite = mDbManager.getFavoriteByUrl(url);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteQueried(favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void deleteFavoriteById(final int id, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int affectedRows = mDbManager.deleteById(id);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteUncollected(affectedRows > 0);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void insertFavorite(String title, String time, String url, String imgUrl, final ActivityFragmentAvaliable host) {
+        final AudioFavorite favorite = new AudioFavorite();
+        favorite.title = title;
+        favorite.time = time;
+        favorite.url = url;
+        favorite.imgUrl = imgUrl;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                favorite.id = (int) mDbManager.insert(favorite);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteCollected(favorite.id != -1, favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     public interface DataCallback {
 
         void onRequestOk(AudioDetail detail);
         void onRequestError(String error);
         void onNetworkError();
+
+        void onFavoriteQueried(AudioFavorite favorite);
+        void onFavoriteCollected(boolean success, AudioFavorite favorite);
+        void onFavoriteUncollected(boolean success);
 
     }
 }

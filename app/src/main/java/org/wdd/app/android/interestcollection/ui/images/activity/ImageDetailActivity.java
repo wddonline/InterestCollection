@@ -5,27 +5,38 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.cache.DrawableCache;
+import org.wdd.app.android.interestcollection.database.model.ImageFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.images.adapter.ImageDetailAdapter;
+import org.wdd.app.android.interestcollection.ui.images.model.Image;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
 import org.wdd.app.android.interestcollection.ui.images.presenter.ImageDetailPresenter;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
 public class ImageDetailActivity extends BaseActivity {
 
-    public static void show(Activity activity, String url, String title) {
+    public static void show(Activity activity, Image image) {
         Intent intent = new Intent(activity, ImageDetailActivity.class);
-        intent.putExtra("url", url);
-        intent.putExtra("title", title);
+        intent.putExtra("image", image);
         activity.startActivity(intent);
     }
 
+    public static void showForResult(Activity activity, int position, Image image, int requestCode) {
+        Intent intent = new Intent(activity, ImageDetailActivity.class);
+        intent.putExtra("position", position);
+        intent.putExtra("image", image);
+        activity.startActivityForResult(intent, requestCode);
+    }
+
+    private Toolbar mToolbar;
     private ListView mListView;
     private LoadView mLoadView;
     private View mHeaderView;
@@ -33,8 +44,12 @@ public class ImageDetailActivity extends BaseActivity {
 
     private ImageDetailPresenter mPresenter;
     private ImageDetailAdapter mAdapter;
-    private String mUrl;
-    private String mTitle;
+    private ImageFavorite mFavorite;
+    private Image mImage;
+
+    private int position;
+    private boolean initCollectStatus = false;
+    private boolean currentCollectStatus = initCollectStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,21 +63,38 @@ public class ImageDetailActivity extends BaseActivity {
     private void initData() {
         mPresenter = new ImageDetailPresenter(this);
 
-        mUrl = getIntent().getStringExtra("url");
-        mTitle = getIntent().getStringExtra("title");
+        position = getIntent().getIntExtra("position" , -1);
+        mImage = getIntent().getParcelableExtra("image");
     }
 
     private void initTitles() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_image_detail_toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar = (Toolbar) findViewById(R.id.activity_image_detail_toolbar);
+        setSupportActionBar(mToolbar);
+        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-        getSupportActionBar().setTitle(mTitle);
+        getSupportActionBar().setTitle(mImage.title);
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_favorites_collect:
+                        showLoadingDialog();
+                        mPresenter.uncollectImage(mFavorite.id, host);
+                        return true;
+                    case R.id.menu_favorites_uncollect:
+                        showLoadingDialog();
+                        mPresenter.collectImage(mImage.title, mImage.date, mImage.url, mImage.imgUrl, mImage.isGif, host);
+                        return false;
+
+                }
+                return false;
+            }
+        });
     }
 
     private void initViews() {
@@ -71,11 +103,32 @@ public class ImageDetailActivity extends BaseActivity {
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
             public void onReloadClicked() {
-                mPresenter.getImageDetailData(mUrl, host);
+                mPresenter.getImageDetailData(mImage.url, host);
             }
         });
 
-        mPresenter.getImageDetailData(mUrl, host);
+        mPresenter.getImageDetailData(mImage.url, host);
+    }
+
+    @Override
+    public void onBackPressed() {
+        backAction();
+        super.onBackPressed();
+    }
+
+    private void backAction() {
+        if (currentCollectStatus != initCollectStatus) {
+            Intent intent = new Intent();
+            intent.putExtra("position", position);
+            setResult(RESULT_OK, intent);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_favorites, menu);
+        mPresenter.getImageCollectStatus(mImage.url, host);
+        return true;
     }
 
     @Override
@@ -137,4 +190,39 @@ public class ImageDetailActivity extends BaseActivity {
         mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
     }
 
+    public void showImageCollectViews(ImageFavorite favorite) {
+        if (favorite == null) {
+            initCollectStatus = false;
+            currentCollectStatus = false;
+        } else {
+            initCollectStatus = true;
+            currentCollectStatus = true;
+        }
+        mFavorite = favorite;
+        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(!initCollectStatus);
+        hideLoadingDialog();
+    }
+
+    public void updateImageCollectViews(ImageFavorite favorite) {
+        currentCollectStatus = true;
+        mFavorite = favorite;
+        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(true);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(false);
+        hideLoadingDialog();
+    }
+
+    public void showImageCollectFinishView() {
+        hideLoadingDialog();
+    }
+
+    public void showImageUncollectViews(boolean success) {
+        if (success) {
+            currentCollectStatus = false;
+            mFavorite = null;
+            mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(false);
+            mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(true);
+        }
+        hideLoadingDialog();
+    }
 }

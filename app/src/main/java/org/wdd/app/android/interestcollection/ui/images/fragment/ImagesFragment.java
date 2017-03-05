@@ -104,7 +104,7 @@ public class ImagesFragment extends BaseFragment {
             mAdapter.setOnItemClickedListener(new ImageAdapter.OnItemClickedListener() {
                 @Override
                 public void onItemClicked(int position, Image item) {
-                    ImageDetailActivity.show(getActivity(), item.url, item.title);
+                    ImageDetailActivity.show(getActivity(), item);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

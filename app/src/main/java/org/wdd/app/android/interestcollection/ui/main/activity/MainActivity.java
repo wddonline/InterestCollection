@@ -2,8 +2,6 @@ package org.wdd.app.android.interestcollection.ui.main.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,11 +22,14 @@ import org.wdd.app.android.interestcollection.ui.audios.fragment.AudiosFragment;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.images.fragment.ImagesFragment;
 import org.wdd.app.android.interestcollection.ui.jokes.fragment.DirtyJokesFragment;
+import org.wdd.app.android.interestcollection.ui.main.presenter.MainPresenter;
+import org.wdd.app.android.interestcollection.ui.settings.activity.AboutActivity;
 import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.utils.AppUtils;
 import org.wdd.app.android.interestcollection.utils.DensityUtils;
+import org.wdd.app.android.interestcollection.utils.MathUtils;
 import org.wdd.app.android.interestcollection.views.FragmentTabHost;
 
 /**
@@ -46,6 +47,7 @@ public class MainActivity extends BaseActivity implements Runnable {
     private SlidingMenu mSlidingMenu;
 
     private Handler handler = new Handler();
+    private MainPresenter mPresenter;
 
     private final long TIME_LIMIT = 3000;
     private int backPressedCount = 0;
@@ -77,7 +79,7 @@ public class MainActivity extends BaseActivity implements Runnable {
     }
 
     private void initData() {
-
+        mPresenter = new MainPresenter(this);
     }
 
     private void initViews() {
@@ -157,4 +159,50 @@ public class MainActivity extends BaseActivity implements Runnable {
         backPressedCount = 0;
     }
 
+    public void finishVersionCheck() {
+        hideLoadingDialog();
+    }
+
+    public void finishCacheClean(long size) {
+        hideLoadingDialog();
+        String hint = getString(R.string.disk_cache_clean_result);
+        hint = String.format(hint, getFileSizeString(size));
+        AppToaster.show(hint);
+    }
+
+    private String getFileSizeString(long size) {
+        String str;
+        if (size >= 1073741824) {//1024 * 1024 * 1024
+            str = MathUtils.formatDouble(size / 1073741824.0) + "G";
+        } else if (size >= 1048576) {////1024 * 1024
+            str = MathUtils.formatDouble(size / 1048576.0) + "M";
+        } else if (size >= 1024){
+            str = MathUtils.formatDouble(size / 1024.0) + "K";
+        } else {
+            str = size + "B";
+        }
+        return str;
+    }
+
+    public void onProfileClicked(View v) {
+
+    }
+
+    public void onFavoritesClicked(View v) {
+
+    }
+
+    public void onVersionCheckClicked(View v) {
+        showLoadingDialog();
+        mPresenter.checkLastestVersion();
+    }
+
+    public void onClearCacheClicked(View v) {
+        showLoadingDialog();
+        mPresenter.cleanFileCache(host);
+    }
+
+    public void onAboutClicked(View v) {
+        AboutActivity.show(this);
+    }
 }

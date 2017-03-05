@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.audios.presenter;
 
+import org.wdd.app.android.interestcollection.database.model.AudioFavorite;
 import org.wdd.app.android.interestcollection.ui.audios.activity.AudioDetailActivity;
 import org.wdd.app.android.interestcollection.ui.audios.data.AudioDetailDataGetter;
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
@@ -33,6 +34,18 @@ public class AudioDetailPresenter implements BasePresenter, AudioDetailDataGette
         mGetter.requestAudioDetailData(url, host);
     }
 
+    public void getAudioCollectStatus(String url, ActivityFragmentAvaliable host) {
+        mGetter.queryAudioCollectStatus(url, host);
+    }
+
+    public void uncollectAudio(int id, ActivityFragmentAvaliable host) {
+        mGetter.deleteFavoriteById(id, host);
+    }
+
+    public void collectAudio(String title, String time, String url, String imgUrl, ActivityFragmentAvaliable host) {
+        mGetter.insertFavorite(title, time, url, imgUrl, host);
+    }
+
     @Override
     public void onRequestOk(AudioDetail detail) {
         if (detail == null) {
@@ -50,5 +63,24 @@ public class AudioDetailPresenter implements BasePresenter, AudioDetailDataGette
     @Override
     public void onNetworkError() {
         mView.showNetworkError();
+    }
+
+    @Override
+    public void onFavoriteQueried(AudioFavorite favorite) {
+        mView.showAudioCollectViews(favorite);
+    }
+
+    @Override
+    public void onFavoriteCollected(boolean success, AudioFavorite favorite) {
+        if (success) {
+            mView.updateAudioCollectViews(favorite);
+        } else {
+            mView.showAudioCollectFinishView();
+        }
+    }
+
+    @Override
+    public void onFavoriteUncollected(boolean success) {
+        mView.showAudioUncollectViews(success);
     }
 }

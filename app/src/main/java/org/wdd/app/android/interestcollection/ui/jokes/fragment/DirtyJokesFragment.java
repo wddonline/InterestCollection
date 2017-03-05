@@ -103,7 +103,7 @@ public class DirtyJokesFragment extends BaseFragment {
             mAdapter.setOnItemClickedListener(new DirtyJodeAdapter.OnItemClickedListener() {
                 @Override
                 public void onItemClicked(int position, DirtyJoke item) {
-                    DirtyJokeDetailActivity.show(getActivity(), item.url, item.title);
+                    DirtyJokeDetailActivity.show(getActivity(), item);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

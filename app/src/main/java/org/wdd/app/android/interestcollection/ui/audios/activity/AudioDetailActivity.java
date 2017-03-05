@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.audios.activity;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,8 @@ import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -25,6 +28,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.database.model.AudioFavorite;
 import org.wdd.app.android.interestcollection.service.music.OnPlayerEventListener;
 import org.wdd.app.android.interestcollection.service.music.PlayService;
 import org.wdd.app.android.interestcollection.service.music.model.Music;
@@ -33,7 +37,6 @@ import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.audios.presenter.AudioDetailPresenter;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
-import org.wdd.app.android.interestcollection.utils.SystemUtils;
 import org.wdd.app.android.interestcollection.views.LoadView;
 import org.wdd.app.android.interestcollection.views.RoundedNetworkImageView;
 
@@ -44,10 +47,15 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     public static void show(Context context, Audio audio) {
         Intent intent = new Intent(context, AudioDetailActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("url", audio.url);
-        intent.putExtra("title", audio.title);
-        intent.putExtra("imgUrl", audio.imgUrl);
+        intent.putExtra("audio", audio);
         context.startActivity(intent);
+    }
+
+    public static void showForResult(Activity activity, int position, Audio audio, int requestCode) {
+        Intent intent = new Intent(activity, AudioDetailActivity.class);
+        intent.putExtra("position", position);
+        intent.putExtra("audio", audio);
+        activity.startActivityForResult(intent, requestCode);
     }
 
     private View mScrollView;
@@ -65,12 +73,15 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     private TextView mPastTimeView;
     private SeekBar mSeekBar;
     private TextView mAllTimeView;
+    private Toolbar mToolbar;
 
-    private String mUrl;
-    private String mTitle;
-    private String mImgUrl;
+    private int position;
+    private boolean initCollectStatus = false;
+    private boolean currentCollectStatus = initCollectStatus;
+
+    private Audio mAudio;
+    private AudioFavorite mFavorite;
     private AudioDetail mDetail;
-
     private AudioDetailPresenter mPresenter;
     private PlayService mPlayService;
     private AudioManager mAudioManager;
@@ -86,12 +97,12 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
             Music music = new Music();
             music.setType(Music.Type.ONLINE);
-            music.setTitle(mTitle);
+            music.setTitle(mAudio.title);
             music.setAlbum(mDetail.column);
             music.setArtist(mDetail.anchor);
             music.setUri(mDetail.audioUrl);
             music.setType(Music.Type.ONLINE);
-            music.setCoverUri(mImgUrl);
+            music.setCoverUri(mAudio.imgUrl);
             mPlayService.play(music);
         }
 
@@ -111,24 +122,39 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initData() {
-        mUrl = getIntent().getStringExtra("url");
-        mTitle = getIntent().getStringExtra("title");
-        mImgUrl = getIntent().getStringExtra("imgUrl");
+        position = getIntent().getIntExtra("position" , -1);
+        mAudio = getIntent().getParcelableExtra("audio");
 
         mPresenter = new AudioDetailPresenter(this);
     }
 
     private void initTitles() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_audio_detail_toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar = (Toolbar) findViewById(R.id.activity_audio_detail_toolbar);
+        setSupportActionBar(mToolbar);
+        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-        getSupportActionBar().setTitle(mTitle);
+        getSupportActionBar().setTitle(mAudio.title);
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_favorites_collect:
+                        showLoadingDialog();
+                        mPresenter.uncollectAudio(mFavorite.id, host);
+                        return true;
+                    case R.id.menu_favorites_uncollect:
+                        showLoadingDialog();
+                        mPresenter.collectAudio(mAudio.title, mAudio.date, mAudio.url, mAudio.imgUrl, host);
+                        return false;
+                }
+                return false;
+            }
+        });
     }
 
     private void initViews() {
@@ -175,7 +201,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
             public void onReloadClicked() {
-                mPresenter.getAudioDetailData(mUrl, host);
+                mPresenter.getAudioDetailData(mAudio.url, host);
             }
         });
 
@@ -204,13 +230,34 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
             }
         });
-        mPresenter.getAudioDetailData(mUrl, host);
+        mPresenter.getAudioDetailData(mAudio.url, host);
     }
 
     private void registerReceiver() {
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         mRemoteReceiver = new ComponentName(getPackageName(), RemoteControlReceiver.class.getName());
         mAudioManager.registerMediaButtonEventReceiver(mRemoteReceiver);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_favorites, menu);
+        mPresenter.getAudioCollectStatus(mAudio.url, host);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        backAction();
+        super.onBackPressed();
+    }
+
+    private void backAction() {
+        if (currentCollectStatus != initCollectStatus) {
+            Intent intent = new Intent();
+            intent.putExtra("position", position);
+            setResult(RESULT_OK, intent);
+        }
     }
 
     @Override
@@ -244,7 +291,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             mTagView.setText(data.tag);
             mCommentCountView.setText(data.commentCount);
             mSourceView.setText(data.source);
-            mCoverView.setImageUrl(mImgUrl);
+            mCoverView.setImageUrl(mAudio.imgUrl);
             mPastTimeView.setText(formatTime("(mm:ss)", 0));
             mAllTimeView.setText(formatTime("(mm:ss)", 0));
         }
@@ -334,6 +381,42 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
     public void showNetworkError() {
         mLoadView.setStatus(LoadView.LoadStatus.Network_Error);
+    }
+
+    public void showAudioCollectViews(AudioFavorite favorite) {
+        if (favorite == null) {
+            initCollectStatus = false;
+            currentCollectStatus = false;
+        } else {
+            initCollectStatus = true;
+            currentCollectStatus = true;
+        }
+        mFavorite = favorite;
+        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(!initCollectStatus);
+        hideLoadingDialog();
+    }
+
+    public void updateAudioCollectViews(AudioFavorite favorite) {
+        currentCollectStatus = true;
+        mFavorite = favorite;
+        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(true);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(false);
+        hideLoadingDialog();
+    }
+
+    public void showAudioCollectFinishView() {
+        hideLoadingDialog();
+    }
+
+    public void showAudioUncollectViews(boolean success) {
+        if (success) {
+            currentCollectStatus = false;
+            mFavorite = null;
+            mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(false);
+            mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(true);
+        }
+        hideLoadingDialog();
     }
 
     private void startPlayService() {

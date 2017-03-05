@@ -29,7 +29,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.main.activity.MainActivity" />
-        <activity android:name=".ui.settings.activity.SettingsActivity" />
         <activity android:name=".ui.settings.activity.AboutUsActivity" />
         <activity android:name=".ui.settings.activity.AboutActivity" />
         <activity android:name=".ui.settings.activity.AboutAppActivity" />

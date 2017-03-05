@@ -44,7 +44,7 @@ public class WebActivity extends BaseActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_web_toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("");
+        getSupportActionBar().setTitle(getIntent().getStringExtra("title"));
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,10 +52,6 @@ public class WebActivity extends BaseActivity {
                 finish();
             }
         });
-
-        String title = getIntent().getStringExtra("title");
-        TextView titileView = (TextView) findViewById(R.id.activity_web_title);
-        titileView.setText(title);
     }
 
     private void initViews() {

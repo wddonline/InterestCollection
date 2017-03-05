@@ -1,0 +1,46 @@
+/* 浏览器重置 start */
+body,p,ul,ol,li,dl,dt,dd,h1,h2,h3,h4,h5,form,fieldset,legend,input,select,textarea,button,th,td,menu,article,pre{margin:0;padding:0;}
+pre{white-space:normal;}
+article,aside,dialog,figure,footer,header,nav,section,select,time{display:block;}
+h1,h2,h3,h4,h5,h6,input,textarea,select,button,label{font-size:100%;font-weight:100;vertical-align:middle;}
+ul,dl,ol{list-style:none;}
+img,fieldset,input[type="submit"]{border:none;}
+input{outline:none;background:transparent;vertical-align:top;}
+table{border-collapse:collapse;border-spacing:0;}
+button{cursor:pointer;border:none;}
+textarea{word-wrap:break-word;resize:none;}
+/* 去除输入框、文本域默认边框和IOS4下的内阴影 */
+input, textarea, select{-webkit-appearance:none;border:none;outline:none;}
+/* 设置Gecko内核下输入框属性placeholder中值的文件颜色 */
+input:-moz-placeholder{color:#C4C4C4;}
+/* 设置webkit内核下输入框属性placeholder中值的文件颜色 */
+::-webkit-input-placeholder{color:#C4C4C4;}
+body{font-family:"微软雅黑";-webkit-user-select:none;/* 禁止选中文本 */-webkit-text-size-adjust:none;-webkit-tap-highlight-color:rgba(0,0,0,0.05);/* 设置点击链接时遮罩层为全透明 */min-height:100%;font-family:"微软雅黑" medium sans-serif;color:#666666}
+/* 设置webkit内核下文字大小不小于12px */
+html,body{-webkit-text-size-adjust:none;height:100%;width:100%;}
+/* 禁止长按链接、按钮、输入框出现系统默认弹框菜单 */
+a,button,input{-webkit-touch-callout:none;outline:none;}
+a,a:visited{text-decoration:none;-webkit-touch-callout:none;}
+/* 浏览器重置 end */
+
+body{width: 100%;height: auto;background:#fff;height: 100%;}
+.wrapper{width: 100%;margin: 0 auto;position: relative;}
+/*header*/
+.header{height: 45px;background:#4fc1e9; display: -webkit-box;}
+.header a{display: block;}
+.back{min-width: 55px;background: url(../images/back.png) left center no-repeat;height: 45px;background-size: 100%;}
+.title{text-align: center;line-height: 45px;color: #ffffff;height: 45px;}
+.header section:nth-child(1){padding-left: 15px;}
+.header section:nth-child(2){-webkit-box-flex: 1;}
+.header section:last-child {min-width: 60px;}
+
+.main{padding: 22px 15px;background: #fff;}
+.main h2{font-size: 20px;color: #393939;text-align: center;margin-bottom: 10px;}
+.main_msg{font-size: 12px;color: #a5a4a4;text-align: center;margin-bottom: 10px;}
+.main_msg span{padding-left: 15px;}
+.main_article{padding-top: 10px;}
+.main_article img{width: 100%;text-align: center;display: block;margin: 0 auto 10px;}
+.main_top{border-bottom: 1px solid #e2e2e2;}
+.main_article p{font-size: 17px;color: #575757;line-height: 180%;}
+.main_article2{margin-top: 10px;}
+.main_article2 p{font-size: 17px;color: #575757;line-height: 180%;text-indent: 2em;}
