@@ -103,7 +103,7 @@ public class VideosFragment extends BaseFragment {
             mAdapter.setOnItemClickedListener(new VideoAdapter.OnItemClickedListener() {
                 @Override
                 public void onItemClicked(int position, Video item) {
-                    VideoDetailActivity.show(getContext(), item.url, item.title);
+                    VideoDetailActivity.show(getContext(), item);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

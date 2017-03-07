@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.videos.presenter;
 
+import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.base.BasePresenter;
 import org.wdd.app.android.interestcollection.ui.videos.activity.VideoDetailActivity;
@@ -30,6 +31,18 @@ public class VideoDetailPresenter implements BasePresenter, VideosDetailDataGett
         mGetter.requestVideoDetailData(url, host);
     }
 
+    public void getVideoCollectStatus(String url, ActivityFragmentAvaliable host) {
+        mGetter.queryVideoCollectStatus(url, host);
+    }
+
+    public void uncollectVideo(int id, ActivityFragmentAvaliable host) {
+        mGetter.deleteFavoriteById(id, host);
+    }
+
+    public void collectVideo(String title, String time, String url, String imgUrl, ActivityFragmentAvaliable host) {
+        mGetter.insertFavorite(title, time, url, imgUrl, host);
+    }
+
     @Override
     public void onRequestOk(VideoDetail detail) {
         if (detail == null) {
@@ -47,5 +60,22 @@ public class VideoDetailPresenter implements BasePresenter, VideosDetailDataGett
     @Override
     public void onNetworkError() {
         mView.showNetworkError();
+    }
+
+    @Override
+    public void onFavoriteQueried(VideoFavorite favorite) {
+        mView.showVideoCollectViews(favorite);
+    }
+
+    @Override
+    public void onFavoriteCollected(boolean success, VideoFavorite favorite) {
+        if (success) {
+            mView.updateVideoCollectViews(favorite);
+        }
+    }
+
+    @Override
+    public void onFavoriteUncollected(boolean success) {
+        mView.showVideoUncollectViews(success);
     }
 }

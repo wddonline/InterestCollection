@@ -21,6 +21,7 @@ public class HttpRequestEntry {
     private Method method = Method.POST;
     private String url;
     private String tag;
+    private boolean shouldCached = true;
 
     private int timeOut = TIME_OUT;
 
@@ -86,4 +87,13 @@ public class HttpRequestEntry {
     public void setTag(String tag) {
         this.tag = tag;
     }
+
+    public void setShouldCached(boolean shouldCached) {
+        this.shouldCached = shouldCached;
+    }
+
+    public boolean shouldCache() {
+        return shouldCached;
+    }
+
 }

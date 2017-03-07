@@ -82,12 +82,10 @@ public class ImageDetailActivity extends BaseActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.menu_favorites_collect:
-                        showLoadingDialog();
+                    case R.id.menu_detail_collect:
                         mPresenter.uncollectImage(mFavorite.id, host);
                         return true;
-                    case R.id.menu_favorites_uncollect:
-                        showLoadingDialog();
+                    case R.id.menu_detail_uncollect:
                         mPresenter.collectImage(mImage.title, mImage.date, mImage.url, mImage.imgUrl, mImage.isGif, host);
                         return false;
 
@@ -126,7 +124,7 @@ public class ImageDetailActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_favorites, menu);
+        getMenuInflater().inflate(R.menu.menu_detail, menu);
         mPresenter.getImageCollectStatus(mImage.url, host);
         return true;
     }
@@ -199,30 +197,23 @@ public class ImageDetailActivity extends BaseActivity {
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(!initCollectStatus);
-        hideLoadingDialog();
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
     }
 
     public void updateImageCollectViews(ImageFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(false);
-        hideLoadingDialog();
-    }
-
-    public void showImageCollectFinishView() {
-        hideLoadingDialog();
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
     }
 
     public void showImageUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
         }
-        hideLoadingDialog();
     }
 }

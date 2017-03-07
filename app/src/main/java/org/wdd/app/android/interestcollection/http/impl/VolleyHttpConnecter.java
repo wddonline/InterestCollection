@@ -87,6 +87,7 @@ public class VolleyHttpConnecter implements HttpConnecter {
                 return requestEntry.getRequestHeaders();
             }
         };
+        request.setShouldCache(requestEntry.shouldCache());
         request.setRetryPolicy(new DefaultRetryPolicy(requestEntry.getTimeOut(),
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         requestQueue.add(request);

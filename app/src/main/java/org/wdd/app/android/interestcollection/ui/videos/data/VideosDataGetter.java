@@ -49,6 +49,7 @@ public class VideosDataGetter {
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setUrl(ServerApis.VIDEO_URL + mPage);
+        requestEntry.setShouldCached(false);
         mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
 
             @Override

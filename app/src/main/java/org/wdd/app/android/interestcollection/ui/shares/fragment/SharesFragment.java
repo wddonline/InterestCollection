@@ -103,7 +103,7 @@ public class SharesFragment extends BaseFragment {
             mAdapter.setOnItemClickedListener(new SharesAdapter.OnItemClickedListener() {
                 @Override
                 public void onItemClicked(int position, Share item) {
-                    ShareDetailActivity.show(getContext(), item.url, item.title);
+                    ShareDetailActivity.show(getContext(), item);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);

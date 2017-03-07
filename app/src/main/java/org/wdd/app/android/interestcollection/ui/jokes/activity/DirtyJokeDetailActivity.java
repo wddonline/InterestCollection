@@ -81,12 +81,10 @@ public class DirtyJokeDetailActivity extends BaseActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.menu_favorites_collect:
-                        showLoadingDialog();
+                    case R.id.menu_detail_collect:
                         mPresenter.uncollectGirl(mFavorite.id, host);
                         return true;
-                    case R.id.menu_favorites_uncollect:
-                        showLoadingDialog();
+                    case R.id.menu_detail_uncollect:
                         mPresenter.collectGirl(mJoke.title, mJoke.date, mJoke.url, mJoke.imgUrl, host);
                         return false;
                 }
@@ -124,7 +122,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_favorites, menu);
+        getMenuInflater().inflate(R.menu.menu_detail, menu);
         mPresenter.getDirtyJokeCollectStatus(mJoke.url, host);
         return true;
     }
@@ -191,31 +189,24 @@ public class DirtyJokeDetailActivity extends BaseActivity {
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(!initCollectStatus);
-        hideLoadingDialog();
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
     }
 
     public void updateDirtyJokeCollectViews(DirtyJokeFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(false);
-        hideLoadingDialog();
-    }
-
-    public void showDirtyJokeCollectFinishView() {
-        hideLoadingDialog();
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
     }
 
     public void showDirtyJokeUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
         }
-        hideLoadingDialog();
     }
 
 }

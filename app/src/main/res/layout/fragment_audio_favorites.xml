@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="org.wdd.app.android.interestcollection.ui.favorites.fragment.impl.AudioFavoritesFragment">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/activity_girl_favorites_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
+
+    <org.wdd.app.android.interestcollection.views.LoadView
+        android:id="@+id/activity_girl_favorites_loadview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

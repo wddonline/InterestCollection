@@ -1,10 +1,14 @@
 package org.wdd.app.android.interestcollection.ui.videos.data;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.wdd.app.android.interestcollection.database.manager.impl.VideoFavoriteDbManager;
+import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
 import org.wdd.app.android.interestcollection.http.HttpConnectCallback;
 import org.wdd.app.android.interestcollection.http.HttpManager;
 import org.wdd.app.android.interestcollection.http.HttpRequestEntry;
@@ -27,11 +31,15 @@ public class VideosDetailDataGetter {
     private HttpSession mSession;
     private HttpManager mManager;
     private DataCallback mCallback;
+    private VideoFavoriteDbManager mDbManager;
+    private Handler mHandler;
 
     public VideosDetailDataGetter(Context context, DataCallback callback) {
         this.mContext = context;
         this.mCallback = callback;
         mManager = HttpManager.getInstance(context);
+        mDbManager = new VideoFavoriteDbManager(context);
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     public void requestVideoDetailData(String url, ActivityFragmentAvaliable host) {
@@ -88,11 +96,77 @@ public class VideosDetailDataGetter {
         mSession = null;
     }
 
+    public void queryVideoCollectStatus(final String url, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final VideoFavorite favorite = mDbManager.getFavoriteByUrl(url);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteQueried(favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void deleteFavoriteById(final int id, final ActivityFragmentAvaliable host) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int affectedRows = mDbManager.deleteById(id);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteUncollected(affectedRows > 0);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public void insertFavorite(String title, String time, String url, String imgUrl, final ActivityFragmentAvaliable host) {
+        final VideoFavorite favorite = new VideoFavorite();
+        favorite.title = title;
+        favorite.time = time;
+        favorite.url = url;
+        favorite.imgUrl = imgUrl;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                favorite.id = (int) mDbManager.insert(favorite);
+                if (!host.isAvaliable()) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mCallback == null) return;
+                        mCallback.onFavoriteCollected(favorite.id != -1, favorite);
+                    }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     public interface DataCallback {
 
         void onRequestOk(VideoDetail data);
         void onRequestError(String error);
         void onNetworkError();
+
+        void onFavoriteQueried(VideoFavorite favorite);
+        void onFavoriteCollected(boolean success, VideoFavorite favorite);
+        void onFavoriteUncollected(boolean success);
 
     }
 }

@@ -49,6 +49,7 @@ public class DirtyJokesDataGetter {
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.setUrl(ServerApis.DIRTY_JOKE_URL + mPage);
+        requestEntry.setShouldCached(false);
         mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
 
             @Override

@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_favorites_ok"
-        android:title="@string/confirm"
-        android:icon="@drawable/ic_done"
+        android:id="@+id/menu_detail_collect"
+        android:title="@string/collect"
+        android:icon="@drawable/ic_favorite_collected"
         app:showAsAction="always"
         android:visible="false"/>
     <item
-        android:id="@+id/menu_favorites_cancel"
-        android:title="@string/cancel"
-        android:icon="@drawable/ic_close"
+        android:id="@+id/menu_detail_uncollect"
+        android:title="@string/uncollect"
+        android:icon="@drawable/ic_favorite_uncollected"
         app:showAsAction="always"
         android:visible="false"/>
 

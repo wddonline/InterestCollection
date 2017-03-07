@@ -143,12 +143,10 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.menu_favorites_collect:
-                        showLoadingDialog();
+                    case R.id.menu_detail_collect:
                         mPresenter.uncollectAudio(mFavorite.id, host);
                         return true;
-                    case R.id.menu_favorites_uncollect:
-                        showLoadingDialog();
+                    case R.id.menu_detail_uncollect:
                         mPresenter.collectAudio(mAudio.title, mAudio.date, mAudio.url, mAudio.imgUrl, host);
                         return false;
                 }
@@ -241,7 +239,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_favorites, menu);
+        getMenuInflater().inflate(R.menu.menu_detail, menu);
         mPresenter.getAudioCollectStatus(mAudio.url, host);
         return true;
     }
@@ -392,31 +390,24 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(!initCollectStatus);
-        hideLoadingDialog();
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
     }
 
     public void updateAudioCollectViews(AudioFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(false);
-        hideLoadingDialog();
-    }
-
-    public void showAudioCollectFinishView() {
-        hideLoadingDialog();
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
     }
 
     public void showAudioUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_favorites_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_favorites_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
         }
-        hideLoadingDialog();
     }
 
     private void startPlayService() {

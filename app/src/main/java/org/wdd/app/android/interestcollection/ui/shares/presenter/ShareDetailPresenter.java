@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.shares.presenter;
 
+import org.wdd.app.android.interestcollection.database.model.ShareFavorite;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.base.BasePresenter;
 import org.wdd.app.android.interestcollection.ui.shares.activity.ShareDetailActivity;
@@ -30,6 +31,18 @@ public class ShareDetailPresenter implements BasePresenter, ShareDetailDataGette
         mGetter.requestShareDetailData(url, host);
     }
 
+    public void getShareCollectStatus(String url, ActivityFragmentAvaliable host) {
+        mGetter.queryShareCollectStatus(url, host);
+    }
+
+    public void uncollectShare(int id, ActivityFragmentAvaliable host) {
+        mGetter.deleteFavoriteById(id, host);
+    }
+
+    public void collectShare(String title, String time, String url, String imgUrl, ActivityFragmentAvaliable host) {
+        mGetter.insertFavorite(title, time, url, imgUrl, host);
+    }
+
     @Override
     public void onRequestOk(ShareDetail detail) {
         if (detail == null) {
@@ -47,5 +60,22 @@ public class ShareDetailPresenter implements BasePresenter, ShareDetailDataGette
     @Override
     public void onNetworkError() {
         mView.showNetworkError();
+    }
+
+    @Override
+    public void onFavoriteQueried(ShareFavorite favorite) {
+        mView.showShareCollectViews(favorite);
+    }
+
+    @Override
+    public void onFavoriteCollected(boolean success, ShareFavorite favorite) {
+        if (success) {
+            mView.updateShareCollectViews(favorite);
+        }
+    }
+
+    @Override
+    public void onFavoriteUncollected(boolean success) {
+        mView.showShareUncollectViews(success);
     }
 }

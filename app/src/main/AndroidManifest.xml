@@ -37,16 +37,19 @@
         <activity android:name=".ui.jokes.activity.DirtyJokeDetailActivity" />
         <activity android:name=".ui.images.activity.ImageDetailActivity" />
         <activity android:name=".ui.videos.activity.VideoDetailActivity" />
-        <activity android:name=".ui.audios.activity.AudioDetailActivity" android:launchMode="singleTask" />
-        <activity android:name=".ui.shares.activity.ShareDetailActivity"/>
+        <activity
+            android:name=".ui.audios.activity.AudioDetailActivity"
+            android:launchMode="singleTask" />
+        <activity android:name=".ui.shares.activity.ShareDetailActivity" />
 
-        <service android:name="org.wdd.app.android.interestcollection.service.music.PlayService" />
+        <service android:name=".service.music.PlayService" />
 
-        <receiver android:name="org.wdd.app.android.interestcollection.service.music.receiver.RemoteControlReceiver">
+        <receiver android:name=".service.music.receiver.RemoteControlReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        <activity android:name="org.wdd.app.android.interestcollection.ui.profile.activity.ProfileEditActivity" />
 
         <activity
             android:name="cn.bmob.v3.update.UpdateDialogActivity"
@@ -70,6 +73,7 @@
             android:name="BMOB_CHANNEL"
             android:value="${UMENG_CHANNEL_VALUE}" />
 
+        <activity android:name=".ui.favorites.activity.FavoritesActivity"></activity>
     </application>
 
 </manifest>

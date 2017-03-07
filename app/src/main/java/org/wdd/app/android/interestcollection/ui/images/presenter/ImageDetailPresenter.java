@@ -70,8 +70,6 @@ public class ImageDetailPresenter implements BasePresenter, ImageDetailDateGette
     public void onFavoriteCollected(boolean success, ImageFavorite favorite) {
         if (success) {
             mView.updateImageCollectViews(favorite);
-        } else {
-            mView.showImageCollectFinishView();
         }
     }
 

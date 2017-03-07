@@ -61,23 +61,6 @@
         <attr name="defaultImage" format="integer|reference" />
     </declare-styleable>
 
-    <declare-styleable name="PagerSlidingTabStrip">
-        <attr name="textEmphasized" format="boolean" />
-        <attr name="tabTextColor" format="color" />
-        <attr name="tabUnselectedTextColor" format="color" />
-        <attr name="indicatorColor" format="color" />
-        <attr name="underlineColor" format="color" />
-        <attr name="dividerColor" format="color" />
-        <attr name="indicatorWidth" format="dimension" />
-        <attr name="indicatorHeight" format="dimension" />
-        <attr name="underlineHeight" format="dimension" />
-        <attr name="dividerPadding" format="dimension" />
-        <attr name="tabPaddingLeftRight" format="dimension" />
-        <attr name="scrollOffset" format="dimension" />
-        <attr name="tabBackground" format="reference" />
-        <attr name="shouldExpand" format="boolean" />
-    </declare-styleable>
-
     <style name="appDialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowFrame">@null</item><!--边框-->
         <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->

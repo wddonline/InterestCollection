@@ -6,9 +6,6 @@ import org.wdd.app.android.interestcollection.ui.audios.data.AudioDetailDataGett
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.base.BasePresenter;
-import org.wdd.app.android.interestcollection.ui.videos.activity.VideoDetailActivity;
-import org.wdd.app.android.interestcollection.ui.videos.data.VideosDetailDataGetter;
-import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
 
 /**
  * Created by richard on 2/23/17.
@@ -74,8 +71,6 @@ public class AudioDetailPresenter implements BasePresenter, AudioDetailDataGette
     public void onFavoriteCollected(boolean success, AudioFavorite favorite) {
         if (success) {
             mView.updateAudioCollectViews(favorite);
-        } else {
-            mView.showAudioCollectFinishView();
         }
     }
 

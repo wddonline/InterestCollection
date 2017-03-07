@@ -63,9 +63,9 @@ public class AudioAdapter extends AbstractCommonAdapter<Audio> {
         public AudioViewHolder(View itemView) {
             super(itemView);
             clickView = itemView.findViewById(R.id.item_audios_list_click);
-            titleView = (TextView) itemView.findViewById(R.id.item_audios_list_title);
-            dateView = (TextView) itemView.findViewById(R.id.item_audios_list_date);
-            imageView = (NetworkImageView) itemView.findViewById(R.id.item_audios_list_img);
+            titleView = (TextView) itemView.findViewById(R.id.item_audio_favorites_title);
+            dateView = (TextView) itemView.findViewById(R.id.item_audio_favorites_date);
+            imageView = (NetworkImageView) itemView.findViewById(R.id.item_audio_favorites_img);
         }
     }
 

@@ -71,8 +71,6 @@ public class DirtyJokeDetailPresenter implements BasePresenter, DirtyJokeDetailD
     public void onFavoriteCollected(boolean success, DirtyJokeFavorite favorite) {
         if (success) {
             mView.updateDirtyJokeCollectViews(favorite);
-        } else {
-            mView.showDirtyJokeCollectFinishView();
         }
     }
 

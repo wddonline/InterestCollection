@@ -33,6 +33,12 @@
     <!-- 个人中心 -->
     <string name="favorites">收藏</string>
     <string name="version_update">版本更新</string>
+    <string name="profile_edit">编辑个人资料</string>
+    <string name="nickname">昵称</string>
+    <string name="sex">性别</string>
+    <string name="sex_male">一位绅士</string>
+    <string name="sex_female">一位淑女</string>
+    <string name="waiting_for_a_name">取一个响亮的名字</string>
 
     <!-- 设置 -->
     <string name="settings">设置</string>
@@ -53,6 +59,7 @@
     <string name="bmob_update_error">查询出错或查询超时</string>
     <string name="collect">收藏</string>
     <string name="uncollect">取消收藏</string>
+    <string name="no_favorite_selected">至少选择一项</string>
 
     <!-- 广告 -->
     <string name="view_detail">查看详情</string>

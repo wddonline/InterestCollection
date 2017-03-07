@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TabWidget;
@@ -18,11 +20,14 @@ import com.umeng.analytics.MobclickAgent;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
+import org.wdd.app.android.interestcollection.preference.AppConfManager;
 import org.wdd.app.android.interestcollection.ui.audios.fragment.AudiosFragment;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.ui.favorites.activity.FavoritesActivity;
 import org.wdd.app.android.interestcollection.ui.images.fragment.ImagesFragment;
 import org.wdd.app.android.interestcollection.ui.jokes.fragment.DirtyJokesFragment;
 import org.wdd.app.android.interestcollection.ui.main.presenter.MainPresenter;
+import org.wdd.app.android.interestcollection.ui.profile.activity.ProfileEditActivity;
 import org.wdd.app.android.interestcollection.ui.settings.activity.AboutActivity;
 import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
@@ -43,8 +48,12 @@ public class MainActivity extends BaseActivity implements Runnable {
         activity.startActivity(intent);
     }
 
+    private final int PROFILE_REQUEST_CODE = 1;
+
     private FragmentTabHost mTabHost;
     private SlidingMenu mSlidingMenu;
+    private TextView mNameView;
+    private ImageView mHeaderView;
 
     private Handler handler = new Handler();
     private MainPresenter mPresenter;
@@ -104,6 +113,8 @@ public class MainActivity extends BaseActivity implements Runnable {
             menuStatusBar.getLayoutParams().height = statusHeight;
         }
 
+        mHeaderView = (ImageView) findViewById(R.id.layout_home_menu_headimg);
+        mNameView = (TextView) findViewById(R.id.layout_home_menu__name);
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         mTabHost.getTabWidget().setDividerDrawable(null);
@@ -135,6 +146,24 @@ public class MainActivity extends BaseActivity implements Runnable {
         tabWidget.setBackgroundColor(ActivityCompat.getColor(this, R.color.colorNavigationBar));
         for (int i = 0; i < tabCount; i++) {
             tabWidget.getChildTabViewAt(i).getLayoutParams().width = tabWidth;
+        }
+
+        setHeaderAndName();
+    }
+
+    private void setHeaderAndName() {
+        AppConfManager confManager = AppConfManager.getInstance(this);
+        String nickname = confManager.getNickname();
+        if (!TextUtils.isEmpty(nickname)) {
+            mNameView.setText(nickname);
+        } else {
+            mNameView.setText(R.string.waiting_for_a_name);
+        }
+        String sex = confManager.getSex();
+        if (sex.equals("0")) {
+            mHeaderView.setImageResource(R.drawable.ic_male_header);
+        } else {
+            mHeaderView.setImageResource(R.drawable.ic_female_header);
         }
     }
 
@@ -184,12 +213,23 @@ public class MainActivity extends BaseActivity implements Runnable {
         return str;
     }
 
-    public void onProfileClicked(View v) {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK) return;
+        switch (requestCode) {
+            case PROFILE_REQUEST_CODE:
+                setHeaderAndName();
+                break;
+        }
+    }
 
+    public void onProfileClicked(View v) {
+        ProfileEditActivity.showForResult(this, v, PROFILE_REQUEST_CODE);
     }
 
     public void onFavoritesClicked(View v) {
-
+        FavoritesActivity.show(this);
     }
 
     public void onVersionCheckClicked(View v) {

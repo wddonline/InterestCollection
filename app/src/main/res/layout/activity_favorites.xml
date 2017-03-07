@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="org.wdd.app.android.interestcollection.ui.favorites.activity.FavoritesActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/activity_favorites_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorPrimary"
+            app:titleTextColor="@color/white" />
+
+        <android.support.v7.widget.AppCompatCheckBox
+            android:id="@+id/activity_favorites_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:theme="@style/ToolBarCheckBox"
+            android:layout_marginLeft="10dp"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
+
+    <org.wdd.app.android.interestcollection.views.NewViewPager
+        android:id="@+id/activity_favorites_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v4.view.PagerTabStrip
+            android:id="@+id/activity_favorites_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </org.wdd.app.android.interestcollection.views.NewViewPager>
+
+</LinearLayout>
