@@ -12,5 +12,6 @@ public class ImageFavorite {
     public String url;
     public String imgUrl;
     public int gifFlag;
+    public String imageCount;
 
 }

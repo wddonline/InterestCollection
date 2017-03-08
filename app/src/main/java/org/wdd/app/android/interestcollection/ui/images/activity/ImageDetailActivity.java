@@ -29,9 +29,9 @@ public class ImageDetailActivity extends BaseActivity {
         activity.startActivity(intent);
     }
 
-    public static void showForResult(Activity activity, int position, Image image, int requestCode) {
+    public static void showForResult(Activity activity, int id, Image image, int requestCode) {
         Intent intent = new Intent(activity, ImageDetailActivity.class);
-        intent.putExtra("position", position);
+        intent.putExtra("id", id);
         intent.putExtra("image", image);
         activity.startActivityForResult(intent, requestCode);
     }
@@ -47,7 +47,7 @@ public class ImageDetailActivity extends BaseActivity {
     private ImageFavorite mFavorite;
     private Image mImage;
 
-    private int position;
+    private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
 
@@ -63,7 +63,7 @@ public class ImageDetailActivity extends BaseActivity {
     private void initData() {
         mPresenter = new ImageDetailPresenter(this);
 
-        position = getIntent().getIntExtra("position" , -1);
+        id = getIntent().getIntExtra("id" , -1);
         mImage = getIntent().getParcelableExtra("image");
     }
 
@@ -117,7 +117,7 @@ public class ImageDetailActivity extends BaseActivity {
     private void backAction() {
         if (currentCollectStatus != initCollectStatus) {
             Intent intent = new Intent();
-            intent.putExtra("position", position);
+            intent.putExtra("id", id);
             setResult(RESULT_OK, intent);
         }
     }

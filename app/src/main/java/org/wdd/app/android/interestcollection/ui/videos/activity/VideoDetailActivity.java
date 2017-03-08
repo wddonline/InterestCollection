@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
-import org.wdd.app.android.interestcollection.ui.audios.activity.AudioDetailActivity;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
 import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
@@ -28,9 +27,9 @@ public class VideoDetailActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
-    public static void showForResult(Activity activity, int position, Video video, int requestCode) {
-        Intent intent = new Intent(activity, AudioDetailActivity.class);
-        intent.putExtra("position", position);
+    public static void showForResult(Activity activity, int id, Video video, int requestCode) {
+        Intent intent = new Intent(activity, VideoDetailActivity.class);
+        intent.putExtra("id", id);
         intent.putExtra("video", video);
         activity.startActivityForResult(intent, requestCode);
     }
@@ -47,7 +46,7 @@ public class VideoDetailActivity extends BaseActivity {
 
     private VideoDetailPresenter mPresenter;
 
-    private int position;
+    private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
 
@@ -64,7 +63,7 @@ public class VideoDetailActivity extends BaseActivity {
     }
 
     private void initData() {
-        position = getIntent().getIntExtra("position" , -1);
+        id = getIntent().getIntExtra("id" , -1);
         mVideo = getIntent().getParcelableExtra("video");
 
         mPresenter = new VideoDetailPresenter(this);
@@ -139,7 +138,7 @@ public class VideoDetailActivity extends BaseActivity {
     private void backAction() {
         if (currentCollectStatus != initCollectStatus) {
             Intent intent = new Intent();
-            intent.putExtra("position", position);
+            intent.putExtra("id", id);
             setResult(RESULT_OK, intent);
         }
     }

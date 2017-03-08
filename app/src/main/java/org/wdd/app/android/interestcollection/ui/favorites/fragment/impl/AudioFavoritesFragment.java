@@ -14,7 +14,8 @@ import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.favorites.activity.FavoritesActionCallback;
 import org.wdd.app.android.interestcollection.ui.favorites.activity.FavoritesActivity;
-import org.wdd.app.android.interestcollection.ui.favorites.adapter.AudioFavoritesAdapter;
+import org.wdd.app.android.interestcollection.ui.favorites.adapter.AbstractFavoritesAdapter;
+import org.wdd.app.android.interestcollection.ui.favorites.adapter.impl.AudioFavoritesAdapter;
 import org.wdd.app.android.interestcollection.ui.favorites.fragment.FavoritesFragment;
 import org.wdd.app.android.interestcollection.ui.favorites.presenter.AudioFavoritesPresenter;
 import org.wdd.app.android.interestcollection.views.LineDividerDecoration;
@@ -63,11 +64,11 @@ public class AudioFavoritesFragment extends FavoritesFragment implements AudioFa
     }
 
     private void initViews() {
-        mRecyclerView = (RecyclerView) mRootView.findViewById(R.id.activity_girl_favorites_recyclerview);
+        mRecyclerView = (RecyclerView) mRootView.findViewById(R.id.activity_audio_favorites_recyclerview);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setHasFixedSize(true);
-        mLoadView = (LoadView) mRootView.findViewById(R.id.activity_girl_favorites_loadview);
+        mLoadView = (LoadView) mRootView.findViewById(R.id.activity_audio_favorites_loadview);
 
     }
 
@@ -78,7 +79,7 @@ public class AudioFavoritesFragment extends FavoritesFragment implements AudioFa
     }
 
     @Override
-    public AudioFavoritesAdapter.Mode getMode() {
+    public AbstractFavoritesAdapter.Mode getMode() {
         if (mAdapter == null) return AudioFavoritesAdapter.Mode.Normal;
         return mAdapter.getMode();
     }
@@ -95,9 +96,8 @@ public class AudioFavoritesFragment extends FavoritesFragment implements AudioFa
     }
 
     @Override
-    public void refreshDataRemoved(int position) {
-        mFavorites.remove(position);
-        mAdapter.notifyDataSetChanged();
+    public void refreshDataRemoved(int id) {
+        mAdapter.removeDataById(id);
     }
 
     public void showNoDataViews() {
@@ -122,8 +122,8 @@ public class AudioFavoritesFragment extends FavoritesFragment implements AudioFa
     }
 
     @Override
-    public void jumpToDetailActivity(int position, Audio audio) {
-        AudioDetailActivity.showForResult(getActivity(), position, audio, FavoritesActivity.REQUEST_CODE_DETAIL);
+    public void jumpToDetailActivity(int id, Audio audio) {
+        AudioDetailActivity.showForResult(getActivity(), id, audio, FavoritesActivity.REQUEST_CODE_DETAIL);
     }
 
     @Override

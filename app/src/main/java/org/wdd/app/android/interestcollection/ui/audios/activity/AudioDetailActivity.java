@@ -51,9 +51,9 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         context.startActivity(intent);
     }
 
-    public static void showForResult(Activity activity, int position, Audio audio, int requestCode) {
+    public static void showForResult(Activity activity, int id, Audio audio, int requestCode) {
         Intent intent = new Intent(activity, AudioDetailActivity.class);
-        intent.putExtra("position", position);
+        intent.putExtra("id", id);
         intent.putExtra("audio", audio);
         activity.startActivityForResult(intent, requestCode);
     }
@@ -75,7 +75,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     private TextView mAllTimeView;
     private Toolbar mToolbar;
 
-    private int position;
+    private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
 
@@ -122,7 +122,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initData() {
-        position = getIntent().getIntExtra("position" , -1);
+        id = getIntent().getIntExtra("id" , -1);
         mAudio = getIntent().getParcelableExtra("audio");
 
         mPresenter = new AudioDetailPresenter(this);
@@ -253,7 +253,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     private void backAction() {
         if (currentCollectStatus != initCollectStatus) {
             Intent intent = new Intent();
-            intent.putExtra("position", position);
+            intent.putExtra("id", id);
             setResult(RESULT_OK, intent);
         }
     }

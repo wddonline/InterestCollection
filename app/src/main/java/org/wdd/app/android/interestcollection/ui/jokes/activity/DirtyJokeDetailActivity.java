@@ -28,9 +28,9 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         activity.startActivity(intent);
     }
 
-    public static void showForResult(Activity activity, int position, DirtyJoke joke, int requestCode) {
+    public static void showForResult(Activity activity, int id, DirtyJoke joke, int requestCode) {
         Intent intent = new Intent(activity, DirtyJokeDetailActivity.class);
-        intent.putExtra("position", position);
+        intent.putExtra("id", id);
         intent.putExtra("joke", joke);
         activity.startActivityForResult(intent, requestCode);
     }
@@ -46,7 +46,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private DirtyJokeFavorite mFavorite;
     private DirtyJoke mJoke;
 
-    private int position;
+    private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
 
@@ -62,7 +62,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private void initData() {
         mPresenter = new DirtyJokeDetailPresenter(this);
 
-        position = getIntent().getIntExtra("position" , -1);
+        id = getIntent().getIntExtra("id" , -1);
         mJoke = getIntent().getParcelableExtra("joke");
     }
 
@@ -115,7 +115,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private void backAction() {
         if (currentCollectStatus != initCollectStatus) {
             Intent intent = new Intent();
-            intent.putExtra("position", position);
+            intent.putExtra("id", id);
             setResult(RESULT_OK, intent);
         }
     }

@@ -1,35 +1,28 @@
-package org.wdd.app.android.interestcollection.ui.favorites.adapter;
+package org.wdd.app.android.interestcollection.ui.favorites.adapter.impl;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.daimajia.swipe.SwipeLayout;
-
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.database.model.AudioFavorite;
 import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
-import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
+import org.wdd.app.android.interestcollection.ui.favorites.adapter.AbstractFavoritesAdapter;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by richard on 11/28/16.
  */
 
-public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesAdapter.AudioItem> {
-
-    public enum Mode {
-        Normal,
-        Select
-    }
+public class AudioFavoritesAdapter extends AbstractFavoritesAdapter<AudioFavoritesAdapter.AudioItem> {
 
     private Mode mode = Mode.Normal;
     private AudioFavoritesCallback callback;
@@ -43,17 +36,17 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
     @Override
     protected RecyclerView.ViewHolder onCreateDataViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_audio_favorites, parent, false);
-        RecyclerView.ViewHolder viewHolder = new GirlVH(view);
+        RecyclerView.ViewHolder viewHolder = new AudioVH(view);
         return viewHolder;
     }
 
     @Override
     protected void onBindDataViewHolder(final RecyclerView.ViewHolder holder, final AudioItem item, final int position) {
-        final GirlVH hospitalVH = (GirlVH) holder;
-        hospitalVH.titleView.setText(item.favorite.title);
-        hospitalVH.dateView.setText(item.favorite.time);
-        hospitalVH.imageView.setImageUrl(item.favorite.imgUrl);
-        hospitalVH.rootView.setOnClickListener(new View.OnClickListener() {
+        final AudioVH audioVH = (AudioVH) holder;
+        audioVH.titleView.setText(item.favorite.title);
+        audioVH.dateView.setText(item.favorite.time);
+        audioVH.imageView.setImageUrl(item.favorite.imgUrl);
+        audioVH.rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch (mode) {
@@ -64,7 +57,7 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
                         audio.imgUrl = item.favorite.imgUrl;
                         audio.title = item.favorite.title;
                         audio.date = item.favorite.time;
-                        callback.jumpToDetailActivity(position, audio);
+                        callback.jumpToDetailActivity(item.favorite.id, audio);
                         break;
                     case Select:
                         item.isSelected = !item.isSelected;
@@ -84,7 +77,7 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
                 }
             }
         });
-        hospitalVH.rootView.setOnLongClickListener(new View.OnLongClickListener() {
+        audioVH.rootView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 mode = Mode.Select;
@@ -93,8 +86,8 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
                 return true;
             }
         });
-        hospitalVH.checkBox.setVisibility(mode == Mode.Select ? View.VISIBLE : View.GONE);
-        hospitalVH.checkBox.setChecked(item.isSelected);
+        audioVH.checkBox.setVisibility(mode == Mode.Select ? View.VISIBLE : View.GONE);
+        audioVH.checkBox.setChecked(item.isSelected);
     }
 
     public void unselectAll() {
@@ -137,6 +130,21 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
         return items;
     }
 
+    public void removeDataById(int id) {
+        Iterator<AudioItem> iterator = data.iterator();
+        AudioItem item;
+        int position = 0;
+        while (iterator.hasNext()) {
+            item = iterator.next();
+            if (item.favorite.id == id) {
+                iterator.remove();
+                notifyItemRemoved(position);
+                break;
+            }
+            position++;
+        }
+    }
+
     public void setMode(Mode mode) {
         this.mode = mode;
         if (mode == Mode.Normal) {
@@ -152,7 +160,7 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
         return mode;
     }
 
-    private class GirlVH extends RecyclerView.ViewHolder {
+    private class AudioVH extends RecyclerView.ViewHolder {
 
         View rootView;
         CheckBox checkBox;
@@ -160,7 +168,7 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
         TextView dateView;
         NetworkImageView imageView;
 
-        public GirlVH(View itemView) {
+        public AudioVH(View itemView) {
             super(itemView);
             rootView = itemView.findViewById(R.id.item_audio_favorites_root);
             checkBox = (CheckBox) itemView.findViewById(R.id.item_audio_favorites_check);
@@ -186,7 +194,7 @@ public class AudioFavoritesAdapter extends AbstractCommonAdapter<AudioFavoritesA
 
     public interface AudioFavoritesCallback {
 
-        void jumpToDetailActivity(int position, Audio audio);
+        void jumpToDetailActivity(int id, Audio audio);
         void switchSelectMode();
         void onAllSelected();
         void onPartSelected();

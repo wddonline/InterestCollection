@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.database.model.ShareFavorite;
-import org.wdd.app.android.interestcollection.ui.audios.activity.AudioDetailActivity;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.shares.adapter.ShareDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.shares.model.Share;
@@ -31,9 +30,9 @@ public class ShareDetailActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
-    public static void showForResult(Activity activity, int position, Share share, int requestCode) {
-        Intent intent = new Intent(activity, AudioDetailActivity.class);
-        intent.putExtra("position", position);
+    public static void showForResult(Activity activity, int id, Share share, int requestCode) {
+        Intent intent = new Intent(activity, ShareDetailActivity.class);
+        intent.putExtra("id", id);
         intent.putExtra("share", share);
         activity.startActivityForResult(intent, requestCode);
     }
@@ -49,7 +48,7 @@ public class ShareDetailActivity extends BaseActivity {
     private Share mShare;
     private ShareFavorite mFavorite;
 
-    private int position;
+    private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
 
@@ -65,7 +64,7 @@ public class ShareDetailActivity extends BaseActivity {
     private void initData() {
         mPresenter = new ShareDetailPresenter(this);
 
-        position = getIntent().getIntExtra("position" , -1);
+        id = getIntent().getIntExtra("id" , -1);
         mShare = getIntent().getParcelableExtra("share");
     }
 
@@ -131,7 +130,7 @@ public class ShareDetailActivity extends BaseActivity {
     private void backAction() {
         if (currentCollectStatus != initCollectStatus) {
             Intent intent = new Intent();
-            intent.putExtra("position", position);
+            intent.putExtra("id", id);
             setResult(RESULT_OK, intent);
         }
     }

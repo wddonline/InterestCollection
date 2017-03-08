@@ -22,7 +22,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + ImageFavoriteTable.TABLE_NAME + "(" + ImageFavoriteTable.FIELD_ID +
                 " INTEGER PRIMARY KEY AUTOINCREMENT, " + ImageFavoriteTable.FIELD_TITLE + " VARCHAR2(100), " + ImageFavoriteTable.FIELD_TIME + " VARCHAR2(20)," +
                 ImageFavoriteTable.FIELD_URL + " VARCHAR2(100) " + "NOT NULL UNIQUE, " + ImageFavoriteTable.FIELD_IMG_URL + " VARCHAR2(100), " +
-                ImageFavoriteTable.FIELD_GIF +  " INTEGER NOT NULL);");
+                ImageFavoriteTable.FIELD_GIF +  " INTEGER NOT NULL, " + ImageFavoriteTable.FIELD_IMAGE_COUNT +  " VARCHAR2(10))");
     }
 
     public ImageFavoriteDbManager(Context context) {
@@ -40,6 +40,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
             values.put(ImageFavoriteTable.FIELD_URL, data.url);
             values.put(ImageFavoriteTable.FIELD_IMG_URL, data.imgUrl);
             values.put(ImageFavoriteTable.FIELD_GIF, data.gifFlag);
+            values.put(ImageFavoriteTable.FIELD_IMAGE_COUNT, data.imageCount);
             result = db.insert(ImageFavoriteTable.TABLE_NAME, null, values);
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,7 +55,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
         List<ImageFavorite> result = null;
         try {
             SQLiteDatabase db = getReadableDatabase();
-            String[] columns = {ImageFavoriteTable.FIELD_ID, ImageFavoriteTable.FIELD_TITLE, ImageFavoriteTable.FIELD_TIME, ImageFavoriteTable.FIELD_URL, ImageFavoriteTable.FIELD_IMG_URL, ImageFavoriteTable.FIELD_GIF};
+            String[] columns = {ImageFavoriteTable.FIELD_ID, ImageFavoriteTable.FIELD_TITLE, ImageFavoriteTable.FIELD_TIME, ImageFavoriteTable.FIELD_URL, ImageFavoriteTable.FIELD_IMG_URL, ImageFavoriteTable.FIELD_GIF, ImageFavoriteTable.FIELD_IMAGE_COUNT};
             String orderBy = ImageFavoriteTable.FIELD_ID + " DESC";
             Cursor cursor = db.query(ImageFavoriteTable.TABLE_NAME, columns, null, null, null, null, orderBy);
             result = new ArrayList<>();
@@ -67,6 +68,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
                 favorite.url = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_URL));
                 favorite.imgUrl = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_IMG_URL));
                 favorite.gifFlag = cursor.getInt(cursor.getColumnIndex(ImageFavoriteTable.FIELD_GIF));
+                favorite.imageCount = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_IMAGE_COUNT));
                 result.add(favorite);
             }
         } catch (Exception e) {
@@ -82,7 +84,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
         ImageFavorite result = null;
         try {
             SQLiteDatabase db = getReadableDatabase();
-            String[] columns = {ImageFavoriteTable.FIELD_ID, ImageFavoriteTable.FIELD_TITLE, ImageFavoriteTable.FIELD_TIME, ImageFavoriteTable.FIELD_URL, ImageFavoriteTable.FIELD_IMG_URL, ImageFavoriteTable.FIELD_GIF};
+            String[] columns = {ImageFavoriteTable.FIELD_ID, ImageFavoriteTable.FIELD_TITLE, ImageFavoriteTable.FIELD_TIME, ImageFavoriteTable.FIELD_URL, ImageFavoriteTable.FIELD_IMG_URL, ImageFavoriteTable.FIELD_GIF, ImageFavoriteTable.FIELD_IMAGE_COUNT};
             String selection = ImageFavoriteTable.FIELD_ID + "=?";
             String[] selectionArgs = {id + ""};
             Cursor cursor = db.query(ImageFavoriteTable.TABLE_NAME, columns, selection, selectionArgs, null, null, null);
@@ -94,6 +96,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
                 result.url = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_URL));
                 result.imgUrl = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_IMG_URL));
                 result.gifFlag = cursor.getInt(cursor.getColumnIndex(ImageFavoriteTable.FIELD_GIF));
+                result.imageCount = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_IMAGE_COUNT));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,7 +110,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
         ImageFavorite result = null;
         try {
             SQLiteDatabase db = getReadableDatabase();
-            String[] columns = {ImageFavoriteTable.FIELD_ID, ImageFavoriteTable.FIELD_TITLE, ImageFavoriteTable.FIELD_TIME, ImageFavoriteTable.FIELD_URL, ImageFavoriteTable.FIELD_IMG_URL, ImageFavoriteTable.FIELD_GIF};
+            String[] columns = {ImageFavoriteTable.FIELD_ID, ImageFavoriteTable.FIELD_TITLE, ImageFavoriteTable.FIELD_TIME, ImageFavoriteTable.FIELD_URL, ImageFavoriteTable.FIELD_IMG_URL, ImageFavoriteTable.FIELD_GIF, ImageFavoriteTable.FIELD_IMAGE_COUNT};
             String selection = ImageFavoriteTable.FIELD_URL + "=?";
             String[] selectionArgs = {url};
             Cursor cursor = db.query(ImageFavoriteTable.TABLE_NAME, columns, selection, selectionArgs, null, null, null);
@@ -119,6 +122,7 @@ public class ImageFavoriteDbManager extends DbManager<ImageFavorite> {
                 result.url = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_URL));
                 result.imgUrl = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_IMG_URL));
                 result.gifFlag = cursor.getInt(cursor.getColumnIndex(ImageFavoriteTable.FIELD_GIF));
+                result.imageCount = cursor.getString(cursor.getColumnIndex(ImageFavoriteTable.FIELD_IMAGE_COUNT));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -17,7 +17,7 @@ import android.widget.CheckBox;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
-import org.wdd.app.android.interestcollection.ui.favorites.adapter.AudioFavoritesAdapter;
+import org.wdd.app.android.interestcollection.ui.favorites.adapter.impl.AudioFavoritesAdapter;
 import org.wdd.app.android.interestcollection.ui.favorites.fragment.impl.AudioFavoritesFragment;
 import org.wdd.app.android.interestcollection.ui.favorites.fragment.impl.DirtyJokeFavoritesFragment;
 import org.wdd.app.android.interestcollection.ui.favorites.fragment.FavoritesFragment;
@@ -42,6 +42,7 @@ public class FavoritesActivity extends BaseActivity implements FavoritesActionCa
     private Toolbar mToolbar;
     private CheckBox mCheckBox;
     private NewViewPager mViewPager;
+    private PagerTabStrip mTabStrip;
 
     private List<FavoritesFragment> mFragments;
 
@@ -129,23 +130,11 @@ public class FavoritesActivity extends BaseActivity implements FavoritesActionCa
         mViewPager.setAdapter(new FavoritesPagerAdapter(getSupportFragmentManager()));
         mViewPager.setOffscreenPageLimit(2);
 
-        PagerTabStrip tabStrip = (PagerTabStrip) findViewById(R.id.activity_favorites_tabs);
+        mTabStrip = (PagerTabStrip) findViewById(R.id.activity_favorites_tabs);
         int color = ContextCompat.getColor(this, R.color.colorPrimary);
-        tabStrip.setTextColor(color);
-        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        tabStrip.setTabIndicatorColor(color);
-    }
-
-    private void cancelSelectMode() {
-        FavoritesFragment fragment = mFragments.get(mViewPager.getCurrentItem());
-        fragment.cancelSelectMode();
-        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        getSupportActionBar().setTitle(R.string.collect);
-        mViewPager.setCanSwitch(true);
-        mCheckBox.setVisibility(View.GONE);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_ok).setVisible(false);
-        mToolbar.getMenu().findItem(R.id.menu_favorites_cancel).setVisible(false);
-        mCheckBox.setChecked(false);
+        mTabStrip.setTextColor(color);
+        mTabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        mTabStrip.setTabIndicatorColor(color);
     }
 
     @Override
@@ -170,12 +159,24 @@ public class FavoritesActivity extends BaseActivity implements FavoritesActionCa
         if (resultCode != RESULT_OK) return;
         switch (requestCode) {
             case REQUEST_CODE_DETAIL:
-                int position = data.getIntExtra("position", -1);
-                if (position == -1) return;
+                int id = data.getIntExtra("id", -1);
+                if (id == -1) return;
                 FavoritesFragment fragment = mFragments.get(mViewPager.getCurrentItem());
-                fragment.refreshDataRemoved(position);
+                fragment.refreshDataRemoved(id);
                 break;
         }
+    }
+
+    private void cancelSelectMode() {
+        FavoritesFragment fragment = mFragments.get(mViewPager.getCurrentItem());
+        fragment.cancelSelectMode();
+        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        getSupportActionBar().setTitle(R.string.collect);
+        mViewPager.setCanSwitch(true);
+        mCheckBox.setVisibility(View.GONE);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_ok).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_favorites_cancel).setVisible(false);
+        mCheckBox.setChecked(false);
     }
 
     @Override
@@ -200,6 +201,7 @@ public class FavoritesActivity extends BaseActivity implements FavoritesActionCa
 
     @Override
     public void resetTitleBar() {
+        mViewPager.setCanSwitch(true);
         mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         mCheckBox.setVisibility(View.GONE);
         mToolbar.getMenu().findItem(R.id.menu_favorites_ok).setVisible(false);
