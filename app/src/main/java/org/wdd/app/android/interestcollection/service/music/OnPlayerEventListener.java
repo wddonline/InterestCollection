@@ -27,7 +27,9 @@ public interface OnPlayerEventListener {
      */
     void onPlayerResume();
 
-    void onPlayerPrepared(int duration);
+    void onPlayerPrepared(long duration);
+
+    void onPlayerCached(long progress);
 
     void onPlayeCompletion();
 }

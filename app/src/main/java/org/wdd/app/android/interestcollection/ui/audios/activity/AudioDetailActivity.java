@@ -214,8 +214,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (mPlayService == null) return;
-                mPlayService.seekTo(progress);
+
             }
 
             @Override
@@ -225,7 +224,8 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                if (mPlayService == null) return;
+                mPlayService.seekTo(seekBar.getProgress());
             }
         });
         mPresenter.getAudioDetailData(mAudio.url, host);
@@ -243,6 +243,20 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         mPresenter.getAudioCollectStatus(mAudio.url, host);
         return true;
     }
+
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        if (mPlayService == null) return;
+//        mPlayService.playPause();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        if (mPlayService == null) return;
+//        mPlayService.playPause();
+//    }
 
     @Override
     public void onBackPressed() {
@@ -319,9 +333,15 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
-    public void onPlayerPrepared(int duration) {
+    public void onPlayerPrepared(long duration) {
         mAllTimeView.setText(formatTime("(mm:ss)", duration));
+        mSeekBar.setProgress(0);
         mSeekBar.setEnabled(true);
+    }
+
+    @Override
+    public void onPlayerCached(long progress) {
+        mSeekBar.setSecondaryProgress((int) progress);
     }
 
     @Override
@@ -329,7 +349,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         mPastTimeView.setText(formatTime("(mm:ss)", 0));
         mPlayBtn.setSelected(false);
         mSeekBar.setProgress(0);
-        mCoverView.clearAnimation();
+        stopPlayingAnim();
     }
 
     @Override
@@ -355,18 +375,21 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void startPlayingAnim() {
-        RotateAnimation anim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
-        anim.setDuration(3000);
-        anim.setFillAfter(true);
-        anim.setInterpolator(new LinearInterpolator());
-        anim.setRepeatCount(Animation.INFINITE);
-        anim.setRepeatMode(Animation.RESTART);
-        mCoverView.setAnimation(anim);
+        if (mCoverView.getAnimation() == null) {
+            RotateAnimation anim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f,
+                    Animation.RELATIVE_TO_SELF, 0.5f);
+            anim.setDuration(3000);
+            anim.setFillAfter(true);
+            anim.setInterpolator(new LinearInterpolator());
+            anim.setRepeatCount(Animation.INFINITE);
+            anim.setRepeatMode(Animation.RESTART);
+            mCoverView.setAnimation(anim);
+        }
+        mCoverView.getAnimation().startNow();
     }
 
     private void stopPlayingAnim() {
-        if (mCoverView.getAnimation() != null) mCoverView.clearAnimation();
+        if (mCoverView.getAnimation() != null) mCoverView.getAnimation().cancel();
     }
 
     public void showNoDataView() {
