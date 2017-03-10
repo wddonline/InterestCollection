@@ -9,7 +9,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TabWidget;
@@ -123,8 +122,7 @@ public class MainActivity extends BaseActivity implements Runnable {
         ImageView tabImgView;
         TextView tabTxtView;
 
-        int[] tabIcons = {R.mipmap.ic_paper, R.mipmap.ic_paper, R.mipmap.ic_paper, R.mipmap.ic_paper,
-                R.mipmap.ic_paper};
+        int[] tabIcons = {R.drawable.ic_tab_joke,R.drawable.ic_tab_image, R.drawable.ic_tab_video, R.drawable.ic_tab_audio, R.drawable.ic_tab_share};
         int[] tabTxts = {R.string.dirty_joke, R.string.image, R.string.video, R.string.audio, R.string.share};
         String[] tabTags = {"dirty_joke", "image", "video", "audio", "news"};
         Class[] tabClasses = {DirtyJokesFragment.class, ImagesFragment.class, VideosFragment.class,
