@@ -14,5 +14,6 @@ public class VideoDetail {
     public String commentCount;
     public String videoUrl;
     public String source;
+    public String html;
 
 }

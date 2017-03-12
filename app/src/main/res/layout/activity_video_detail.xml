@@ -16,6 +16,19 @@
         app:title="@string/app_name"
         app:titleTextColor="@color/white" />
 
+    <ProgressBar
+        android:id="@+id/activity_video_detail_progress"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        style="?android:progressBarStyleHorizontal"
+        android:max="100"
+        android:visibility="gone"/>
+
+    <WebView
+        android:id="@+id/activity_video_detail_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
     <android.support.v4.widget.NestedScrollView
         android:id="@+id/activity_video_detail_scrollview"

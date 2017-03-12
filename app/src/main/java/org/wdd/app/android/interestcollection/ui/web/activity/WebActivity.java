@@ -11,7 +11,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
@@ -88,6 +87,12 @@ public class WebActivity extends BaseActivity {
         });
 
         webView.loadUrl(url);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webView.loadUrl("about:blank");
     }
 
     @Override

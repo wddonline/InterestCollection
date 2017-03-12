@@ -276,7 +276,9 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     protected void onDestroy() {
         super.onDestroy();
         mPresenter.cancelRequest();
-
+        if (mDetail != null && !TextUtils.isEmpty(mDetail.html)) {
+            mWebView.loadUrl("about:blank");
+        }
         if (mRemoteReceiver != null) {
             mAudioManager.unregisterMediaButtonEventReceiver(mRemoteReceiver);
         }

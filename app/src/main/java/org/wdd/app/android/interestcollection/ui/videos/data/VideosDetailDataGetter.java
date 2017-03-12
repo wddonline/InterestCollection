@@ -58,23 +58,43 @@ public class VideosDetailDataGetter {
                     mCallback.onRequestOk(null);
                     return;
                 }
-                Element rootNode = rootNodes.first();
+//                Element rootNode = rootNodes.first();
+//                VideoDetail detail = new VideoDetail();
+//                detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
+//
+//                Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
+//                detail.time = postMetaNodes.get(0).text();
+//                detail.tag = postMetaNodes.get(1).text();
+//                detail.commentCount = postMetaNodes.get(2).text();
+//
+//                Elements contentNodes = rootNode.getElementsByAttributeValue("class", "single-post-content");
+//                if (contentNodes.size() == 0) {
+//                    mCallback.onRequestOk(null);
+//                    return;
+//                }
+//                Element contentNode = contentNodes.first();
+//                detail.videoUrl = contentNode.getElementsByTag("iframe").first().attr("src");
+//                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
+
                 VideoDetail detail = new VideoDetail();
-                detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
-
-                Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
-                detail.time = postMetaNodes.get(0).text();
-                detail.tag = postMetaNodes.get(1).text();
-                detail.commentCount = postMetaNodes.get(2).text();
-
-                Elements contentNodes = rootNode.getElementsByAttributeValue("class", "single-post-content");
-                if (contentNodes.size() == 0) {
-                    mCallback.onRequestOk(null);
-                    return;
+                document.getElementsByTag("script").remove();
+                document.getElementsByAttributeValue("id", "sidemenu-container").remove();
+                document.getElementsByTag("header").remove();
+                document.getElementsByAttributeValue("role", "search").remove();
+                Elements articles = document.getElementsByTag("article");
+                Elements divs = articles.first().getElementsByTag("div");
+                if (divs.size() > 0) {
+                    divs = divs.last().getElementsByTag("div");
+                    if (divs.size() > 0) {
+                        divs.last().remove();
+                    }
                 }
-                Element contentNode = contentNodes.first();
-                detail.videoUrl = contentNode.getElementsByTag("iframe").first().attr("src");
-                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
+                document.getElementsByAttributeValue("id", "pageGo").remove();
+                document.getElementsByClass("post-xg clear").remove();
+                document.getElementsByTag("footer").remove();
+                document.getElementsByClass("comments-area").first().remove();
+                document.getElementsByAttributeValue("id", "btn_top").first().remove();
+                detail.html = document.html();
                 mCallback.onRequestOk(detail);
             }
 

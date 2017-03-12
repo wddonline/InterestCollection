@@ -3,11 +3,18 @@ package org.wdd.app.android.interestcollection.ui.videos.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
@@ -36,6 +43,8 @@ public class VideoDetailActivity extends BaseActivity {
 
     private View mScrollView;
     private Toolbar mToolbar;
+    private WebView mWebView;
+    private ProgressBar mProgressBar;
     private TextView mTitleView;
     private TextView mTimeView;
     private TextView mTagView;
@@ -45,6 +54,7 @@ public class VideoDetailActivity extends BaseActivity {
     private LoadView mLoadView;
 
     private VideoDetailPresenter mPresenter;
+    private VideoDetail mDetail;
 
     private int id;
     private boolean initCollectStatus = false;
@@ -97,6 +107,37 @@ public class VideoDetailActivity extends BaseActivity {
     }
 
     private void initViews() {
+        mWebView = (WebView) findViewById(R.id.activity_video_detail_webview);
+        mProgressBar = (ProgressBar) findViewById(R.id.activity_video_detail_progress);
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+        mWebView.getSettings().setSupportZoom(false); // 支持缩放
+        mWebView.getSettings().setUseWideViewPort(true);
+        mWebView.setWebChromeClient(new WebChromeClient() {
+
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                mProgressBar.setProgress(newProgress);
+            }
+
+        });
+
+        mWebView.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mProgressBar.setVisibility(View.GONE);
+            }
+        });
+
         mScrollView = findViewById(R.id.activity_video_detail_scrollview);
         mTitleView = (TextView) findViewById(R.id.layout_post_list_header_title);
         mTimeView = (TextView) findViewById(R.id.layout_post_list_header_date);
@@ -119,6 +160,9 @@ public class VideoDetailActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mDetail != null && !TextUtils.isEmpty(mDetail.html)) {
+            mWebView.loadUrl("about:blank");
+        }
         mPresenter.cancelRequest();
     }
 
@@ -148,14 +192,20 @@ public class VideoDetailActivity extends BaseActivity {
     }
 
     public void showVideoDetailViews(VideoDetail data) {
+        this.mDetail = data;
         mScrollView.setVisibility(View.VISIBLE);
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
-        mTitleView.setText(data.title);
-        mTimeView.setText(data.time);
-        mTagView.setText(data.tag);
-        mCommentCountView.setText(data.commentCount);
-        mSourceView.setText(data.source);
+        if (TextUtils.isEmpty(data.html)) {
+            mTitleView.setText(data.title);
+            mTimeView.setText(data.time);
+            mTagView.setText(data.tag);
+            mCommentCountView.setText(data.commentCount);
+            mSourceView.setText(data.source);
+        } else {
+            mWebView.setVisibility(View.VISIBLE);
+            mWebView.loadDataWithBaseURL(null, data.html, "text/html","UTF-8", null);
+        }
     }
 
     public void showErrorView(String error) {
