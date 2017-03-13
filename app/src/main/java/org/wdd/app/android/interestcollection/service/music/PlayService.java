@@ -38,7 +38,7 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
     private Music mPlayingMusic;
     private Handler mHandler = new Handler();
 
-    private boolean isPausing;
+    private boolean isPausing = true;
     private boolean isPreparing;
 
     private IMediaPlayer.OnPreparedListener mOnPreparedListener = new IMediaPlayer.OnPreparedListener() {
@@ -124,9 +124,7 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
 
     private void videoPlayEnd() {
         ksyMediaPlayer.seekTo(0);
-        isPausing = true;
-        unregisterReceiver(mNoisyReceiver);
-        mHandler.removeCallbacks(mBackgroundRunnable);
+        onAudioPaused();
         if (mListener == null) return;
         mListener.onPlayeCompletion();
     }
@@ -152,10 +150,6 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
             }
         }
         return START_NOT_STICKY;
-    }
-
-    public static boolean isRunning(Context context) {
-        return SystemUtils.isServiceRunning(context, PlayService.class);
     }
 
     public void setOnPlayEventListener(OnPlayerEventListener listener) {
@@ -193,11 +187,8 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
                     mListener.onChange(music);
                 }
             }
-            isPausing = false;
             mPlayingMusic = music;
-            updateNotification(music);
-            mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-            registerReceiver(mNoisyReceiver, mNoisyFilter);
+            onAudioPlayed();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -217,24 +208,15 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
 
     private void start() {
         ksyMediaPlayer.start();
-        isPausing = false;
-        mHandler.post(mBackgroundRunnable);
-        updateNotification(mPlayingMusic);
-        mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        registerReceiver(mNoisyReceiver, mNoisyFilter);
+        onAudioPlayed();
     }
 
     private void pause() {
         if (!isPlaying()) {
             return;
         }
-
         ksyMediaPlayer.pause();
-        isPausing = true;
-        mHandler.removeCallbacks(mBackgroundRunnable);
-        cancelNotification(mPlayingMusic);
-        mAudioManager.abandonAudioFocus(this);
-        unregisterReceiver(mNoisyReceiver);
+        onAudioPaused();
         if (mListener != null) {
             mListener.onPlayerPause();
         }
@@ -272,25 +254,6 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
         }
     }
 
-    public boolean isPlaying() {
-        return ksyMediaPlayer != null && ksyMediaPlayer.isPlaying();
-    }
-
-    public boolean isPausing() {
-        return ksyMediaPlayer != null && isPausing;
-    }
-
-    public boolean isPreparing() {
-        return ksyMediaPlayer != null && isPreparing;
-    }
-
-    /**
-     * 获取正在播放的歌曲[本地|网络]
-     */
-    public Music getPlayingMusic() {
-        return mPlayingMusic;
-    }
-
     /**
      * 更新通知栏
      */
@@ -319,6 +282,48 @@ public class PlayService extends Service implements AudioManager.OnAudioFocusCha
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    private void onAudioPlayed() {
+        if (!isPausing) return;
+        isPausing = false;
+        mHandler.post(mBackgroundRunnable);
+        updateNotification(mPlayingMusic);
+        mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        registerReceiver(mNoisyReceiver, mNoisyFilter);
+
+    }
+
+    private void onAudioPaused() {
+        if (isPausing) return;
+        isPausing = true;
+        mHandler.removeCallbacks(mBackgroundRunnable);
+        cancelNotification(mPlayingMusic);
+        mAudioManager.abandonAudioFocus(this);
+        unregisterReceiver(mNoisyReceiver);
+    }
+
+    public static boolean isRunning(Context context) {
+        return SystemUtils.isServiceRunning(context, PlayService.class);
+    }
+
+    public boolean isPlaying() {
+        return ksyMediaPlayer != null && ksyMediaPlayer.isPlaying();
+    }
+
+    public boolean isPausing() {
+        return ksyMediaPlayer != null && isPausing;
+    }
+
+    public boolean isPreparing() {
+        return ksyMediaPlayer != null && isPreparing;
+    }
+
+    /**
+     * 获取正在播放的歌曲[本地|网络]
+     */
+    public Music getPlayingMusic() {
+        return mPlayingMusic;
     }
 
     private Runnable mBackgroundRunnable = new Runnable() {

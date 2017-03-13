@@ -21,6 +21,11 @@
 -keep class org.jsoup.** {*;}
 -dontwarn com.umeng.message.**
 -dontwarn com.alibaba.fastjson.**
+-keep class org.wdd.app.android.interestcollection.ads.model.** {*;}
+
+# KSYMediaPlayer
+-keep class com.ksyun.media.player.**{ *; }
+-keep class com.ksy.statlibrary.**{ *;}
 
 # Umeng
 -dontwarn com.taobao.**
