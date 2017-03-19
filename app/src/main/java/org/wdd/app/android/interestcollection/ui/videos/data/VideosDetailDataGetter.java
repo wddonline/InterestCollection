@@ -3,6 +3,7 @@ package org.wdd.app.android.interestcollection.ui.videos.data;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -58,25 +59,23 @@ public class VideosDetailDataGetter {
                     mCallback.onRequestOk(null);
                     return;
                 }
-//                Element rootNode = rootNodes.first();
-//                VideoDetail detail = new VideoDetail();
-//                detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
-//
-//                Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
-//                detail.time = postMetaNodes.get(0).text();
-//                detail.tag = postMetaNodes.get(1).text();
-//                detail.commentCount = postMetaNodes.get(2).text();
-//
-//                Elements contentNodes = rootNode.getElementsByAttributeValue("class", "single-post-content");
-//                if (contentNodes.size() == 0) {
-//                    mCallback.onRequestOk(null);
-//                    return;
-//                }
-//                Element contentNode = contentNodes.first();
-//                detail.videoUrl = contentNode.getElementsByTag("iframe").first().attr("src");
-//                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
-
+                Element rootNode = rootNodes.first();
                 VideoDetail detail = new VideoDetail();
+                detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
+
+                Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
+                detail.time = postMetaNodes.get(0).text();
+                detail.tag = postMetaNodes.get(1).text();
+                detail.commentCount = postMetaNodes.get(2).text();
+
+                Elements contentNodes = rootNode.getElementsByAttributeValue("class", "single-post-content");
+                if (contentNodes.size() == 0) {
+                    mCallback.onRequestOk(null);
+                    return;
+                }
+                Element contentNode = contentNodes.first();
+                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
+
                 document.getElementsByTag("script").remove();
                 document.getElementsByAttributeValue("id", "sidemenu-container").remove();
                 document.getElementsByTag("header").remove();
@@ -95,6 +94,11 @@ public class VideosDetailDataGetter {
                 document.getElementsByClass("comments-area").first().remove();
                 document.getElementsByAttributeValue("id", "btn_top").first().remove();
                 detail.html = document.html();
+
+                String videoUrl = contentNode.getElementsByTag("iframe").first().attr("src");
+                if (!TextUtils.isEmpty(videoUrl) && (videoUrl.startsWith("http://player.youku.com/") || videoUrl.startsWith("https://player.youku.com/"))) {
+                    detail.vid = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
+                }
                 mCallback.onRequestOk(detail);
             }
 

@@ -12,7 +12,7 @@ public class VideoDetail {
     public String time;
     public String tag;
     public String commentCount;
-    public String videoUrl;
+    public String vid;
     public String source;
     public String html;
 

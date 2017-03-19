@@ -259,7 +259,7 @@ public class VolleyHttpConnecter implements HttpConnecter {
         if (!TextUtils.isEmpty(txt)) {
             HttpResponseEntry responseEntry = new HttpResponseEntry();
             responseEntry.setStatusCode(StatusCode.HTTP_OK);
-            Document document = Jsoup.parse(txt, "gb2312");
+            Document document = Jsoup.parse(txt);
             responseEntry.setData(document);
             callback.onRequestOk(responseEntry);
         } else {

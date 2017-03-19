@@ -3,10 +3,13 @@ package org.wdd.app.android.interestcollection.ui.videos.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,12 +20,18 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.youku.cloud.module.PlayerErrorInfo;
+import com.youku.cloud.player.PlayerListener;
+import com.youku.cloud.player.VideoDefinition;
+import com.youku.cloud.player.YoukuPlayerView;
+
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
 import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
 import org.wdd.app.android.interestcollection.ui.videos.presenter.VideoDetailPresenter;
+import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
 public class VideoDetailActivity extends BaseActivity {
@@ -41,7 +50,9 @@ public class VideoDetailActivity extends BaseActivity {
         activity.startActivityForResult(intent, requestCode);
     }
 
-    private View mScrollView;
+    private View mVideoContainer;
+    private View mHeaderView;
+    private View mFooterView;
     private Toolbar mToolbar;
     private WebView mWebView;
     private ProgressBar mProgressBar;
@@ -52,6 +63,7 @@ public class VideoDetailActivity extends BaseActivity {
     private View mImageView;
     private TextView mSourceView;
     private LoadView mLoadView;
+    private YoukuPlayerView mYoukuPlayerView;
 
     private VideoDetailPresenter mPresenter;
     private VideoDetail mDetail;
@@ -59,6 +71,7 @@ public class VideoDetailActivity extends BaseActivity {
     private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
+    private boolean isSupported = false;
 
     private Video mVideo;
     private VideoFavorite mFavorite;
@@ -111,7 +124,7 @@ public class VideoDetailActivity extends BaseActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.activity_video_detail_progress);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
-        mWebView.getSettings().setSupportZoom(false); // 支持缩放
+        mWebView.getSettings().setSupportZoom(true); // 支持缩放
         mWebView.getSettings().setUseWideViewPort(true);
         mWebView.setWebChromeClient(new WebChromeClient() {
 
@@ -138,7 +151,9 @@ public class VideoDetailActivity extends BaseActivity {
             }
         });
 
-        mScrollView = findViewById(R.id.activity_video_detail_scrollview);
+        mVideoContainer = findViewById(R.id.activity_video_detail_container);
+        mHeaderView = findViewById(R.id.activity_video_detail_header);
+        mFooterView = findViewById(R.id.activity_video_detail_footer);
         mTitleView = (TextView) findViewById(R.id.layout_post_list_header_title);
         mTimeView = (TextView) findViewById(R.id.layout_post_list_header_date);
         mTagView = (TextView) findViewById(R.id.layout_post_list_header_tag);
@@ -146,6 +161,7 @@ public class VideoDetailActivity extends BaseActivity {
         mImageView = findViewById(R.id.layout_post_list_header_img);
         mImageView.setVisibility(View.GONE);
         mSourceView = (TextView) findViewById(R.id.layout_post_list_footer_source);
+        mYoukuPlayerView = (YoukuPlayerView) findViewById(R.id.activity_video_detail_playerview);
         mLoadView = (LoadView) findViewById(R.id.activity_video_detail_loadview);
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
@@ -158,12 +174,25 @@ public class VideoDetailActivity extends BaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (isSupported) mYoukuPlayerView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isSupported) mYoukuPlayerView.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mDetail != null && !TextUtils.isEmpty(mDetail.html)) {
             mWebView.loadUrl("about:blank");
         }
         mPresenter.cancelRequest();
+        if (isSupported) mYoukuPlayerView.onDestroy();
     }
 
     @Override
@@ -174,9 +203,28 @@ public class VideoDetailActivity extends BaseActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
+
+    @Override
     public void onBackPressed() {
-        backAction();
-        super.onBackPressed();
+        if (isSupported) {
+            if (mYoukuPlayerView.isFullScreen()) {
+                mYoukuPlayerView.goSmallScreen();
+            } else {
+                backAction();
+                super.onBackPressed();
+            }
+        } else {
+            backAction();
+            super.onBackPressed();
+        }
     }
 
     private void backAction() {
@@ -187,24 +235,58 @@ public class VideoDetailActivity extends BaseActivity {
         }
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (!isSupported) return;
+        switch (getResources().getConfiguration().orientation) {
+            case Configuration.ORIENTATION_PORTRAIT:
+                mToolbar.setVisibility(View.VISIBLE);
+                mHeaderView.setVisibility(View.VISIBLE);
+                mFooterView.setVisibility(View.VISIBLE);
+                mYoukuPlayerView.setShowBackBtn(false);
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE:
+                mToolbar.setVisibility(View.GONE);
+                mHeaderView.setVisibility(View.GONE);
+                mFooterView.setVisibility(View.GONE);
+                mYoukuPlayerView.setShowBackBtn(true);
+                break;
+        }
+    }
+
+    private void autoplayvideo() {
+        mYoukuPlayerView.playYoukuVideo(mDetail.vid);
+    }
+
     public void showNoDataView() {
         mLoadView.setStatus(LoadView.LoadStatus.No_Data);
     }
 
     public void showVideoDetailViews(VideoDetail data) {
         this.mDetail = data;
-        mScrollView.setVisibility(View.VISIBLE);
+        mVideoContainer.setVisibility(View.VISIBLE);
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
-        if (TextUtils.isEmpty(data.html)) {
+        if (TextUtils.isEmpty(data.vid)) {
+            isSupported = false;
+            mWebView.setVisibility(View.VISIBLE);
+            mWebView.loadDataWithBaseURL(null, data.html, "text/html","UTF-8", null);
+        } else {
+            isSupported = true;
             mTitleView.setText(data.title);
             mTimeView.setText(data.time);
             mTagView.setText(data.tag);
             mCommentCountView.setText(data.commentCount);
             mSourceView.setText(data.source);
-        } else {
-            mWebView.setVisibility(View.VISIBLE);
-            mWebView.loadDataWithBaseURL(null, data.html, "text/html","UTF-8", null);
+
+            // 初始化播放器
+            mYoukuPlayerView.attachActivity(this);
+            mYoukuPlayerView.setPreferVideoDefinition(VideoDefinition.VIDEO_HD);
+            mYoukuPlayerView.setShowBackBtn(false);
+            mYoukuPlayerView.setPlayerListener(new VideoPlayerListener());
+
+            autoplayvideo();
         }
     }
 
@@ -242,6 +324,46 @@ public class VideoDetailActivity extends BaseActivity {
             mFavorite = null;
             mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
             mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
+        }
+    }
+
+    private class VideoPlayerListener extends PlayerListener {
+        @Override
+        public void onComplete() {
+            super.onComplete();
+        }
+
+        @Override
+        public void onError(int code, PlayerErrorInfo info) {
+            Log.e("###", code + "");
+            switch(code) {
+                case 3001://无版权
+                case 3002://被禁止播放
+                case 3004://订阅才能观看
+                    mVideoContainer.setVisibility(View.GONE);
+                    mWebView.setVisibility(View.VISIBLE);
+                    mWebView.loadDataWithBaseURL("http://www.dsuu.cc/wp-content/themes/dsuum/", mDetail.html, "text/html","UTF-8", null);
+                    break;
+                default:
+                    AppToaster.show(info.getDesc());
+                    break;
+            }
+
+        }
+
+        @Override
+        public void OnCurrentPositionChanged(int msec) {
+            super.OnCurrentPositionChanged(msec);
+        }
+
+        @Override
+        public void onVideoNeedPassword(int code) {
+            super.onVideoNeedPassword(code);
+        }
+
+        @Override
+        public void onVideoSizeChanged(int width, int height) {
+            super.onVideoSizeChanged(width, height);
         }
     }
 }
