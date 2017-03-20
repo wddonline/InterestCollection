@@ -297,7 +297,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
         if (TextUtils.isEmpty(mDetail.audioUrl)) {
             mWebView.setVisibility(View.VISIBLE);
-            mWebView.loadDataWithBaseURL(null, data.html, "text/html","UTF-8", null);
+            mWebView.loadDataWithBaseURL("http://www.dsuu.cc/wp-content/themes/dsuum/", data.html, "text/html","UTF-8", null);
         } else {
             mScrollView.setVisibility(View.VISIBLE);
             mTitleView.setText(data.title);

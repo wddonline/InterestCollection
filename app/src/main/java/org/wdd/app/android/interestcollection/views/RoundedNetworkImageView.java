@@ -16,7 +16,6 @@ import org.wdd.app.android.interestcollection.views.drawable.RoundedDrawable;
  */
 
 public class RoundedNetworkImageView extends NetworkImageView {
-    public static final String TAG = "RoundedImageView";
 
     public static final int DEFAULT_RADIUS = 0;
     public static final int DEFAULT_BORDER = 0;

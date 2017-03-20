@@ -1,14 +1,13 @@
 package org.wdd.app.android.interestcollection.views;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
@@ -22,7 +21,7 @@ import org.wdd.app.android.interestcollection.http.impl.VolleyTool;
  * Created by richard on 11/28/16.
  */
 
-public class NetworkImageView extends ImageView {
+public class NetworkImageView extends AppCompatImageView {
 
     /** The URL of the network image to load */
     private String mUrl;

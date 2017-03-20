@@ -19,10 +19,7 @@ public class Constants {
     public static final String GIRL_ALBUM_AD_ID = "4010016977768498";//Banner
     public static final String GIRL_VIDEO_AD_ID = "1040117981197701";//开屏
 
-    public static final String MUSIC_LIST_TYPE = "music_list_type";
-    public static final String TING_UID = "ting_uid";
     public static final String FROM_NOTIFICATION = "from_notification";
-    public static final String DOWNLOAD_UPDATE = "download_update";
 
     public static final String ACTION_MEDIA_PLAY_PAUSE = "org.wdd.app.android.interestcollection.ACTION_MEDIA_PLAY_PAUSE";
 }

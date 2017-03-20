@@ -5,7 +5,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.volley.toolbox.DrawableLoader;
 
@@ -57,10 +56,8 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 						if (drawable.getBuffer() != null) {
 							// 计算存储bitmap所占用的字节数
 							Bitmap bitmap = drawable.getBuffer();
-							LogUtils.e("####", "gif" + bitmap.getRowBytes() * bitmap.getHeight());
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
-							LogUtils.e("####", "clear");
 							mLruCache.remove(key);
 							return 0;
 						}
@@ -69,10 +66,8 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 						if (drawable.getBitmap() != null) {
 							// 计算存储bitmap所占用的字节数
 							Bitmap bitmap = drawable.getBitmap();
-							LogUtils.e("####", "img" + bitmap.getRowBytes() * bitmap.getHeight());
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
-							LogUtils.e("####", "clear");
 							mLruCache.remove(key);
 							return 0;
 						}
@@ -81,7 +76,6 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 					}
 
 				} else {
-					LogUtils.e("####", "clear");
 					mLruCache.remove(key);
 					return 0;
 				}
@@ -91,7 +85,6 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 			protected void entryRemoved(boolean evicted, String key, Drawable oldValue, Drawable newValue) {
 				if (evicted) {
 					if (oldValue != null) {
-						LogUtils.e("####", "recycled");
 						if (oldValue != null) {
 							if (oldValue instanceof GifDrawable) {
 								((GifDrawable)oldValue).recycle();
@@ -154,7 +147,6 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 			key = it.next();
 			drawable = snapshot.get(key);
 			if (drawable != null) {
-				LogUtils.e("####", "all recycled");
 				if (drawable instanceof GifDrawable) {
 					((GifDrawable)drawable).recycle();
 				} else if(drawable instanceof BitmapDrawable) {

@@ -102,7 +102,7 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
                 loadSplashAd();
 
             }
-        }, 0);
+        }, 1500);
     }
 
     @Override

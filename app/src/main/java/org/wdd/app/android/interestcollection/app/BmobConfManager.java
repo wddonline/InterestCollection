@@ -30,7 +30,7 @@ class BmobConfManager {
         mSwitcher.isOpen = mPreferences.getBoolean(ADS_OPEN_STATUS, true);
         isAppReviewing = mPreferences.getBoolean(APP_REVIEW_STATUS, false);
 
-//        mSwitcher.isOpen = true;
+        mSwitcher.isOpen = true;
 //        mSwitcher.save(new SaveListener<String>() {
 //            @Override
 //            public void done(String s, BmobException e) {

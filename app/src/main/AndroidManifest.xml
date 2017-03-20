@@ -60,10 +60,16 @@
         <activity
             android:name=".ui.audios.activity.AudioDetailActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.shares.activity.ShareDetailActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.profile.activity.ProfileEditActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.favorites.activity.FavoritesActivity"
+            android:screenOrientation="portrait"/>
 
         <service android:name=".service.music.PlayService" />
 
@@ -72,9 +78,6 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
-
-        <activity android:name="org.wdd.app.android.interestcollection.ui.profile.activity.ProfileEditActivity" />
-        <activity android:name=".ui.favorites.activity.FavoritesActivity" />
 
         <activity
             android:name="cn.bmob.v3.update.UpdateDialogActivity"
@@ -86,6 +89,7 @@
 
         <activity
             android:name="com.qq.e.ads.ADActivity"
+            android:screenOrientation="portrait"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize" />
 
         <meta-data

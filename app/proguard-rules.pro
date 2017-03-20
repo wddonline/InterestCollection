@@ -18,6 +18,7 @@
 
 -keepattributes EnclosingMethod
 
+-keep class pl.droidsonroids.gif.** {*;}
 -keep class org.jsoup.** {*;}
 -dontwarn com.umeng.message.**
 -dontwarn com.alibaba.fastjson.**
@@ -124,3 +125,7 @@
 -keep class com.android.internal.http.multipart.**{*;}
 -keep class org.apache.commons.**{*;}
 -keep class org.apache.http.**{*;}
+
+# 优酷
+-keep class com.alibaba.**{*;}
+-keep class com.youku.**{*;}

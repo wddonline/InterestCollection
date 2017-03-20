@@ -271,7 +271,7 @@ public class VideoDetailActivity extends BaseActivity {
         if (TextUtils.isEmpty(data.vid)) {
             isSupported = false;
             mWebView.setVisibility(View.VISIBLE);
-            mWebView.loadDataWithBaseURL(null, data.html, "text/html","UTF-8", null);
+            mWebView.loadDataWithBaseURL("http://www.dsuu.cc/wp-content/themes/dsuum/", data.html, "text/html","UTF-8", null);
         } else {
             isSupported = true;
             mTitleView.setText(data.title);
