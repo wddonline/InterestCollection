@@ -94,13 +94,38 @@ public class BannerAdsBuilder implements View.OnClickListener {
 
     }
 
-    public static boolean shouldShowAds() {
+    /*
+        JOKE_LIST_AD_ID 周一、周四显示
+        IMAGE_LIST_AD_ID 周二、周五显示
+        VIDEO_LIST_AD_ID 周三、周六显示
+        AUDIO_LIST_AD_ID 周四、周日显示
+        SHARE_LIST_AD_ID 周二、周六、周日显示
+     */
+    public static boolean shouldShowAds(String adId) {
         if (!InterestCollectionApplication.getInstance().isAdsOpen()) return false;
         Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        if (hour % 2 == 0) {
-            return true;
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        if (adId.equals(Constants.JOKE_LIST_AD_ID)) {
+            if (day == Calendar.MONDAY || day == Calendar.THURSDAY) {
+                return true;
+            }
+        } else if (adId.equals(Constants.IMAGE_LIST_AD_ID)) {
+            if (day == Calendar.TUESDAY || day == Calendar.FRIDAY) {
+                return true;
+            }
+        } else if (adId.equals(Constants.VIDEO_LIST_AD_ID)) {
+            if (day == Calendar.WEDNESDAY || day == Calendar.SATURDAY) {
+                return true;
+            }
+        } else if (adId.equals(Constants.AUDIO_LIST_AD_ID)) {
+            if (day == Calendar.THURSDAY || day == Calendar.SUNDAY) {
+                return true;
+            }
+        } else if (adId.equals(Constants.SHARE_LIST_AD_ID)){
+            if (day == Calendar.TUESDAY || day == Calendar.SATURDAY || day == Calendar.SUNDAY) {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 }

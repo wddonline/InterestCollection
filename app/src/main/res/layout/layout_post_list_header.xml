@@ -68,6 +68,12 @@
 
     </LinearLayout>
 
+    <RelativeLayout
+        android:id="@+id/layout_post_list_header_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"/>
+
     <org.wdd.app.android.interestcollection.views.NetworkImageView
         android:id="@+id/layout_post_list_header_img"
         android:layout_width="match_parent"

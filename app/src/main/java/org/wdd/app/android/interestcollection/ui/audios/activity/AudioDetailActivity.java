@@ -15,6 +15,7 @@ import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -28,6 +29,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.AudioFavorite;
 import org.wdd.app.android.interestcollection.service.music.OnPlayerEventListener;
 import org.wdd.app.android.interestcollection.service.music.PlayService;
@@ -37,6 +40,7 @@ import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.audios.presenter.AudioDetailPresenter;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 import org.wdd.app.android.interestcollection.views.RoundedNetworkImageView;
 
@@ -308,6 +312,12 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             mCoverView.setImageUrl(mAudio.imgUrl);
             mPastTimeView.setText(formatTime("(mm:ss)", 0));
             mAllTimeView.setText(formatTime("(mm:ss)", 0));
+
+            ViewGroup footerAdsView = (ViewGroup) findViewById(R.id.layout_post_list_footer_ads);
+            BannerAdsBuilder adsBuilder = new BannerAdsBuilder(this, footerAdsView, Constants.DETAIL_FOOTER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                adsBuilder.addBannerAds();
+            }
         }
     }
 

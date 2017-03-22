@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
 import org.wdd.app.android.interestcollection.ui.videos.activity.VideoDetailActivity;
@@ -19,6 +20,7 @@ import org.wdd.app.android.interestcollection.ui.videos.adapter.VideoAdapter;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
 import org.wdd.app.android.interestcollection.ui.videos.presenter.VideosPresenter;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LineDividerDecoration;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
@@ -34,7 +36,8 @@ public class VideosFragment extends BaseFragment {
 
     private VideosPresenter mPresenter;
     private VideoAdapter mAdapter;
-    private List<Video> images;
+    private List<Video> mVideos;
+    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +66,8 @@ public class VideosFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_videos_loadview);
+        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_videos_ads);
+        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.VIDEO_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -91,9 +96,9 @@ public class VideosFragment extends BaseFragment {
 
     public void showVideosListView(List<Video> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
-            images = new ArrayList<>();
-            images.addAll(data);
-            mAdapter = new VideoAdapter(getContext(), images);
+            mVideos = new ArrayList<>();
+            mVideos.addAll(data);
+            mAdapter = new VideoAdapter(getContext(), mVideos);
             mAdapter.setOnLoadMoreListener(new AbstractCommonAdapter.OnLoadMoreListener() {
                 @Override
                 public void onLoadMore() {
@@ -109,15 +114,19 @@ public class VideosFragment extends BaseFragment {
             mRecyclerView.setAdapter(mAdapter);
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
+
+            if (BannerAdsBuilder.shouldShowAds(Constants.VIDEO_LIST_AD_ID)) {
+                mAdsBuilder.addBannerAds();
+            }
         } else {
 
             if (isAppend) {
-                int start = images.size();
-                images.addAll(data);
+                int start = mVideos.size();
+                mVideos.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
             } else {
-                images.clear();
-                images.addAll(data);
+                mVideos.clear();
+                mVideos.addAll(data);
                 mAdapter.notifyDataSetChanged();
                 mRefreshLayout.setRefreshing(false);
             }

@@ -8,10 +8,13 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.cache.DrawableCache;
 import org.wdd.app.android.interestcollection.database.model.ImageFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
@@ -19,6 +22,7 @@ import org.wdd.app.android.interestcollection.ui.images.adapter.ImageDetailAdapt
 import org.wdd.app.android.interestcollection.ui.images.model.Image;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
 import org.wdd.app.android.interestcollection.ui.images.presenter.ImageDetailPresenter;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
 public class ImageDetailActivity extends BaseActivity {
@@ -46,6 +50,8 @@ public class ImageDetailActivity extends BaseActivity {
     private ImageDetailAdapter mAdapter;
     private ImageFavorite mFavorite;
     private Image mImage;
+    private BannerAdsBuilder mHeaderAdsBuilder;
+    private BannerAdsBuilder mFooterAdsBuilder;
 
     private int id;
     private boolean initCollectStatus = false;
@@ -143,6 +149,12 @@ public class ImageDetailActivity extends BaseActivity {
         if (mHeaderView == null) {
             mHeaderView = View.inflate(this, R.layout.layout_post_list_header, null);
             mListView.addHeaderView(mHeaderView);
+
+            ViewGroup headerAdsView = (ViewGroup) mHeaderView.findViewById(R.id.layout_post_list_header_ads);
+            mHeaderAdsBuilder = new BannerAdsBuilder(this, headerAdsView, Constants.DETAIL_HEADER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                mHeaderAdsBuilder.addBannerAds();
+            }
         }
         TextView titleView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_title);
         titleView.setText(data.title);
@@ -164,6 +176,12 @@ public class ImageDetailActivity extends BaseActivity {
         if (mFooterView == null) {
             mFooterView = View.inflate(this, R.layout.layout_post_list_footer, null);
             mListView.addFooterView(mFooterView);
+
+            ViewGroup footerAdsView = (ViewGroup) mFooterView.findViewById(R.id.layout_post_list_footer_ads);
+            mFooterAdsBuilder = new BannerAdsBuilder(this, footerAdsView, Constants.DETAIL_FOOTER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                mFooterAdsBuilder.addBannerAds();
+            }
         }
         TextView sourceView = (TextView) mFooterView.findViewById(R.id.layout_post_list_footer_source);
         sourceView.setText(data.source);

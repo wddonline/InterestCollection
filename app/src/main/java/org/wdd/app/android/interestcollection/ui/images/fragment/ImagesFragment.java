@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter.LoadStatus;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
@@ -20,6 +21,7 @@ import org.wdd.app.android.interestcollection.ui.images.adapter.ImageAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.Image;
 import org.wdd.app.android.interestcollection.ui.images.presenter.ImagesPresenter;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LineDividerDecoration;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
@@ -35,7 +37,8 @@ public class ImagesFragment extends BaseFragment {
 
     private ImagesPresenter mPresenter;
     private ImageAdapter mAdapter;
-    private List<Image> images;
+    private List<Image> mImages;
+    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,6 +67,8 @@ public class ImagesFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_images_loadview);
+        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_images_ads);
+        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.IMAGE_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -92,9 +97,9 @@ public class ImagesFragment extends BaseFragment {
 
     public void showImagesListView(List<Image> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
-            images = new ArrayList<>();
-            images.addAll(data);
-            mAdapter = new ImageAdapter(getContext(), images);
+            mImages = new ArrayList<>();
+            mImages.addAll(data);
+            mAdapter = new ImageAdapter(getContext(), mImages);
             mAdapter.setOnLoadMoreListener(new AbstractCommonAdapter.OnLoadMoreListener() {
                 @Override
                 public void onLoadMore() {
@@ -110,15 +115,19 @@ public class ImagesFragment extends BaseFragment {
             mRecyclerView.setAdapter(mAdapter);
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
+
+            if (BannerAdsBuilder.shouldShowAds(Constants.IMAGE_LIST_AD_ID)) {
+                mAdsBuilder.addBannerAds();
+            }
         } else {
 
             if (isAppend) {
-                int start = images.size();
-                images.addAll(data);
+                int start = mImages.size();
+                mImages.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
             } else {
-                images.clear();
-                images.addAll(data);
+                mImages.clear();
+                mImages.addAll(data);
                 mAdapter.notifyDataSetChanged();
                 mRefreshLayout.setRefreshing(false);
             }

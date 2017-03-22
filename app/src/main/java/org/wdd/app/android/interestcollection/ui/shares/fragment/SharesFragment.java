@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
 import org.wdd.app.android.interestcollection.ui.shares.activity.ShareDetailActivity;
@@ -19,6 +20,7 @@ import org.wdd.app.android.interestcollection.ui.shares.adapter.SharesAdapter;
 import org.wdd.app.android.interestcollection.ui.shares.model.Share;
 import org.wdd.app.android.interestcollection.ui.shares.presenter.SharesPresenter;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LineDividerDecoration;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
@@ -34,7 +36,8 @@ public class SharesFragment extends BaseFragment {
 
     private SharesPresenter mPresenter;
     private SharesAdapter mAdapter;
-    private List<Share> shares;
+    private List<Share> mShares;
+    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +66,8 @@ public class SharesFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_shares_loadview);
+        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_shares_ads);
+        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.SHARE_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -91,9 +96,9 @@ public class SharesFragment extends BaseFragment {
 
     public void showSharesListView(List<Share> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
-            shares = new ArrayList<>();
-            shares.addAll(data);
-            mAdapter = new SharesAdapter(getContext(), shares);
+            mShares = new ArrayList<>();
+            mShares.addAll(data);
+            mAdapter = new SharesAdapter(getContext(), mShares);
             mAdapter.setOnLoadMoreListener(new AbstractCommonAdapter.OnLoadMoreListener() {
                 @Override
                 public void onLoadMore() {
@@ -109,14 +114,18 @@ public class SharesFragment extends BaseFragment {
             mRecyclerView.setAdapter(mAdapter);
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
+
+            if (BannerAdsBuilder.shouldShowAds(Constants.SHARE_LIST_AD_ID)) {
+                mAdsBuilder.addBannerAds();
+            }
         } else {
             if (isAppend) {
-                int start = shares.size();
-                shares.addAll(data);
+                int start = mShares.size();
+                mShares.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
             } else {
-                shares.clear();
-                shares.addAll(data);
+                mShares.clear();
+                mShares.addAll(data);
                 mAdapter.notifyDataSetChanged();
                 mRefreshLayout.setRefreshing(false);
             }

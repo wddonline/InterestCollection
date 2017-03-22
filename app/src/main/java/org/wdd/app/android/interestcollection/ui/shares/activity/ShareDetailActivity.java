@@ -8,16 +8,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.ShareFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.shares.adapter.ShareDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.shares.model.Share;
 import org.wdd.app.android.interestcollection.ui.shares.model.ShareDetail;
 import org.wdd.app.android.interestcollection.ui.shares.presenter.ShareDetailPresenter;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
@@ -47,6 +51,8 @@ public class ShareDetailActivity extends BaseActivity {
     private ShareDetailAdapter mAdapter;
     private Share mShare;
     private ShareFavorite mFavorite;
+    private BannerAdsBuilder mHeaderAdsBuilder;
+    private BannerAdsBuilder mFooterAdsBuilder;
 
     private int id;
     private boolean initCollectStatus = false;
@@ -142,6 +148,12 @@ public class ShareDetailActivity extends BaseActivity {
         if (mHeaderView == null) {
             mHeaderView = View.inflate(this, R.layout.layout_post_list_header, null);
             mListView.addHeaderView(mHeaderView);
+
+            ViewGroup headerAdsView = (ViewGroup) mHeaderView.findViewById(R.id.layout_post_list_header_ads);
+            mHeaderAdsBuilder = new BannerAdsBuilder(this, headerAdsView, Constants.DETAIL_HEADER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                mHeaderAdsBuilder.addBannerAds();
+            }
         }
         TextView titleView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_title);
         titleView.setText(data.title);
@@ -157,6 +169,12 @@ public class ShareDetailActivity extends BaseActivity {
         if (mFooterView == null) {
             mFooterView = View.inflate(this, R.layout.layout_post_list_footer, null);
             mListView.addFooterView(mFooterView);
+
+            ViewGroup footerAdsView = (ViewGroup) mFooterView.findViewById(R.id.layout_post_list_footer_ads);
+            mFooterAdsBuilder = new BannerAdsBuilder(this, footerAdsView, Constants.DETAIL_FOOTER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                mFooterAdsBuilder.addBannerAds();
+            }
         }
         TextView sourceView = (TextView) mFooterView.findViewById(R.id.layout_post_list_footer_source);
         sourceView.setText(data.source);

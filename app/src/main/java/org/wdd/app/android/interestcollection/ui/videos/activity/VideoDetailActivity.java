@@ -9,10 +9,10 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -26,12 +26,15 @@ import com.youku.cloud.player.VideoDefinition;
 import com.youku.cloud.player.YoukuPlayerView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
 import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
 import org.wdd.app.android.interestcollection.ui.videos.presenter.VideoDetailPresenter;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
 public class VideoDetailActivity extends BaseActivity {
@@ -265,7 +268,6 @@ public class VideoDetailActivity extends BaseActivity {
 
     public void showVideoDetailViews(VideoDetail data) {
         this.mDetail = data;
-        mVideoContainer.setVisibility(View.VISIBLE);
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
         if (TextUtils.isEmpty(data.vid)) {
@@ -274,11 +276,17 @@ public class VideoDetailActivity extends BaseActivity {
             mWebView.loadDataWithBaseURL("http://www.dsuu.cc/wp-content/themes/dsuum/", data.html, "text/html","UTF-8", null);
         } else {
             isSupported = true;
+            mVideoContainer.setVisibility(View.VISIBLE);
             mTitleView.setText(data.title);
             mTimeView.setText(data.time);
             mTagView.setText(data.tag);
             mCommentCountView.setText(data.commentCount);
             mSourceView.setText(data.source);
+            ViewGroup adsView = (ViewGroup) mFooterView.findViewById(R.id.layout_post_list_footer_ads);
+            BannerAdsBuilder adsBuilder = new BannerAdsBuilder(this, adsView, Constants.DETAIL_FOOTER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                adsBuilder.addBannerAds();
+            }
 
             // 初始化播放器
             mYoukuPlayerView.attachActivity(this);
@@ -335,7 +343,6 @@ public class VideoDetailActivity extends BaseActivity {
 
         @Override
         public void onError(int code, PlayerErrorInfo info) {
-            Log.e("###", code + "");
             switch(code) {
                 case 3001://无版权
                 case 3002://被禁止播放

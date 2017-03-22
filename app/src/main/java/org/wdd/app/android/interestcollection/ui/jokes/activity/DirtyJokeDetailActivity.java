@@ -7,16 +7,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.DirtyJokeFavorite;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.jokes.adapter.DirtyJokeDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
 import org.wdd.app.android.interestcollection.ui.jokes.presenter.DirtyJokeDetailPresenter;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
@@ -45,6 +49,8 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private DirtyJokeDetailAdapter mAdapter;
     private DirtyJokeFavorite mFavorite;
     private DirtyJoke mJoke;
+    private BannerAdsBuilder mHeaderAdsBuilder;
+    private BannerAdsBuilder mFooterAdsBuilder;
 
     private int id;
     private boolean initCollectStatus = false;
@@ -96,6 +102,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private void initViews() {
         mListView = (ListView) findViewById(R.id.activity_dirty_joke_detail_listview);
         mLoadView = (LoadView) findViewById(R.id.activity_dirty_joke_detail_loadview);
+
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
             public void onReloadClicked() {
@@ -140,6 +147,12 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         if (mHeaderView == null) {
             mHeaderView = View.inflate(this, R.layout.layout_post_list_header, null);
             mListView.addHeaderView(mHeaderView);
+
+            ViewGroup headerAdsView = (ViewGroup) mHeaderView.findViewById(R.id.layout_post_list_header_ads);
+            mHeaderAdsBuilder = new BannerAdsBuilder(this, headerAdsView, Constants.DETAIL_HEADER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                mHeaderAdsBuilder.addBannerAds();
+            }
         }
         TextView titleView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_title);
         titleView.setText(data.title);
@@ -155,6 +168,12 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         if (mFooterView == null) {
             mFooterView = View.inflate(this, R.layout.layout_post_list_footer, null);
             mListView.addFooterView(mFooterView);
+
+            ViewGroup footerAdsView = (ViewGroup) mFooterView.findViewById(R.id.layout_post_list_footer_ads);
+            mFooterAdsBuilder = new BannerAdsBuilder(this, footerAdsView, Constants.DETAIL_FOOTER_AD_ID, true);
+            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+                mFooterAdsBuilder.addBannerAds();
+            }
         }
         TextView sourceView = (TextView) mFooterView.findViewById(R.id.layout_post_list_footer_source);
         sourceView.setText(data.source);

@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter.LoadStatus;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
@@ -19,6 +21,7 @@ import org.wdd.app.android.interestcollection.ui.jokes.adapter.DirtyJodeAdapter;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
 import org.wdd.app.android.interestcollection.ui.jokes.presenter.DirtyJokesPresenter;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LineDividerDecoration;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
@@ -34,7 +37,8 @@ public class DirtyJokesFragment extends BaseFragment {
 
     private DirtyJokesPresenter mPresenter;
     private DirtyJodeAdapter mAdapter;
-    private List<DirtyJoke> jokes;
+    private List<DirtyJoke> mJokes;
+    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +67,8 @@ public class DirtyJokesFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_dirty_jokes_loadview);
+        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_dirty_jokes_ads);
+        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.JOKE_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -91,9 +97,9 @@ public class DirtyJokesFragment extends BaseFragment {
 
     public void showDirtyJokesListView(List<DirtyJoke> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
-            jokes = new ArrayList<>();
-            jokes.addAll(data);
-            mAdapter = new DirtyJodeAdapter(getContext(), jokes);
+            mJokes = new ArrayList<>();
+            mJokes.addAll(data);
+            mAdapter = new DirtyJodeAdapter(getContext(), mJokes);
             mAdapter.setOnLoadMoreListener(new AbstractCommonAdapter.OnLoadMoreListener() {
                 @Override
                 public void onLoadMore() {
@@ -109,14 +115,18 @@ public class DirtyJokesFragment extends BaseFragment {
             mRecyclerView.setAdapter(mAdapter);
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
+
+            if (BannerAdsBuilder.shouldShowAds(Constants.JOKE_LIST_AD_ID)) {
+                mAdsBuilder.addBannerAds();
+            }
         } else {
             if (isAppend) {
-                int start = jokes.size();
-                jokes.addAll(data);
+                int start = mJokes.size();
+                mJokes.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
             } else {
-                jokes.clear();
-                jokes.addAll(data);
+                mJokes.clear();
+                mJokes.addAll(data);
                 mAdapter.notifyDataSetChanged();
                 mRefreshLayout.setRefreshing(false);
             }

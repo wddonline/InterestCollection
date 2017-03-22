@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
 import org.wdd.app.android.interestcollection.ui.audios.activity.AudioDetailActivity;
 import org.wdd.app.android.interestcollection.ui.audios.adapter.AudioAdapter;
 import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
@@ -19,6 +20,7 @@ import org.wdd.app.android.interestcollection.ui.audios.presenter.AudiosPresente
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.base.BaseFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
+import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LineDividerDecoration;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
@@ -34,7 +36,8 @@ public class AudiosFragment extends BaseFragment {
 
     private AudiosPresenter mPresenter;
     private AudioAdapter mAdapter;
-    private List<Audio> audios;
+    private List<Audio> mAudios;
+    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +66,8 @@ public class AudiosFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_audios_loadview);
+        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_audios_ads);
+        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.AUDIO_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -91,9 +96,9 @@ public class AudiosFragment extends BaseFragment {
 
     public void showAudiosListView(List<Audio> data, boolean isAppend, boolean isLastPage) {
         if (mAdapter == null) {
-            audios = new ArrayList<>();
-            audios.addAll(data);
-            mAdapter = new AudioAdapter(getContext(), audios);
+            mAudios = new ArrayList<>();
+            mAudios.addAll(data);
+            mAdapter = new AudioAdapter(getContext(), mAudios);
             mAdapter.setOnLoadMoreListener(new AbstractCommonAdapter.OnLoadMoreListener() {
                 @Override
                 public void onLoadMore() {
@@ -109,14 +114,18 @@ public class AudiosFragment extends BaseFragment {
             mRecyclerView.setAdapter(mAdapter);
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
+
+            if (BannerAdsBuilder.shouldShowAds(Constants.AUDIO_LIST_AD_ID)) {
+                mAdsBuilder.addBannerAds();
+            }
         } else {
             if (isAppend) {
-                int start = audios.size();
-                audios.addAll(data);
+                int start = mAudios.size();
+                mAudios.addAll(data);
                 mAdapter.notifyItemRangeChanged(start, data.size());
             } else {
-                audios.clear();
-                audios.addAll(data);
+                mAudios.clear();
+                mAudios.addAll(data);
                 mAdapter.notifyDataSetChanged();
                 mRefreshLayout.setRefreshing(false);
             }
