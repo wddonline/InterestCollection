@@ -78,10 +78,13 @@ public class ShareDetailDataGetter {
                 Elements elements = contentNode.getAllElements();
                 detail.nodes = new ArrayList<>();
                 Element element;
+                Elements imgNodes;
                 for (int i = 0; i < elements.size(); i++) {
                     element = elements.get(i);
-                    if(element.hasAttr("data-original")) {
-                        detail.nodes.add(new ShareDetail.Node(true, element.attr("data-original")));
+                    if("noscript".equalsIgnoreCase(element.tagName())) {
+                        imgNodes = element.getElementsByTag("img");
+                        if (imgNodes.size() == 0) continue;
+                        detail.nodes.add(new ShareDetail.Node(true, imgNodes.first().attr("src")));
                     } else if("p".equalsIgnoreCase(element.tagName())) {
                         if (element.hasClass("source")) {
                             detail.source = element.text();

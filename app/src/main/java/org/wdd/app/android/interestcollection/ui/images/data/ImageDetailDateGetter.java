@@ -70,28 +70,29 @@ public class ImageDetailDateGetter {
                 detail.commentCount = postMetaNodes.get(2).text();
 
                 Elements contentNodes = articleNode.getElementsByAttributeValue("class", "single-post-content");
-                if (contentNodes.size() == 0) {
-                    mCallback.onRequestOk(null);
-                    return;
-                }
-                Element contentNode = contentNodes.first();
-                Elements elements = contentNode.getAllElements();
-                detail.nodes = new ArrayList<>();
-                Element element;
-                for (int i = 0; i < elements.size(); i++) {
-                    element = elements.get(i);
-                    if(element.hasAttr("data-original")) {
-                        detail.nodes.add(new ImageDetail.Node(true, element.attr("data-original")));
-                    } else if("p".equalsIgnoreCase(element.tagName())) {
-                        if (element.hasClass("source")) {
-                            detail.source = element.text();
-                            break;
+                if (contentNodes.size()> 0) {
+                    Element contentNode = contentNodes.first();
+                    Elements elements = contentNode.children();
+                    detail.nodes = new ArrayList<>();
+                    Element element;
+                    Elements imgNodes;
+                    for (int i = 0; i < elements.size(); i++) {
+                        element = elements.get(i);
+                        if("noscript".equalsIgnoreCase(element.tagName())) {
+                            imgNodes = element.getElementsByTag("img");
+                            if (imgNodes.size() == 0) continue;
+                            detail.nodes.add(new ImageDetail.Node(true, imgNodes.first().attr("src")));
+                        } else if("p".equalsIgnoreCase(element.tagName())) {
+                            if (element.hasClass("source")) {
+                                detail.source = element.text();
+                                break;
+                            }
+                            String p = element.text();
+                            if (p.length() == 0) continue;
+                            detail.nodes.add(new ImageDetail.Node(false, p));
+                        } else if (element.hasClass("summary")) {
+                            detail.summary = element.text();
                         }
-                        String p = element.text();
-                        if (p.length() == 0) continue;
-                        detail.nodes.add(new ImageDetail.Node(false, p));
-                    } else if (element.hasClass("summary")) {
-                        detail.summary = element.text();
                     }
                 }
 

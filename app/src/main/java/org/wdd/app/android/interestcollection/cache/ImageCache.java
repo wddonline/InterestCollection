@@ -5,11 +5,8 @@ import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
 import java.lang.ref.SoftReference;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 图片缓存
@@ -39,14 +36,12 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 
 	private LruCache<String, Bitmap> mStrongRefs;// 硬引用缓存
 	private LinkedHashMap<String, SoftReference<Bitmap>> mSoftRefs;// 软引用缓存
-	private ReentrantReadWriteLock mLock;
 
 	private ImageCache() {
-		mLock = new ReentrantReadWriteLock();
 		// 获取单个进程可用内存的最大值
 		final int avaliableSize = (int) Runtime.getRuntime().maxMemory();
 		// 设置为可用内存的1/4（按Byte计算）
-		final int useableSize = avaliableSize / 20;
+		final int useableSize = avaliableSize / 15;
 		mStrongRefs = new LruCache<String, Bitmap>(useableSize) {
 			@Override
 			protected int sizeOf(String key, Bitmap value) {
@@ -78,10 +73,16 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 			@Override
 			protected boolean removeEldestEntry(Entry<String, SoftReference<Bitmap>> eldest) {
 				if (size() > MAX_SIZE) {
-					Bitmap bitmap = eldest.getValue().get();
-					if (bitmap != null) {
-						bitmap.recycle();
+					SoftReference<Bitmap> value = eldest.getValue();
+					if (value != null) {
+						Bitmap bitmap = value.get();
+						if (bitmap != null) {
+							bitmap.recycle();
+							bitmap = null;
+							value.clear();
+						}
 					}
+
 					return true;
 				}
 				return false;
@@ -107,7 +108,6 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 
 		SoftReference<Bitmap> ref = mSoftRefs.get(url);
 		if (ref != null) {
-			mLock.writeLock().lock();
 			bitmap = ref.get();
 			if (bitmap != null) {
 				// 找到该Bitmap之后，将它移到硬引用缓存。并从软引用缓存中删除。
@@ -117,7 +117,6 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 			} else {
 				mSoftRefs.remove(url);
 			}
-			mLock.writeLock().unlock();
 		}
 		return null;
 	}
@@ -133,33 +132,15 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		if (bitmap == null) {
 			return;
 		}
-		mLock.writeLock().lock();
 		mStrongRefs.put(url, bitmap);
-		mLock.writeLock().unlock();
 	}
 
 	public void clear() {
-		mLock.writeLock().lock();
 		clearLruCache();
 		clearSoftCache();
-		mLock.writeLock().unlock();
 	}
 
 	private void clearLruCache() {
-		Map<String, Bitmap> snapshot = mStrongRefs.snapshot();
-		Set<String> keys = snapshot.keySet();
-		Iterator<String> it = keys.iterator();
-		String key;
-		Bitmap bitmap;
-		while (it.hasNext()) {
-			key = it.next();
-			bitmap = snapshot.get(key);
-			if (bitmap != null) {
-				bitmap.recycle();
-			}
-		}
-		keys.clear();
-		snapshot.clear();
 		mStrongRefs.evictAll();
 	}
 
@@ -179,7 +160,6 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 	}
 
 	public void removeBitmap(String key) {
-		mLock.writeLock().lock();
 		Bitmap bitmap = mStrongRefs.remove(key);
 		if (bitmap != null) bitmap.recycle();
 		SoftReference<Bitmap> reference = mSoftRefs.remove(key);
@@ -188,7 +168,6 @@ public class ImageCache implements com.android.volley.toolbox.ImageLoader.ImageC
 		if (bitmap != null) {
 			bitmap.recycle();
 		}
-		mLock.writeLock().unlock();
 	}
 
 }

@@ -103,29 +103,6 @@ public class BannerAdsBuilder implements View.OnClickListener {
      */
     public static boolean shouldShowAds(String adId) {
         if (!InterestCollectionApplication.getInstance().isAdsOpen()) return false;
-        Calendar calendar = Calendar.getInstance();
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-        if (adId.equals(Constants.JOKE_LIST_AD_ID)) {
-            if (day == Calendar.MONDAY || day == Calendar.THURSDAY) {
-                return true;
-            }
-        } else if (adId.equals(Constants.IMAGE_LIST_AD_ID)) {
-            if (day == Calendar.TUESDAY || day == Calendar.FRIDAY) {
-                return true;
-            }
-        } else if (adId.equals(Constants.VIDEO_LIST_AD_ID)) {
-            if (day == Calendar.WEDNESDAY || day == Calendar.SATURDAY) {
-                return true;
-            }
-        } else if (adId.equals(Constants.AUDIO_LIST_AD_ID)) {
-            if (day == Calendar.THURSDAY || day == Calendar.SUNDAY) {
-                return true;
-            }
-        } else if (adId.equals(Constants.SHARE_LIST_AD_ID)){
-            if (day == Calendar.TUESDAY || day == Calendar.SATURDAY || day == Calendar.SUNDAY) {
-                return true;
-            }
-        }
         return false;
     }
 }

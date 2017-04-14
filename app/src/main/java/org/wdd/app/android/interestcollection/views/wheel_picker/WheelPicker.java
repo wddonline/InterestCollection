@@ -856,7 +856,7 @@ public class WheelPicker extends View implements IDebug, IWheelPicker, Runnable 
     @Override
     public void setData(List data) {
         if (null == data)
-            throw new NullPointerException("WheelPicker's data can not be null!");
+            throw new NullPointerException("WheelPicker's post can not be null!");
         mData.addAll(data);
 
         // 重置位置
@@ -1129,12 +1129,12 @@ public class WheelPicker extends View implements IDebug, IWheelPicker, Runnable 
          * 滚轮选择器停止后会回调该方法并将当前选中的数据项在数据列表中的位置返回
          * <p>
          * Invoke when WheelPicker scroll stopped
-         * This method will be called when WheelPicker stop and return current selected item data's
+         * This method will be called when WheelPicker stop and return current selected item post's
          * position in list
          *
          * @param position 当前选中的数据项在数据列表中的位置
          *                 <p>
-         *                 Current selected item data's position in list
+         *                 Current selected item post's position in list
          */
         void onWheelSelected(int position);
 

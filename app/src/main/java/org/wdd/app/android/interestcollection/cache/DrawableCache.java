@@ -10,11 +10,6 @@ import com.android.volley.toolbox.DrawableLoader;
 
 import org.wdd.app.android.interestcollection.utils.LogUtils;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import pl.droidsonroids.gif.GifDrawable;
 
 /**
@@ -23,6 +18,8 @@ import pl.droidsonroids.gif.GifDrawable;
  *
  */
 public class DrawableCache implements DrawableLoader.DrawableCache {
+
+	private final String TAG = DrawableCache.class.getName();
 
 	private static DrawableCache cache;
 
@@ -38,15 +35,13 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 	}
 
 	private LruCache<String, Drawable> mLruCache;
-	private ReentrantReadWriteLock mLock;
 
 	private DrawableCache() {
-		mLock = new ReentrantReadWriteLock();
 		// 获取单个进程可用内存的最大值
 		final int avaliableSize = (int) Runtime.getRuntime().maxMemory();
 		// 设置为可用内存的1/4（按Byte计算）
 		final int useableSize = avaliableSize / 20;
-		LogUtils.e("###", useableSize / 1024 / 1024f + "m");
+		LogUtils.e(TAG, useableSize / 1024 / 1024f + "m");
 		mLruCache = new LruCache<String, Drawable>(useableSize) {
 			@Override
 			protected int sizeOf(String key, Drawable value) {
@@ -59,7 +54,6 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
 							mLruCache.remove(key);
-							return 0;
 						}
 					} else if (value instanceof BitmapDrawable) {
 						BitmapDrawable drawable = (BitmapDrawable) value;
@@ -69,16 +63,14 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 							return bitmap.getRowBytes() * bitmap.getHeight();
 						} else {
 							mLruCache.remove(key);
-							return 0;
 						}
-					} else {
-						return 0;
 					}
 
 				} else {
 					mLruCache.remove(key);
-					return 0;
+
 				}
+				return 0;
 			}
 
 			@Override
@@ -100,7 +92,7 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 
 	/**
 	 * 从缓存中获取Bitmap
-	 * 
+	 *
 	 * @param url
 	 * @return drawable
 	 */
@@ -118,7 +110,7 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 
 	/**
 	 * 添加Drawable到内存缓存
-	 * 
+	 *
 	 * @param url
 	 * @param drawable
 	 */
@@ -127,50 +119,15 @@ public class DrawableCache implements DrawableLoader.DrawableCache {
 		if (drawable == null) {
 			return;
 		}
-		mLock.writeLock().lock();
 		mLruCache.put(url, drawable);
-		mLock.writeLock().unlock();
 	}
 
 	public void clear() {
-		clearLruCache();
-	}
-
-	private void clearLruCache() {
-		mLock.writeLock().lock();
-		Map<String, Drawable> snapshot = mLruCache.snapshot();
-		Set<String> keys = snapshot.keySet();
-		Iterator<String> it = keys.iterator();
-		String key;
-		Drawable drawable;
-		while (it.hasNext()) {
-			key = it.next();
-			drawable = snapshot.get(key);
-			if (drawable != null) {
-				if (drawable instanceof GifDrawable) {
-					((GifDrawable)drawable).recycle();
-				} else if(drawable instanceof BitmapDrawable) {
-					((BitmapDrawable)drawable).getBitmap().recycle();
-				}
-			}
-		}
-		keys.clear();
-		snapshot.clear();
 		mLruCache.evictAll();
-		mLock.writeLock().unlock();
 	}
 
 	public void removeDrawable(String key) {
-		mLock.writeLock().lock();
-		Drawable drawable = mLruCache.remove(key);
-		if (drawable != null) {
-			if (drawable instanceof GifDrawable) {
-				((GifDrawable)drawable).recycle();
-			} else if(drawable instanceof BitmapDrawable) {
-				((BitmapDrawable)drawable).getBitmap().recycle();
-			}
-		}
-		mLock.writeLock().unlock();
+		mLruCache.remove(key);
 	}
 
 }

@@ -63,7 +63,6 @@ public class VideoDetailActivity extends BaseActivity {
     private TextView mTimeView;
     private TextView mTagView;
     private TextView mCommentCountView;
-    private View mImageView;
     private TextView mSourceView;
     private LoadView mLoadView;
     private YoukuPlayerView mYoukuPlayerView;
@@ -161,8 +160,6 @@ public class VideoDetailActivity extends BaseActivity {
         mTimeView = (TextView) findViewById(R.id.layout_post_list_header_date);
         mTagView = (TextView) findViewById(R.id.layout_post_list_header_tag);
         mCommentCountView = (TextView) findViewById(R.id.layout_post_list_header_comment_count);
-        mImageView = findViewById(R.id.layout_post_list_header_img);
-        mImageView.setVisibility(View.GONE);
         mSourceView = (TextView) findViewById(R.id.layout_post_list_footer_source);
         mYoukuPlayerView = (YoukuPlayerView) findViewById(R.id.activity_video_detail_playerview);
         mLoadView = (LoadView) findViewById(R.id.activity_video_detail_loadview);

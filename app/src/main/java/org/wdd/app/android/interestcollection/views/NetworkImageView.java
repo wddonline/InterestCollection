@@ -13,7 +13,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 
 import org.wdd.app.android.interestcollection.R;
-import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.cache.ImageCache;
 import org.wdd.app.android.interestcollection.http.impl.VolleyTool;
 
@@ -53,7 +52,7 @@ public class NetworkImageView extends AppCompatImageView {
 
     public NetworkImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        mImageLoader = new ImageLoader(VolleyTool.getInstance(InterestCollectionApplication.getInstance()).getRequestQueue(), ImageCache.getInstance());
+        mImageLoader = new ImageLoader(VolleyTool.getInstance(getContext()).getRequestQueue(), ImageCache.getInstance());
         setDefaultImageResId(R.drawable.default_img);
         setErrorImageResId(R.drawable.default_img);
     }
@@ -250,6 +249,8 @@ public class NetworkImageView extends AppCompatImageView {
             setImageResource(R.drawable.default_img);
             e.printStackTrace();
         } catch (Exception e) {
+            mImageContainer = null;
+            setImageResource(R.drawable.default_img);
             e.printStackTrace();
         }
     }

@@ -214,7 +214,7 @@ public class VolleyHttpConnecter implements HttpConnecter {
 
         if (status == 1) {//请求成功
 
-            Object segment = json.get("data");
+            Object segment = json.get("post");
             Object data;
             if (segment instanceof JSONArray) {//是json数组
                 JSONArray array = (JSONArray) segment;
@@ -243,7 +243,7 @@ public class VolleyHttpConnecter implements HttpConnecter {
         int status = json.getInteger("status");
 
         if (status == 1) {//请求成功
-            String data = json.getString("data");
+            String data = json.getString("post");
             HttpResponseEntry responseEntry = new HttpResponseEntry();
             responseEntry.setStatusCode(StatusCode.HTTP_OK);
             responseEntry.setData(data);
@@ -263,7 +263,7 @@ public class VolleyHttpConnecter implements HttpConnecter {
             responseEntry.setData(document);
             callback.onRequestOk(responseEntry);
         } else {
-            HttpError error = new HttpError(ErrorCode.PARSE_ERROR, "response data is empty");
+            HttpError error = new HttpError(ErrorCode.PARSE_ERROR, "response post is empty");
             callback.onRequestFailure(error);
         }
     }

@@ -37,7 +37,6 @@ public class AudiosFragment extends BaseFragment {
     private AudiosPresenter mPresenter;
     private AudioAdapter mAdapter;
     private List<Audio> mAudios;
-    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -66,8 +65,6 @@ public class AudiosFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_audios_loadview);
-        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_audios_ads);
-        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.AUDIO_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -115,9 +112,6 @@ public class AudiosFragment extends BaseFragment {
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
-            if (BannerAdsBuilder.shouldShowAds(Constants.AUDIO_LIST_AD_ID)) {
-                mAdsBuilder.addBannerAds();
-            }
         } else {
             if (isAppend) {
                 int start = mAudios.size();

@@ -82,13 +82,13 @@ public interface IWheelPicker {
      * {@link com.aigestudio.wheelpicker.WheelPicker.OnItemSelectedListener}回调监听或调用
      * {@link #getCurrentItemPosition()}
      * <p>
-     * Get the position of current selected item in data source
+     * Get the position of current selected item in post source
      * Notice:The value by return will not change when WheelPicker scroll, this method will always
      * return the value which {@link #setSelectedItemPosition(int)} set, the value this method
      * return will be changed if and only if call the
      * {@link #setSelectedItemPosition(int)}
      * set a new value
-     * If you only want to get the position of current selected item in data source, you can get it
+     * If you only want to get the position of current selected item in post source, you can get it
      * through {@link com.aigestudio.wheelpicker.WheelPicker.OnItemSelectedListener} or call
      * {@link #getCurrentItemPosition()} directly
      *
@@ -109,18 +109,18 @@ public interface IWheelPicker {
      * 的值，否则会抛出异常
      * 默认情况下，当前被选中的数据项所显示的数据在数据源中的位置为0
      * <p>
-     * Set the position of current selected item in data source
+     * Set the position of current selected item in post source
      * Call this method and set a new value may be reinitialize the location of WheelPicker. For
      * example, you call this method after scroll the WheelPicker and set selected item position
      * with a new value, WheelPicker will clear the related parameters last scroll set and reset
-     * series of data, and make the position 3 as a new starting point of WheelPicker, this behavior
+     * series of post, and make the position 3 as a new starting point of WheelPicker, this behavior
      * maybe influenced some attribute you set last time, such as parameters of method in
      * {@link com.aigestudio.wheelpicker.WheelPicker.OnWheelChangeListener} and
      * {@link com.aigestudio.wheelpicker.WheelPicker.OnItemSelectedListener}, so you must always
      * consider the influence when you call this method set a new value
-     * You should always set a value which greater than or equal to 0 and less than data source's
+     * You should always set a value which greater than or equal to 0 and less than post source's
      * length
-     * By default, position of current selected item in data source is 0
+     * By default, position of current selected item in post source is 0
      *
      * @param position 当前被选中的数据项所显示的数据在数据源中的位置
      */
@@ -130,7 +130,7 @@ public interface IWheelPicker {
      * 获取当前被选中的数据项所显示的数据在数据源中的位置
      * 与{@link #getSelectedItemPosition()}不同的是，该方法所返回的结果会因为滚轮选择器的改变而改变
      * <p>
-     * Get the position of current selected item in data source
+     * Get the position of current selected item in post source
      * The difference between {@link #getSelectedItemPosition()}, the value this method return will
      * change by WheelPicker scrolled
      *
@@ -141,7 +141,7 @@ public interface IWheelPicker {
     /**
      * 获取数据列表
      * <p>
-     * Get data source of WheelPicker
+     * Get post source of WheelPicker
      *
      * @return 数据列表
      */
@@ -154,11 +154,11 @@ public interface IWheelPicker {
      * 为滚轮选择器设置数据源会重置滚轮选择器的各项状态，具体行为参考
      * {@link #setSelectedItemPosition(int)}
      * <p>
-     * Set data source of WheelPicker
-     * The data source can be any type, WheelPicker will change the data to string when it draw the
+     * Set post source of WheelPicker
+     * The post source can be any type, WheelPicker will change the post to string when it draw the
      * item.
-     * There is a default data source when you not set the data source for WheelPicker.
-     * Set data source for WheelPicker will reset state of it, you can refer to
+     * There is a default post source when you not set the post source for WheelPicker.
+     * Set post source for WheelPicker will reset state of it, you can refer to
      * {@link #setSelectedItemPosition(int)} for more details.
      *
      * @param data 数据列表
@@ -178,16 +178,16 @@ public interface IWheelPicker {
      * 择器最宽的文本是什么，滚轮选择器会根据这条文本计算宽度并将其作为滚轮选择器的宽度
      * <p>
      * Set items of WheelPicker if has same width
-     * WheelPicker will traverse the data source to calculate each data text width to find out the
+     * WheelPicker will traverse the post source to calculate each post text width to find out the
      * maximum text width for the final view width, this process maybe spends a lot of time and
-     * reduce efficiency when data source has large amount data, in most large amount data case,
-     * data text always has same width, you can call this method tell to WheelPicker your data
+     * reduce efficiency when post source has large amount post, in most large amount post case,
+     * post text always has same width, you can call this method tell to WheelPicker your post
      * source has same width to save time and improve efficiency.
-     * Sometimes the data source you set is positively has different text width, but maybe you know
-     * the maximum width text's position in data source, then you can call
+     * Sometimes the post source you set is positively has different text width, but maybe you know
+     * the maximum width text's position in post source, then you can call
      * {@link #setMaximumWidthTextPosition(int)} tell to WheelPicker where is the maximum width text
-     * in data source, WheelPicker will calculate its width base on this text which found by
-     * position. If you don't know the position of maximum width text in data source, but you have
+     * in post source, WheelPicker will calculate its width base on this text which found by
+     * position. If you don't know the position of maximum width text in post source, but you have
      * maximum width text, you can call {@link #setMaximumWidthText(String)} tell to WheelPicker
      * what maximum width text is directly, WheelPicker will calculate its width base on this text.
      *
@@ -234,7 +234,7 @@ public interface IWheelPicker {
     /**
      * 获取最宽的文本在数据源中的位置
      * <p>
-     * Get the position of maximum width text in data source
+     * Get the position of maximum width text in post source
      *
      * @return 最宽的文本在数据源中的位置
      */
@@ -243,7 +243,7 @@ public interface IWheelPicker {
     /**
      * 设置最宽的文本在数据源中的位置
      * <p>
-     * Set the position of maximum width text in data source
+     * Set the position of maximum width text in post source
      *
      * @param position 最宽的文本在数据源中的位置
      * @see #setSameWidth(boolean)

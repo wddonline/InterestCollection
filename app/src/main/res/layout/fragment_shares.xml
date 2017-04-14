@@ -5,11 +5,6 @@
     android:orientation="vertical"
     tools:context="org.wdd.app.android.interestcollection.ui.images.fragment.ImagesFragment">
 
-    <RelativeLayout
-        android:id="@+id/fragment_shares_ads"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/fragment_shares_refreshlayout"
         android:layout_width="match_parent"

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_post_list_header_summary_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:orientation="horizontal"
+    android:background="@color/white">
+
+    <View
+        android:layout_width="6dp"
+        android:layout_height="match_parent"
+        android:background="#e1e2e4" />
+
+    <TextView
+        android:id="@+id/item_dirty_joke_detail_list_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:lineSpacingExtra="6dp"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:textColor="#acacbb"
+        android:textSize="@dimen/textSizeItemTitle" />
+
+</LinearLayout>

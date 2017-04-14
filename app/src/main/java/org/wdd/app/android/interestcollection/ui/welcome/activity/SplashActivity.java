@@ -13,7 +13,6 @@ import com.qq.e.ads.splash.SplashAD;
 import com.qq.e.ads.splash.SplashADListener;
 
 import org.wdd.app.android.interestcollection.R;
-import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.permission.PermissionListener;
 import org.wdd.app.android.interestcollection.permission.PermissionManager;
 import org.wdd.app.android.interestcollection.permission.Rationale;
@@ -39,6 +38,9 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
 
     private boolean isCheckRequired = false;
     private long startTimeMillis;
+    private boolean isAdOverdue = false;
+    private boolean isAdClicked = false;
+    private boolean isActivityPause = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +89,11 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
     @Override
     protected void onResume() {
         super.onResume();
+        isActivityPause = false;
+        if (isAdOverdue || isAdClicked) {
+            run();
+            return;
+        }
         if (isCheckRequired) {
             checkPermission();
             isCheckRequired = false;
@@ -94,15 +101,20 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        isActivityPause = true;
+    }
+
+    @Override
     public void onSucceed(int requestCode, List<String> grantedPermissions) {
+        startTimeMillis = System.currentTimeMillis();
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                startTimeMillis = System.currentTimeMillis();
                 loadSplashAd();
-
             }
-        }, 1500);
+        }, 1000);
     }
 
     @Override
@@ -142,68 +154,78 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
     }
 
     public void loadSplashAd() {
-        if (InterestCollectionApplication.getInstance().isAdsOpen()) {
-            new SplashAD(this, mAdsContainer, mSkipView, Constants.TENCENT_APP_ID, Constants.SPLASH_AD_ID, new SplashADListener() {
-                @Override
-                public void onADDismissed() {
+        new SplashAD(this, mAdsContainer, mSkipView, Constants.TENCENT_APP_ID, Constants.SPLASH_AD_ID, new SplashADListener() {
+
+            @Override
+            public void onADDismissed() {
+                if (isAdOverdue) {
                     run();
+                } else {
+                    if (isAdClicked) {
+
+                    } else {
+                        run();
+                    }
                 }
+            }
 
-                @Override
-                public void onNoAD(int i) {
-                    waitOrJump();
+            @Override
+            public void onNoAD(int i) {
+                waitOrJump();
+            }
+
+            @Override
+            public void onADPresent() {
+                AlphaAnimation hideAnim = new AlphaAnimation(1, 0);
+                hideAnim.setDuration(800);
+                hideAnim.setFillAfter(true);
+                hideAnim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        mBgView.setVisibility(View.GONE);
+                        mProviderView.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                AlphaAnimation showAnim = new AlphaAnimation(0, 1);
+                hideAnim.setDuration(800);
+                hideAnim.setFillAfter(true);
+
+                mBgView.startAnimation(hideAnim);
+                mProviderView.startAnimation(hideAnim);
+
+                mAdsContainer.setVisibility(View.VISIBLE);
+                mSkipView.setVisibility(View.VISIBLE);
+                mAdsContainer.startAnimation(showAnim);
+                mSkipView.startAnimation(showAnim);
+            }
+
+            @Override
+            public void onADClicked() {
+                isAdClicked = true;
+            }
+
+            @Override
+            public void onADTick(long millisUntilFinished) {
+                String skipText = getString(R.string.click_to_skip);
+                mSkipView.setText(String.format(skipText, Math.round(millisUntilFinished / 1000f)));
+                if (millisUntilFinished <= 1000) {
+                    isAdOverdue = true;
+                    if (isActivityPause) return;
+                    onADDismissed();
                 }
-
-                @Override
-                public void onADPresent() {
-                    AlphaAnimation hideAnim = new AlphaAnimation(1, 0);
-                    hideAnim.setDuration(800);
-                    hideAnim.setFillAfter(true);
-                    hideAnim.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            mBgView.setVisibility(View.GONE);
-                            mProviderView.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-
-                        }
-                    });
-
-                    AlphaAnimation showAnim = new AlphaAnimation(0, 1);
-                    hideAnim.setDuration(800);
-                    hideAnim.setFillAfter(true);
-
-                    mBgView.startAnimation(hideAnim);
-                    mProviderView.startAnimation(hideAnim);
-
-                    mAdsContainer.setVisibility(View.VISIBLE);
-                    mSkipView.setVisibility(View.VISIBLE);
-                    mAdsContainer.startAnimation(showAnim);
-                    mSkipView.startAnimation(showAnim);
-                }
-
-                @Override
-                public void onADClicked() {
-
-                }
-
-                @Override
-                public void onADTick(long millisUntilFinished) {
-                    String skipText = getString(R.string.click_to_skip);
-                    mSkipView.setText(String.format(skipText, Math.round(millisUntilFinished / 1000f)));
-                }
-            }, 3000);
-        } else {
-            waitOrJump();
-        }
+            }
+        }, 3000);
     }
 
     private void waitOrJump() {

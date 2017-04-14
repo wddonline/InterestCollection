@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
+import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,43 +20,23 @@ import java.util.List;
 
 public class DirtyJokeDetailAdapter extends BaseAdapter {
 
-    private final int TYPE_POST = 0;
-    private final int TYPE_COMMENT = 1;
+    private final int TYPE_HEADER = 0;
+    private final int TYPE_CONTENT = 1;
+    private final int TYPE_IMAGE = 2;
 
     private LayoutInflater mInflater;
 
-    private List<Object> mData;
+    private List<DirtyJokeDetail.Post> mData;
 
     public DirtyJokeDetailAdapter(Context context, List<DirtyJokeDetail.Post> posts) {
         mInflater = LayoutInflater.from(context);
         mData = new ArrayList<>();
-        DirtyJokeDetail.Post post;
-        for (int i = 0; i < posts.size(); i++) {
-            post = posts.get(i);
-            mData.add(post);
-            if (post.comments != null) {
-                for (int j = 0; j < post.comments.size(); j++) {
-                    mData.add(post.comments.get(j));
-                }
-            }
-
-        }
+        mData.addAll(posts);
     }
 
     public void refreshData(List<DirtyJokeDetail.Post> posts) {
         mData.clear();
-        DirtyJokeDetail.Post post;
-        for (int i = 0; i < posts.size(); i++) {
-            post = posts.get(i);
-            mData.add(post);
-            if (post.comments != null) {
-                for (int j = 0; j < post.comments.size(); j++) {
-                    mData.add(post.comments.get(j));
-                }
-            }
-
-        }
-        notifyDataSetChanged();
+        mData.addAll(posts);
     }
 
     @Override
@@ -65,16 +46,21 @@ public class DirtyJokeDetailAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 2;
+        return 3;
     }
 
     @Override
     public int getItemViewType(int position) {
-        Object item = mData.get(position);
-        if (item instanceof DirtyJokeDetail.Comment) {
-            return TYPE_COMMENT;
+        DirtyJokeDetail.Post post = mData.get(position);
+        switch (post.type) {
+            case HEADER:
+                return TYPE_HEADER;
+            case TEXT:
+                return TYPE_CONTENT;
+            case IMAGE:
+                return TYPE_IMAGE;
         }
-        return TYPE_POST;
+        return TYPE_CONTENT;
     }
 
     @Override
@@ -89,37 +75,62 @@ public class DirtyJokeDetailAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Object item = mData.get(position);
-        if (item instanceof DirtyJokeDetail.Post) {
-            PostViewHolder viewHolder;
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.item_dirty_joke_detail_list_post, parent, false);
-                viewHolder = new PostViewHolder(convertView);
-                convertView.setTag(viewHolder);
-            } else {
-                viewHolder = (PostViewHolder) convertView.getTag();
-            }
-            DirtyJokeDetail.Post post = (DirtyJokeDetail.Post) item;
-            viewHolder.bindData(post);
-        } else {
-            CommentViewHolder viewHolder;
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.item_dirty_joke_detail_list_reply, parent, false);
-                viewHolder = new CommentViewHolder(convertView);
-                convertView.setTag(viewHolder);
-            } else {
-                viewHolder = (CommentViewHolder) convertView.getTag();
-            }
-            DirtyJokeDetail.Comment comment = (DirtyJokeDetail.Comment) item;
-            viewHolder.bindData(comment);
+        DirtyJokeDetail.Post item = mData.get(position);
+        switch (getItemViewType(position)) {
+            case TYPE_HEADER:
+                HeaderViewHolder headerViewHolder;
+                if (convertView == null) {
+                    convertView = mInflater.inflate(R.layout.item_dirty_joke_detail_list_header, parent, false);
+                    headerViewHolder = new HeaderViewHolder(convertView);
+                    convertView.setTag(headerViewHolder);
+                } else {
+                    headerViewHolder = (HeaderViewHolder) convertView.getTag();
+                }
+                headerViewHolder.bindData(item);
+                break;
+            case TYPE_CONTENT:
+                TextViewHolder textViewHolder;
+                if (convertView == null) {
+                    convertView = mInflater.inflate(R.layout.item_dirty_joke_detail_list_post, parent, false);
+                    textViewHolder = new TextViewHolder(convertView);
+                    convertView.setTag(textViewHolder);
+                } else {
+                    textViewHolder = (TextViewHolder) convertView.getTag();
+                }
+                textViewHolder.bindData(item);
+                break;
+            case TYPE_IMAGE:
+                ImageViewHolder imageViewHolder;
+                if (convertView == null) {
+                    convertView = mInflater.inflate(R.layout.item_images_detail_image, parent, false);
+                    imageViewHolder = new ImageViewHolder(convertView);
+                    convertView.setTag(imageViewHolder);
+                } else {
+                    imageViewHolder = (ImageViewHolder) convertView.getTag();
+                }
+                imageViewHolder.bindData(item);
+                break;
         }
         return convertView;
     }
 
-    private class PostViewHolder {
+    private class HeaderViewHolder {
+
         TextView postView;
 
-        public PostViewHolder(View itemView) {
+        public HeaderViewHolder(View itemView) {
+            postView = (TextView) itemView.findViewById(R.id.item_dirty_joke_detail_list_text);
+        }
+
+        public void bindData(DirtyJokeDetail.Post post) {
+            postView.setText(post.content);
+        }
+    }
+
+    private class TextViewHolder {
+        TextView postView;
+
+        public TextViewHolder(View itemView) {
             postView = (TextView) itemView.findViewById(R.id.item_dirty_joke_detail_list_post_text);
         }
 
@@ -128,22 +139,16 @@ public class DirtyJokeDetailAdapter extends BaseAdapter {
         }
     }
 
-    private class CommentViewHolder {
+    private class ImageViewHolder {
 
-        TextView typeView;
-        TextView nameView;
-        TextView commentView;
+        NetworkImageView imageView;
 
-        public CommentViewHolder(View itemView) {
-            typeView = (TextView) itemView.findViewById(R.id.item_dirty_joke_detail_list_reply_type);
-            nameView = (TextView) itemView.findViewById(R.id.item_dirty_joke_detail_list_reply_name);
-            commentView = (TextView) itemView.findViewById(R.id.item_dirty_joke_detail_list_reply_comment);
+        public ImageViewHolder(View itemView) {
+            imageView = (NetworkImageView) itemView.findViewById(R.id.item_images_detail_image_img);
         }
 
-        public void bindData(DirtyJokeDetail.Comment comment) {
-            typeView.setText(comment.type);
-            nameView.setText(comment.author);
-            commentView.setText(comment.comment);
+        public void bindData(DirtyJokeDetail.Post post) {
+            imageView.setImageUrl(post.content);
         }
     }
 

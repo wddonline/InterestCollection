@@ -22,7 +22,6 @@ import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
 import org.wdd.app.android.interestcollection.ui.jokes.presenter.DirtyJokeDetailPresenter;
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
-import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 public class DirtyJokeDetailActivity extends BaseActivity {
 
@@ -49,7 +48,6 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private DirtyJokeDetailAdapter mAdapter;
     private DirtyJokeFavorite mFavorite;
     private DirtyJoke mJoke;
-    private BannerAdsBuilder mHeaderAdsBuilder;
     private BannerAdsBuilder mFooterAdsBuilder;
 
     private int id;
@@ -147,12 +145,6 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         if (mHeaderView == null) {
             mHeaderView = View.inflate(this, R.layout.layout_post_list_header, null);
             mListView.addHeaderView(mHeaderView);
-
-            ViewGroup headerAdsView = (ViewGroup) mHeaderView.findViewById(R.id.layout_post_list_header_ads);
-            mHeaderAdsBuilder = new BannerAdsBuilder(this, headerAdsView, Constants.DETAIL_HEADER_AD_ID, true);
-            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
-                mHeaderAdsBuilder.addBannerAds();
-            }
         }
         TextView titleView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_title);
         titleView.setText(data.title);
@@ -162,8 +154,6 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         tagView.setText(data.tag);
         TextView commentCountView = (TextView) mHeaderView.findViewById(R.id.layout_post_list_header_comment_count);
         commentCountView.setText(data.commentCount);
-        NetworkImageView imageView = (NetworkImageView) mHeaderView.findViewById(R.id.layout_post_list_header_img);
-        imageView.setImageUrl(data.imgUrl);
 
         if (mFooterView == null) {
             mFooterView = View.inflate(this, R.layout.layout_post_list_footer, null);
@@ -179,10 +169,10 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         sourceView.setText(data.source);
 
         if (mAdapter == null) {
-            mAdapter = new DirtyJokeDetailAdapter(this, data.posts);
+            mAdapter = new DirtyJokeDetailAdapter(this, data.post);
             mListView.setAdapter(mAdapter);
         } else {
-            mAdapter.refreshData(data.posts);
+            mAdapter.refreshData(data.post);
         }
 
     }

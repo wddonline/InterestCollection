@@ -23,6 +23,7 @@ import org.wdd.app.android.interestcollection.utils.HttpUtils;
 import org.wdd.app.android.interestcollection.utils.ServerApis;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by richard on 2/24/17.
@@ -71,43 +72,45 @@ public class DirtyJokeDetailDateGetter {
                 detail.commentCount = postMetaNodes.get(2).text();
 
                 Elements contentNodes = articleNode.getElementsByAttributeValue("class", "single-post-content");
-                if (contentNodes.size() == 0) {
-                    mCallback.onRequestOk(null);
-                    return;
-                }
-                Element contentNode = contentNodes.first();
-                detail.imgUrl = contentNode.getElementsByTag("img").first().attr("data-original");
-                Elements postNodes = contentNode.getElementsByTag("p");
-                if (postNodes.size() > 0) {
-                    detail.posts = new ArrayList<>();
-                    Element postNode;
-                    DirtyJokeDetail.Post post = null;
-                    DirtyJokeDetail.Comment comment;
-                    Elements spanNodes;
-                    for (int i = 0; i < postNodes.size(); i++) {
-                        postNode = postNodes.get(i);
-                        if (TextUtils.isEmpty(postNode.text())) continue;
-                        if ("hf".equals(postNode.attr("class"))) {
-                            if (post.comments == null) {
-                                post.comments = new ArrayList<>();
+                if (contentNodes.size() > 0) {
+                    Element contentNode = contentNodes.first();
+                    Elements nodes = contentNode.children();
+                    if (nodes.size() > 0) {
+                        Element node;
+                        DirtyJokeDetail.Post post;
+                        Elements imgNodes;
+                        String name;
+                        List<DirtyJokeDetail.Post> list = new ArrayList<>();
+                        for (int i = 0; i < nodes.size(); i++) {
+                            node = nodes.get(i);
+                            if (node.tagName().equals("h2")) {
+                                post = new DirtyJokeDetail.Post();
+                                post.type = DirtyJokeDetail.PostType.HEADER;
+                                post.content = node.text();
+                                list.add(post);
+                            } else if (node.tagName().equals("p")) {
+                                if ("source".equals(node.attr("class"))) {
+                                    detail.source = node.text();
+                                    continue;
+                                }
+                                name = node.text();
+                                if (TextUtils.isEmpty(name)) continue;
+                                post = new DirtyJokeDetail.Post();
+                                post.type = DirtyJokeDetail.PostType.TEXT;
+                                post.content = name;
+                                list.add(post);
+                            } else if (node.tagName().equals("noscript")) {
+                                imgNodes = node.getElementsByTag("img");
+                                if (imgNodes.size() == 0) continue;
+                                post = new DirtyJokeDetail.Post();
+                                post.type = DirtyJokeDetail.PostType.IMAGE;
+                                post.content = imgNodes.first().attr("src");
+                                list.add(post);
                             }
-                            comment = new DirtyJokeDetail.Comment();
-                            spanNodes = postNode.getElementsByTag("span");
-                            comment.type = spanNodes.first().text();
-                            comment.author = spanNodes.last().text();
-                            String text = postNode.html();
-                            comment.comment = text.substring(text.lastIndexOf(">") + 1, text.length());
-                            post.comments.add(comment);
-                        } else if ("source".equals(postNode.attr("class"))) {
-                            detail.source = postNode.text();
-                        } else {
-                            post = new DirtyJokeDetail.Post();
-                            post.content = postNode.text();
-                            detail.posts.add(post);
                         }
+                        detail.post = list;
                     }
                 }
-
                 mCallback.onRequestOk(detail);
             }
 

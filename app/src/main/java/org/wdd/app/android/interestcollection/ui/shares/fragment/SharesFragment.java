@@ -37,7 +37,6 @@ public class SharesFragment extends BaseFragment {
     private SharesPresenter mPresenter;
     private SharesAdapter mAdapter;
     private List<Share> mShares;
-    private BannerAdsBuilder mAdsBuilder;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -66,8 +65,6 @@ public class SharesFragment extends BaseFragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new LineDividerDecoration(getContext(), LinearLayoutManager.VERTICAL));
         mLoadView = (LoadView) mRootView.findViewById(R.id.fragment_shares_loadview);
-        ViewGroup adsView = (ViewGroup) mRootView.findViewById(R.id.fragment_shares_ads);
-        mAdsBuilder = new BannerAdsBuilder(getActivity(), adsView, Constants.SHARE_LIST_AD_ID);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -115,9 +112,6 @@ public class SharesFragment extends BaseFragment {
             mRefreshLayout.setVisibility(View.VISIBLE);
             mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
-            if (BannerAdsBuilder.shouldShowAds(Constants.SHARE_LIST_AD_ID)) {
-                mAdsBuilder.addBannerAds();
-            }
         } else {
             if (isAppend) {
                 int start = mShares.size();
