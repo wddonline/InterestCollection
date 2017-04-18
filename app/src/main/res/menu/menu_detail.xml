@@ -14,5 +14,10 @@
         android:icon="@drawable/ic_favorite_uncollected"
         app:showAsAction="always"
         android:visible="false"/>
+    <item
+        android:id="@+id/menu_detail_share"
+        android:title="@string/share"
+        android:icon="@drawable/ic_share"
+        app:showAsAction="always" />
 
 </menu>

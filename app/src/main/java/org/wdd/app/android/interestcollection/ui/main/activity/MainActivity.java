@@ -28,6 +28,7 @@ import org.wdd.app.android.interestcollection.ui.jokes.fragment.DirtyJokesFragme
 import org.wdd.app.android.interestcollection.ui.main.presenter.MainPresenter;
 import org.wdd.app.android.interestcollection.ui.profile.activity.ProfileEditActivity;
 import org.wdd.app.android.interestcollection.ui.settings.activity.AboutActivity;
+import org.wdd.app.android.interestcollection.ui.settings.activity.AppWallActivity;
 import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
@@ -238,6 +239,10 @@ public class MainActivity extends BaseActivity implements Runnable {
     public void onClearCacheClicked(View v) {
         showLoadingDialog();
         mPresenter.cleanFileCache(host);
+    }
+
+    public void onAppRecommendationClicked(View v) {
+        AppWallActivity.show(this);
     }
 
     public void onAboutClicked(View v) {

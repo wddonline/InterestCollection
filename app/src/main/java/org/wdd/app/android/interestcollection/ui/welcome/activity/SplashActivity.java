@@ -41,6 +41,7 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
     private boolean isAdOverdue = false;
     private boolean isAdClicked = false;
     private boolean isActivityPause = false;
+    private boolean jumped = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +83,8 @@ public class SplashActivity extends BaseActivity implements Runnable, Permission
 
     @Override
     public void run() {
+        if (jumped) return;
+        jumped = true;
         finish();
         MainActivity.show(this);
     }

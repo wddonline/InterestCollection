@@ -60,6 +60,7 @@
     <string name="collect">收藏</string>
     <string name="uncollect">取消收藏</string>
     <string name="no_favorite_selected">至少选择一项</string>
+    <string name="app_recommendation">应用推荐</string>
 
     <!-- 广告 -->
     <string name="view_detail">查看详情</string>

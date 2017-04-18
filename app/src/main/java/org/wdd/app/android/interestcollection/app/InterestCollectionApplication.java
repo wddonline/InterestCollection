@@ -38,6 +38,7 @@ public class InterestCollectionApplication extends Application {
 
         uiHandler = new Handler(Looper.getMainLooper());
         BmobUtils.initBombClient(this);
+
         //设置umeng统计场景
         MobclickAgent.setScenarioType(getApplicationContext(), MobclickAgent.EScenarioType.E_UM_NORMAL);
         MobclickAgent.setSessionContinueMillis(10 * 60 * 1000);

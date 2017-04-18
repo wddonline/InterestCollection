@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/white"
-    tools:context="org.wdd.app.android.interestcollection.ui.jokes.activity.DirtyJokeDetailActivity">
+    tools:context=".ui.videos.activity.VideoDetailActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/activity_video_detail_toolbar"
