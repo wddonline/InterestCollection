@@ -6,10 +6,15 @@ import android.os.Looper;
 import android.os.Process;
 
 import com.umeng.analytics.MobclickAgent;
+import com.umeng.socialize.Config;
+import com.umeng.socialize.PlatformConfig;
+import com.umeng.socialize.UMShareAPI;
+import com.umeng.socialize.common.QueuedWork;
 import com.youku.cloud.player.YoukuPlayerConfig;
 
 import org.wdd.app.android.interestcollection.http.HttpManager;
 import org.wdd.app.android.interestcollection.utils.BmobUtils;
+import org.wdd.app.android.interestcollection.utils.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +55,11 @@ public class InterestCollectionApplication extends Application {
         YoukuPlayerConfig.setClientIdAndSecret("549fc7c5622c1f61", "1240d184012e29b5dfb15d3ba35b0c4e");
         YoukuPlayerConfig.onInitial(this);
         YoukuPlayerConfig.setLog(false);
+
+        //开启debug模式，方便定位错误，具体错误检查方式可以查看http://dev.umeng.com/social/android/quick-integration的报错必看，正式发布，请关闭该模式
+        Config.DEBUG = Constants.DEBUG;
+        QueuedWork.isUseThreadPool = false;
+        UMShareAPI.get(this);
     }
 
     public boolean isAdsOpen() {
@@ -83,5 +93,11 @@ public class InterestCollectionApplication extends Application {
         HttpManager.getInstance(this).stopAllSession();
         MobclickAgent.onKillProcess(this);
         Process.killProcess(Process.myPid());
+    }
+
+    {
+        PlatformConfig.setWeixin("wx3e22eb228c61a725", "6ddecdba647b4e72affcb7207dfa417b");
+        PlatformConfig.setSinaWeibo("996509505", "ece6bcc4834a485612b58a4c5a17f3d1","https://www.pgyer.com/QGM2");
+        PlatformConfig.setQQZone("1106053180", "CNOcdrWmv3xCxXY9");
     }
 }

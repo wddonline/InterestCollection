@@ -3,6 +3,7 @@ package org.wdd.app.android.interestcollection.ui.shares.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -11,6 +12,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.umeng.socialize.ShareAction;
+import com.umeng.socialize.UMShareAPI;
+import com.umeng.socialize.UMShareListener;
+import com.umeng.socialize.bean.SHARE_MEDIA;
+import com.umeng.socialize.media.UMImage;
+import com.umeng.socialize.media.UMWeb;
+import com.umeng.socialize.shareboard.ShareBoardConfig;
+import com.umeng.socialize.shareboard.SnsPlatform;
+import com.umeng.socialize.utils.ShareBoardlistener;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
@@ -23,7 +35,8 @@ import org.wdd.app.android.interestcollection.ui.shares.model.ShareDetail;
 import org.wdd.app.android.interestcollection.ui.shares.presenter.ShareDetailPresenter;
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
-import org.wdd.app.android.interestcollection.views.NetworkImageView;
+
+import java.lang.ref.WeakReference;
 
 public class ShareDetailActivity extends BaseActivity {
 
@@ -52,6 +65,8 @@ public class ShareDetailActivity extends BaseActivity {
     private Share mShare;
     private ShareFavorite mFavorite;
     private BannerAdsBuilder mFooterAdsBuilder;
+    private UMShareListener mShareListener;
+    private ShareAction mShareAction;
 
     private int id;
     private boolean initCollectStatus = false;
@@ -93,7 +108,12 @@ public class ShareDetailActivity extends BaseActivity {
                         return true;
                     case R.id.menu_detail_uncollect:
                         mPresenter.collectShare(mShare.title, mShare.date, mShare.url, mShare.imgUrl, host);
-                        return false;
+                        return true;
+                    case R.id.menu_detail_share:
+                        ShareBoardConfig config = new ShareBoardConfig();
+                        config.setMenuItemBackgroundShape(ShareBoardConfig.BG_SHAPE_NONE);
+                        mShareAction.open(config);
+                        return true;
                 }
                 return false;
             }
@@ -110,12 +130,81 @@ public class ShareDetailActivity extends BaseActivity {
             }
         });
 
+        mShareListener = new CustomShareListener(this);
+        mShareAction = new ShareAction(this).setDisplayList(
+                SHARE_MEDIA.WEIXIN, SHARE_MEDIA.WEIXIN_CIRCLE, SHARE_MEDIA.WEIXIN_FAVORITE,
+                SHARE_MEDIA.SINA, SHARE_MEDIA.QQ, SHARE_MEDIA.QZONE)
+                .setShareboardclickCallback(new ShareBoardlistener() {
+                    @Override
+                    public void onclick(SnsPlatform snsPlatform, SHARE_MEDIA share_media) {
+                        UMWeb web = new UMWeb("https://www.pgyer.com/QGM2");
+                        web.setTitle(getString(R.string.app_name));
+                        web.setDescription(mShare.title);
+                        web.setThumb(new UMImage(getBaseContext(), mShare.imgUrl));
+                        new ShareAction(ShareDetailActivity.this).withMedia(web)
+                                .setPlatform(share_media)
+                                .setCallback(mShareListener)
+                                .share();
+                    }
+                });
+
         mPresenter.getShareDetailData(mShare.url, host);
+    }
+
+    private static class CustomShareListener implements UMShareListener {
+
+        private WeakReference<ShareDetailActivity> mActivity;
+
+        private CustomShareListener(ShareDetailActivity activity) {
+            mActivity = new WeakReference(activity);
+        }
+
+        @Override
+        public void onStart(SHARE_MEDIA platform) {
+
+        }
+
+        @Override
+        public void onResult(SHARE_MEDIA platform) {
+            if (platform.name().equals("WEIXIN_FAVORITE")) {
+                Toast.makeText(mActivity.get(), platform + " 收藏成功啦", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(mActivity.get(), platform + " 分享成功啦", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void onError(SHARE_MEDIA platform, Throwable t) {
+            Toast.makeText(mActivity.get(), platform + " 分享失败啦", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onCancel(SHARE_MEDIA platform) {
+            if (platform == SHARE_MEDIA.QQ || platform == SHARE_MEDIA.QZONE) return;
+            Toast.makeText(mActivity.get(), platform + " 分享取消了", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        /** attention to this below ,must add this**/
+        UMShareAPI.get(this).onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * 屏幕横竖屏切换时避免出现window leak的问题
+     */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mShareAction.close();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        UMShareAPI.get(this).release();
         mPresenter.cancelRequest();
     }
 
