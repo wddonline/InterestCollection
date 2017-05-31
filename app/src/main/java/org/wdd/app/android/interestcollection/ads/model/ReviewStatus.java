@@ -1,4 +1,4 @@
-package org.wdd.app.android.interestcollection.ui.welcome.model;
+package org.wdd.app.android.interestcollection.ads.model;
 
 import cn.bmob.v3.BmobObject;
 

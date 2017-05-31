@@ -51,7 +51,6 @@ public class InterestCollectionApplication extends Application {
         bombConfManager = new BmobConfManager(this);
         bombConfManager.init();
 
-//        YoukuPlayerConfig.setClientIdAndSecret(YoukuProfile.CLIENT_ID,YoukuProfile.CLIENT_SECRET);
         YoukuPlayerConfig.setClientIdAndSecret("549fc7c5622c1f61", "1240d184012e29b5dfb15d3ba35b0c4e");
         YoukuPlayerConfig.onInitial(this);
         YoukuPlayerConfig.setLog(false);

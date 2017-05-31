@@ -7,8 +7,8 @@ android {
         applicationId "org.wdd.app.android.interestcollection"
         minSdkVersion 9
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -33,11 +33,8 @@ android {
         XIAOMI {}
         WDJ {}
         ZS91 {}
-        WO {}
+        KUAN {}
         MEIZU {}
-        HUAWEI {}
-        LEPLAY {}
-        PPZS {}
     }
 
     productFlavors.all {

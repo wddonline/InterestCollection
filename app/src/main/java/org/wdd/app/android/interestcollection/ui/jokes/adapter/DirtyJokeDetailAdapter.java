@@ -8,10 +8,12 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -31,11 +33,29 @@ public class DirtyJokeDetailAdapter extends BaseAdapter {
     public DirtyJokeDetailAdapter(Context context, List<DirtyJokeDetail.Post> posts) {
         mInflater = LayoutInflater.from(context);
         mData = new ArrayList<>();
+        if (InterestCollectionApplication.getInstance().getAppReviewStatus()) {
+            Iterator<DirtyJokeDetail.Post> it = posts.iterator();
+            DirtyJokeDetail.Post post;
+            while (it.hasNext()) {
+                post = it.next();
+                if (post.type == DirtyJokeDetail.PostType.IMAGE || post.type == DirtyJokeDetail.PostType.HEADER) {
+                    it.remove();
+                }
+            }
+        }
         mData.addAll(posts);
     }
 
     public void refreshData(List<DirtyJokeDetail.Post> posts) {
         mData.clear();
+        if (InterestCollectionApplication.getInstance().getAppReviewStatus()) {
+            Iterator<DirtyJokeDetail.Post> it = posts.iterator();
+            while (it.hasNext()) {
+                if (it.next().type == DirtyJokeDetail.PostType.IMAGE || it.next().type == DirtyJokeDetail.PostType.HEADER) {
+                    it.remove();
+                }
+            }
+        }
         mData.addAll(posts);
     }
 

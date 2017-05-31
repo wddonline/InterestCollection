@@ -8,8 +8,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.wdd.app.android.interestcollection.R;
+import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.ui.base.AbstractCommonAdapter;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
+import org.wdd.app.android.interestcollection.utils.DensityUtils;
 import org.wdd.app.android.interestcollection.views.NetworkImageView;
 
 import java.util.List;
@@ -40,7 +42,14 @@ public class DirtyJodeAdapter extends AbstractCommonAdapter<DirtyJoke> {
         JokeViewHolder viewHolder = (JokeViewHolder) holder;
         viewHolder.titleView.setText(item.title);
         viewHolder.dateView.setText(item.date);
-        viewHolder.imageView.setImageUrl(item.imgUrl);
+        if (InterestCollectionApplication.getInstance().getAppReviewStatus()) {
+            viewHolder.imageView.setVisibility(View.INVISIBLE);
+            viewHolder.imageView.getLayoutParams().width = 0;
+            viewHolder.imageView.getLayoutParams().height = DensityUtils.dip2px(context, 60);
+        } else {
+            viewHolder.imageView.setVisibility(View.VISIBLE);
+            viewHolder.imageView.setImageUrl(item.imgUrl);
+        }
         viewHolder.clickView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
