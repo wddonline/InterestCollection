@@ -6,18 +6,18 @@
         android:id="@+id/menu_detail_collect"
         android:title="@string/collect"
         android:icon="@drawable/ic_favorite_collected"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:visible="false"/>
     <item
         android:id="@+id/menu_detail_uncollect"
         android:title="@string/uncollect"
         android:icon="@drawable/ic_favorite_uncollected"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:visible="false"/>
     <item
         android:id="@+id/menu_detail_share"
         android:title="@string/share"
         android:icon="@drawable/ic_share"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
 </menu>

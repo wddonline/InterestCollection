@@ -1,10 +1,12 @@
 package org.wdd.app.android.interestcollection.ui.videos.data;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.http.HttpConnectCallback;
 import org.wdd.app.android.interestcollection.http.HttpManager;
 import org.wdd.app.android.interestcollection.http.HttpRequestEntry;
@@ -32,6 +34,8 @@ public class VideosDataGetter {
     private DataCallback mCallback;
 
     private int mPage = 1;
+    private int mPageNum = 1;
+    private String mUrlPrefix = null;
 
     public VideosDataGetter(Context context, DataCallback callback) {
         this.mContext = context;
@@ -39,69 +43,72 @@ public class VideosDataGetter {
         mManager = HttpManager.getInstance(context);
     }
 
-    public void requestVideosListData(final boolean isAppend, ActivityFragmentAvaliable host) {
+    public void requestVideosListData(String url, final boolean isAppend, ActivityFragmentAvaliable host) {
+        String realUrl;
         if (isAppend) {
-            mPage++;
+            realUrl = ServerApis.VIDEO_URL + url + "/" + mUrlPrefix + mPage + ".html";
         } else {
-            mPage = 1;
+            realUrl = ServerApis.VIDEO_URL + url;
         }
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
-        requestEntry.setUrl(ServerApis.VIDEO_URL + mPage);
+        requestEntry.setUrl(realUrl);
         requestEntry.setShouldCached(false);
         mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
 
             @Override
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
+                List<Video> videos;
                 Document document = (Document) res.getData();
-                Elements rootNode = document.getElementsByAttributeValue("id", "content-c");
-                if (rootNode.size() == 0) {
-                    mCallback.onRequestOk(null, isAppend, true);
+                Elements nodes = document.getElementsByAttributeValue("class", "item_list");
+                if (nodes.size() == 0) {
+                    mCallback.onRequestError(mContext.getString(R.string.parse_error), isAppend);
                     return;
                 }
-                Elements articleNodes = rootNode.first().getElementsByTag("article");
-                if (articleNodes.size() == 0) {
-                    mCallback.onRequestOk(null, isAppend, true);
+                nodes = nodes.first().getElementsByTag("a");
+                if (nodes.size() == 0) {
+                    mCallback.onRequestError(mContext.getString(R.string.parse_error), isAppend);
                     return;
                 }
-                List<Video> videos = new ArrayList<>();
-                Element articleNode;
-                Element aNode;
+                videos = new ArrayList<>();
+                Element node;
                 Element imgNode;
-                Element titleNode;
+                Element spanNode;
                 Video video;
-                for (int i = 0; i < articleNodes.size(); i++) {
-                    articleNode = articleNodes.get(i);
+                for (int i = 0; i < nodes.size(); i++) {
+                    node = nodes.get(i);
                     video = new Video();
-                    aNode = articleNode.getElementsByTag("a").first();
-                    video.url = aNode.attr("href");
-                    imgNode = articleNode.getElementsByTag("img").first();
-                    video.imgUrl = imgNode.attr("src");
+                    video.url = node.attr("href");
+                    imgNode = node.getElementsByTag("img").first();
                     video.title = imgNode.attr("alt");
-                    titleNode = articleNode.getElementsByTag("time").first();
-                    video.date = titleNode.text();
+                    video.imgUrl = ServerApis.VIDEO_URL + imgNode.attr("src");
+                    spanNode = node.getElementsByTag("span").first();
+                    video.date = spanNode.text();
                     videos.add(video);
                 }
 
-                boolean isLastPage;
-                Elements pageNodes = rootNode.first().getElementsByAttributeValue("class", "pagenavi");
-                if (pageNodes.size() == 0) {
-                    isLastPage = true;
-                } else {
-                    Elements aNodes = pageNodes.first().getElementsByTag("a");
-                    if (aNodes.size() == 0) {
-                        isLastPage = true;
-                    } else {
-                        String navText = aNodes.last().text();
-                        if ("下一页".equals(navText)) {
-                            isLastPage = false;
-                        } else {
-                            isLastPage = true;
+                if (videos.size() > 0) {
+                    mPage++;
+                }
+                boolean isLastPage = true;
+                if (mPageNum == -1 || TextUtils.isEmpty(mUrlPrefix)) {
+                    nodes = document.getElementsByTag("select");
+                    if (nodes.size() > 0) {
+                        nodes = nodes.first().getElementsByTag("option");
+                        if (nodes.size() > 0) {
+                            node = nodes.last();
+                            mPageNum = Integer.parseInt(node.text());
+                            String value = node.attr("value");
+                            mUrlPrefix = value.substring(0, value.lastIndexOf('_') + 1);
+                            isLastPage = mPage == mPageNum;
                         }
                     }
+                } else {
+                    isLastPage = mPage == mPageNum;
                 }
+
                 mCallback.onRequestOk(videos, isAppend, isLastPage);
             }
 

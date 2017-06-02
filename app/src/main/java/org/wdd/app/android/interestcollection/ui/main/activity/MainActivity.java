@@ -9,7 +9,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TabWidget;
 import android.widget.TextView;
@@ -30,7 +29,7 @@ import org.wdd.app.android.interestcollection.ui.profile.activity.ProfileEditAct
 import org.wdd.app.android.interestcollection.ui.settings.activity.AboutActivity;
 import org.wdd.app.android.interestcollection.ui.settings.activity.AppWallActivity;
 import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
-import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
+import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosMainFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.utils.AppUtils;
 import org.wdd.app.android.interestcollection.utils.BmobUtils;
@@ -66,10 +65,7 @@ public class MainActivity extends BaseActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            //透明状态栏
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        }
+        AppUtils.setImmersiveStatusBar(this);
         MobclickAgent.openActivityDurationTrack(false);
         initData();
         initTitles();
@@ -137,12 +133,12 @@ public class MainActivity extends BaseActivity implements Runnable {
             tabIcons = new int[]{R.drawable.ic_tab_joke, R.drawable.ic_tab_video, R.drawable.ic_tab_audio, R.drawable.ic_tab_share};
             tabTxts = new int[]{R.string.dirty_joke, R.string.video, R.string.audio, R.string.share};
             tabTags = new String[]{"dirty_joke", "video", "audio", "news"};
-            tabClasses = new Class[]{DirtyJokesFragment.class, VideosFragment.class, AudiosFragment.class, SharesFragment.class};
+            tabClasses = new Class[]{DirtyJokesFragment.class, VideosMainFragment.class, AudiosFragment.class, SharesFragment.class};
         } else {
             tabIcons = new int[]{R.drawable.ic_tab_joke,R.drawable.ic_tab_image, R.drawable.ic_tab_video, R.drawable.ic_tab_audio, R.drawable.ic_tab_share};
             tabTxts = new int[]{R.string.dirty_joke, R.string.image, R.string.video, R.string.audio, R.string.share};
             tabTags = new String[]{"dirty_joke", "image", "video", "audio", "news"};
-            tabClasses = new Class[]{DirtyJokesFragment.class, ImagesFragment.class, VideosFragment.class, AudiosFragment.class, SharesFragment.class};
+            tabClasses = new Class[]{DirtyJokesFragment.class, ImagesFragment.class, VideosMainFragment.class, AudiosFragment.class, SharesFragment.class};
         }
 
         int tabCount = tabIcons.length;

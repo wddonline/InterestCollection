@@ -13,6 +13,7 @@ tools:context="org.wdd.app.android.interestcollection.ui.shares.activity.ShareDe
     android:layout_height="?actionBarSize"
     android:background="@color/colorPrimary"
     app:title="@string/app_name"
+    app:theme="@style/ToolbarTheme"
     app:titleTextColor="@color/white" >
 
     <!--<TextView-->

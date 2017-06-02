@@ -129,3 +129,13 @@
 # 优酷
 -keep class com.alibaba.**{*;}
 -keep class com.youku.**{*;}
+
+-keepattributes SourceFile,LineNumberTable
+
+-keep class cn.com.mma.** { *; }
+-keep class cn.mmachina.** { *; }
+-keep class com.nostra13.**{*;}
+
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-verbose

@@ -35,6 +35,7 @@ public class VideosFragment extends BaseFragment {
     private VideosPresenter mPresenter;
     private VideoAdapter mAdapter;
     private List<Video> mVideos;
+    private String mUrl;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,6 +53,7 @@ public class VideosFragment extends BaseFragment {
 
     private void initData() {
         mPresenter = new VideosPresenter(this);
+        mUrl = getArguments().getString("url");
     }
 
     private void initViews() {
@@ -67,20 +69,20 @@ public class VideosFragment extends BaseFragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mPresenter.getVideosListData(false, host);
+                mPresenter.getVideosListData(mUrl, false, host);
             }
         });
         mLoadView.setReloadClickedListener(new LoadView.OnReloadClickedListener() {
             @Override
             public void onReloadClicked() {
-                mPresenter.getVideosListData(false, host);
+                mPresenter.getVideosListData(mUrl, false, host);
             }
         });
     }
 
     @Override
     protected void lazyLoad() {
-        mPresenter.getVideosListData(false, host);
+        mPresenter.getVideosListData(mUrl, false, host);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class VideosFragment extends BaseFragment {
             mAdapter.setOnLoadMoreListener(new AbstractCommonAdapter.OnLoadMoreListener() {
                 @Override
                 public void onLoadMore() {
-                    mPresenter.getVideosListData(true, host);
+                    mPresenter.getVideosListData(mUrl, true, host);
                 }
             });
             mAdapter.setOnItemClickedListener(new VideoAdapter.OnItemClickedListener() {

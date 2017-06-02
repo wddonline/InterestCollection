@@ -69,8 +69,6 @@ public class VideoDetailActivity extends BaseActivity {
     private View mHeaderView;
     private View mFooterView;
     private Toolbar mToolbar;
-    private WebView mWebView;
-    private ProgressBar mProgressBar;
     private TextView mTitleView;
     private TextView mTimeView;
     private TextView mTagView;
@@ -125,10 +123,10 @@ public class VideoDetailActivity extends BaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_detail_collect:
-                        mPresenter.uncollectVideo(mFavorite.id, host);
+                        mPresenter.collectVideo(mVideo.title, mVideo.date, mVideo.url, mVideo.imgUrl, host);
                         return true;
                     case R.id.menu_detail_uncollect:
-                        mPresenter.collectVideo(mVideo.title, mVideo.date, mVideo.url, mVideo.imgUrl, host);
+                        mPresenter.uncollectVideo(mFavorite.id, host);
                         return true;
                     case R.id.menu_detail_share:
                         ShareBoardConfig config = new ShareBoardConfig();
@@ -142,37 +140,6 @@ public class VideoDetailActivity extends BaseActivity {
     }
 
     private void initViews() {
-        mWebView = (WebView) findViewById(R.id.activity_video_detail_webview);
-        mProgressBar = (ProgressBar) findViewById(R.id.activity_video_detail_progress);
-        mWebView.getSettings().setJavaScriptEnabled(true);
-        mWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
-        mWebView.getSettings().setSupportZoom(true); // 支持缩放
-        mWebView.getSettings().setUseWideViewPort(true);
-        mWebView.setWebChromeClient(new WebChromeClient() {
-
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                super.onProgressChanged(view, newProgress);
-                mProgressBar.setProgress(newProgress);
-            }
-
-        });
-
-        mWebView.setWebViewClient(new WebViewClient() {
-
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-                mProgressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                mProgressBar.setVisibility(View.GONE);
-            }
-        });
-
         mVideoContainer = findViewById(R.id.activity_video_detail_container);
         mHeaderView = findViewById(R.id.activity_video_detail_header);
         mFooterView = findViewById(R.id.activity_video_detail_footer);
@@ -268,9 +235,6 @@ public class VideoDetailActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         UMShareAPI.get(this).release();
-        if (mDetail != null && !TextUtils.isEmpty(mDetail.html)) {
-            mWebView.loadUrl("about:blank");
-        }
         mPresenter.cancelRequest();
         if (isSupported) mYoukuPlayerView.onDestroy();
     }
@@ -348,32 +312,35 @@ public class VideoDetailActivity extends BaseActivity {
         this.mDetail = data;
         mLoadView.setStatus(LoadView.LoadStatus.Normal);
 
-        if (TextUtils.isEmpty(data.vid)) {
-            isSupported = false;
-            mWebView.setVisibility(View.VISIBLE);
-            mWebView.loadDataWithBaseURL("http://www.dsuu.cc/wp-content/themes/dsuum/", data.html, "text/html","UTF-8", null);
-        } else {
-            isSupported = true;
-            mVideoContainer.setVisibility(View.VISIBLE);
+        isSupported = true;
+        mVideoContainer.setVisibility(View.VISIBLE);
+        if (!TextUtils.isEmpty(data.title)) {
             mTitleView.setText(data.title);
-            mTimeView.setText(data.time);
-            mTagView.setText(data.tag);
-            mCommentCountView.setText(data.commentCount);
-            mSourceView.setText(data.source);
-            ViewGroup adsView = (ViewGroup) mFooterView.findViewById(R.id.layout_post_list_footer_ads);
-            BannerAdsBuilder adsBuilder = new BannerAdsBuilder(this, adsView, Constants.DETAIL_FOOTER_AD_ID, true);
-            if (InterestCollectionApplication.getInstance().isAdsOpen()) {
-                adsBuilder.addBannerAds();
-            }
-
-            // 初始化播放器
-            mYoukuPlayerView.attachActivity(this);
-            mYoukuPlayerView.setPreferVideoDefinition(VideoDefinition.VIDEO_HD);
-            mYoukuPlayerView.setShowBackBtn(false);
-            mYoukuPlayerView.setPlayerListener(new VideoPlayerListener());
-
-            autoplayvideo();
         }
+        if (!TextUtils.isEmpty(data.time)) {
+            mTimeView.setText(data.time);
+        }
+        if (!TextUtils.isEmpty(data.tag)) {
+            mTagView.setText(data.tag);
+        }
+        findViewById(R.id.layout_post_list_header_comment_icon).setVisibility(View.GONE);
+        mCommentCountView.setVisibility(View.GONE);
+        if (!TextUtils.isEmpty(data.source)) {
+            mSourceView.setText(data.source);
+        }
+        ViewGroup adsView = (ViewGroup) mFooterView.findViewById(R.id.layout_post_list_footer_ads);
+        BannerAdsBuilder adsBuilder = new BannerAdsBuilder(this, adsView, Constants.DETAIL_FOOTER_AD_ID, true);
+        if (InterestCollectionApplication.getInstance().isAdsOpen()) {
+            adsBuilder.addBannerAds();
+        }
+
+        // 初始化播放器
+        mYoukuPlayerView.attachActivity(this);
+        mYoukuPlayerView.setPreferVideoDefinition(VideoDefinition.VIDEO_HD);
+        mYoukuPlayerView.setShowBackBtn(false);
+        mYoukuPlayerView.setPlayerListener(new VideoPlayerListener());
+
+        autoplayvideo();
     }
 
     public void showErrorView(String error) {
@@ -393,23 +360,23 @@ public class VideoDetailActivity extends BaseActivity {
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(initCollectStatus);
     }
 
     public void updateVideoCollectViews(VideoFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
     }
 
     public void showVideoUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
         }
     }
 
@@ -425,10 +392,6 @@ public class VideoDetailActivity extends BaseActivity {
                 case 3001://无版权
                 case 3002://被禁止播放
                 case 3004://订阅才能观看
-                    mVideoContainer.setVisibility(View.GONE);
-                    mWebView.setVisibility(View.VISIBLE);
-                    mWebView.loadDataWithBaseURL("http://www.dsuu.cc/wp-content/themes/dsuum/", mDetail.html, "text/html","UTF-8", null);
-                    break;
                 default:
                     AppToaster.show(info.getDesc());
                     break;

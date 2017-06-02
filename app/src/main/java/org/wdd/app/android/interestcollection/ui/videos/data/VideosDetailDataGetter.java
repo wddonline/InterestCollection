@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.database.manager.impl.VideoFavoriteDbManager;
 import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
 import org.wdd.app.android.interestcollection.http.HttpConnectCallback;
@@ -46,58 +47,42 @@ public class VideosDetailDataGetter {
     public void requestVideoDetailData(String url, ActivityFragmentAvaliable host) {
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
-        requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
-        requestEntry.setUrl(url);
+        requestEntry.addRequestHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+        requestEntry.setUrl("http://www.yiledao.com/" + url);
         mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
 
             @Override
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
-                Document document = (Document) res.getData();
-                Elements rootNodes = document.getElementsByAttributeValue("id", "content-c");
-                if (rootNodes.size() == 0) {
-                    mCallback.onRequestOk(null);
-                    return;
-                }
-                Element rootNode = rootNodes.first();
                 VideoDetail detail = new VideoDetail();
-                detail.title = rootNode.getElementsByAttributeValue("class", "post-title").first().text();
-
-                Elements postMetaNodes = rootNode.getElementsByAttributeValue("class", "post-meta");
-                detail.time = postMetaNodes.get(0).text();
-                detail.tag = postMetaNodes.get(1).text();
-                detail.commentCount = postMetaNodes.get(2).text();
-
-                Elements contentNodes = rootNode.getElementsByAttributeValue("class", "single-post-content");
-                if (contentNodes.size() == 0) {
-                    mCallback.onRequestOk(null);
-                    return;
-                }
-                Element contentNode = contentNodes.first();
-                detail.source = contentNode.getElementsByAttributeValue("class", "source").first().text();
-
-                document.getElementsByTag("script").remove();
-                document.getElementsByAttributeValue("id", "sidemenu-container").remove();
-                document.getElementsByTag("header").remove();
-                document.getElementsByAttributeValue("role", "search").remove();
-                Elements articles = document.getElementsByTag("article");
-                Elements divs = articles.first().getElementsByTag("div");
-                if (divs.size() > 0) {
-                    divs = divs.last().getElementsByTag("div");
-                    if (divs.size() > 0) {
-                        divs.last().remove();
+                Document document = (Document) res.getData();
+                Elements nodes = document.getElementsByAttributeValue("id", "area-title-view");
+                Element node;
+                if (nodes.size() > 0) {
+                    node = nodes.first();
+                    detail.title = node.getElementsByTag("h1").first().text();
+                    detail.time = node.getElementsByAttributeValue("class", "date").first().text();
+                    Elements aNodes = node.getElementsByTag("a");
+                    if (aNodes.size() > 0) {
+                        detail.tag = aNodes.get(0).text();
+                    }
+                    if (aNodes.size() > 2) {
+                        detail.source = aNodes.get(2).text();
                     }
                 }
-                document.getElementsByAttributeValue("id", "pageGo").remove();
-                document.getElementsByClass("post-xg clear").remove();
-                document.getElementsByTag("footer").remove();
-                document.getElementsByClass("comments-area").first().remove();
-                document.getElementsByAttributeValue("id", "btn_top").first().remove();
-                detail.html = document.html();
-
-                String videoUrl = contentNode.getElementsByTag("iframe").first().attr("src");
-                if (!TextUtils.isEmpty(videoUrl) && (videoUrl.startsWith("http://player.youku.com/") || videoUrl.startsWith("https://player.youku.com/"))) {
-                    detail.vid = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
+                nodes = document.getElementsByAttributeValue("class", "content");
+                if (nodes.size() > 0) {
+                    nodes = nodes.first().getElementsByTag("embed");
+                    if (nodes.size() > 0) {
+                        String params = nodes.first().attr("flashvars");
+                        String[] pieces = params.split("&");
+                        for (String piece : pieces) {
+                            if (piece.startsWith("VideoIDS")) {
+                                detail.vid = piece.split("=")[1];
+                                break;
+                            }
+                        }
+                    }
                 }
                 mCallback.onRequestOk(detail);
             }

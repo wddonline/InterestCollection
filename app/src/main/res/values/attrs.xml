@@ -91,4 +91,8 @@
         <attr name="android:scaleType" />
     </declare-styleable>
 
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
 </resources>

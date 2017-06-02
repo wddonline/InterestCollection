@@ -1,5 +1,7 @@
 package org.wdd.app.android.interestcollection.ui.videos.presenter;
 
+import android.text.TextUtils;
+
 import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
 import org.wdd.app.android.interestcollection.ui.base.ActivityFragmentAvaliable;
 import org.wdd.app.android.interestcollection.ui.base.BasePresenter;
@@ -45,7 +47,7 @@ public class VideoDetailPresenter implements BasePresenter, VideosDetailDataGett
 
     @Override
     public void onRequestOk(VideoDetail detail) {
-        if (detail == null) {
+        if (TextUtils.isEmpty(detail.vid)) {
             mView.showNoDataView();
             return;
         }

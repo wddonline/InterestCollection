@@ -28,8 +28,8 @@ public class VideosPresenter implements BasePresenter, VideosDataGetter.DataCall
         mGetter.cancelSession();
     }
 
-    public void getVideosListData(boolean isAppend, ActivityFragmentAvaliable host) {
-        mGetter.requestVideosListData(isAppend, host);
+    public void getVideosListData(String url, boolean isAppend, ActivityFragmentAvaliable host) {
+        mGetter.requestVideosListData(url, isAppend, host);
     }
 
     @Override

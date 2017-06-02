@@ -10,7 +10,7 @@ public class ServerApis {
 
     public final static String DIRTY_JOKE_URL = "http://www.dsuu.cc/quwei-category/joke/page/";
     public final static String IMAGE_URL = "http://www.dsuu.cc/quwei-category/pic/page/";
-    public final static String VIDEO_URL = "http://www.dsuu.cc/quwei-category/video/page/";
+    public final static String VIDEO_URL = "http://m.yiledao.com/";
     public final static String AUDIO_URL = "http://www.dsuu.cc/quwei-category/audio/page/";
     public final static String SHARE_URL = "http://www.dsuu.cc/quwei-category/share/page/";
 

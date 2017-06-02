@@ -53,6 +53,7 @@
             android:textSize="@dimen/textSizeItemExtra"/>
 
         <ImageView
+            android:id="@+id/layout_post_list_header_comment_icon"
             android:layout_width="15dp"
             android:layout_height="15dp"
             android:layout_marginLeft="20dp"
