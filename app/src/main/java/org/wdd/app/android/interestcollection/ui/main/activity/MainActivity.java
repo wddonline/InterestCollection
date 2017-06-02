@@ -33,6 +33,7 @@ import org.wdd.app.android.interestcollection.ui.shares.fragment.SharesFragment;
 import org.wdd.app.android.interestcollection.ui.videos.fragment.VideosFragment;
 import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.utils.AppUtils;
+import org.wdd.app.android.interestcollection.utils.BmobUtils;
 import org.wdd.app.android.interestcollection.utils.DensityUtils;
 import org.wdd.app.android.interestcollection.utils.MathUtils;
 import org.wdd.app.android.interestcollection.views.FragmentTabHost;
@@ -73,6 +74,7 @@ public class MainActivity extends BaseActivity implements Runnable {
         initData();
         initTitles();
         initViews();
+        BmobUtils.autoUpdateApp(this);
     }
 
     private void initTitles() {
@@ -112,6 +114,10 @@ public class MainActivity extends BaseActivity implements Runnable {
             menuStatusBar.setVisibility(View.VISIBLE);
             menuStatusBar.getLayoutParams().height = statusHeight;
         }
+        if(InterestCollectionApplication.getInstance().getAppReviewStatus()) {
+            findViewById(R.id.layout_home_menu_app).setVisibility(View.GONE);
+            findViewById(R.id.layout_home_menu_app_divider).setVisibility(View.GONE);
+        }
 
         mHeaderView = (ImageView) findViewById(R.id.layout_home_menu_headimg);
         mNameView = (TextView) findViewById(R.id.layout_home_menu__name);
@@ -123,11 +129,21 @@ public class MainActivity extends BaseActivity implements Runnable {
         ImageView tabImgView;
         TextView tabTxtView;
 
-        int[] tabIcons = {R.drawable.ic_tab_joke,R.drawable.ic_tab_image, R.drawable.ic_tab_video, R.drawable.ic_tab_audio, R.drawable.ic_tab_share};
-        int[] tabTxts = {R.string.dirty_joke, R.string.image, R.string.video, R.string.audio, R.string.share};
-        String[] tabTags = {"dirty_joke", "image", "video", "audio", "news"};
-        Class[] tabClasses = {DirtyJokesFragment.class, ImagesFragment.class, VideosFragment.class,
-                AudiosFragment.class, SharesFragment.class};
+        int[] tabIcons;
+        int[] tabTxts;
+        String[] tabTags;
+        Class[] tabClasses;
+        if (InterestCollectionApplication.getInstance().getAppReviewStatus()) {
+            tabIcons = new int[]{R.drawable.ic_tab_joke, R.drawable.ic_tab_video, R.drawable.ic_tab_audio, R.drawable.ic_tab_share};
+            tabTxts = new int[]{R.string.dirty_joke, R.string.video, R.string.audio, R.string.share};
+            tabTags = new String[]{"dirty_joke", "video", "audio", "news"};
+            tabClasses = new Class[]{DirtyJokesFragment.class, VideosFragment.class, AudiosFragment.class, SharesFragment.class};
+        } else {
+            tabIcons = new int[]{R.drawable.ic_tab_joke,R.drawable.ic_tab_image, R.drawable.ic_tab_video, R.drawable.ic_tab_audio, R.drawable.ic_tab_share};
+            tabTxts = new int[]{R.string.dirty_joke, R.string.image, R.string.video, R.string.audio, R.string.share};
+            tabTags = new String[]{"dirty_joke", "image", "video", "audio", "news"};
+            tabClasses = new Class[]{DirtyJokesFragment.class, ImagesFragment.class, VideosFragment.class, AudiosFragment.class, SharesFragment.class};
+        }
 
         int tabCount = tabIcons.length;
 

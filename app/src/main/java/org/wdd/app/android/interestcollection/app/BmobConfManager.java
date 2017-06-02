@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.wdd.app.android.interestcollection.ads.model.AdsSwitcher;
+import org.wdd.app.android.interestcollection.ads.model.ReviewStatus;
 
 import java.util.List;
 
@@ -27,8 +28,8 @@ class BmobConfManager {
     public BmobConfManager(Context context) {
         mSwitcher = new AdsSwitcher();
         mPreferences = context.getSharedPreferences("ads", Context.MODE_PRIVATE);
-        mSwitcher.isOpen = mPreferences.getBoolean(ADS_OPEN_STATUS, true);
-        isAppReviewing = mPreferences.getBoolean(APP_REVIEW_STATUS, false);
+        mSwitcher.isOpen = mPreferences.getBoolean(ADS_OPEN_STATUS, false);
+        isAppReviewing = mPreferences.getBoolean(APP_REVIEW_STATUS, true);
 
         mSwitcher.isOpen = true;
 //        mSwitcher.save(new SaveListener<String>() {
@@ -44,15 +45,28 @@ class BmobConfManager {
     }
 
     public void init() {
-        BmobQuery<AdsSwitcher> query = new BmobQuery<>();
-        query.setLimit(1);
-        query.findObjects(new FindListener<AdsSwitcher>() {
+        BmobQuery<AdsSwitcher> adsQuery = new BmobQuery<>();
+        adsQuery.setLimit(1);
+        adsQuery.findObjects(new FindListener<AdsSwitcher>() {
             @Override
             public void done(List<AdsSwitcher> list, BmobException e) {
                 if (e == null && list.size() > 0) {
                     mSwitcher.isOpen = list.get(0).isOpen;
                     SharedPreferences.Editor editor = mPreferences.edit();
                     editor.putBoolean(ADS_OPEN_STATUS, mSwitcher.isOpen);
+                    editor.commit();
+                }
+            }
+        });
+        BmobQuery<ReviewStatus> reviewQuery = new BmobQuery<>();
+        reviewQuery.setLimit(1);
+        reviewQuery.findObjects(new FindListener<ReviewStatus>() {
+            @Override
+            public void done(List<ReviewStatus> list, BmobException e) {
+                if (e == null && list.size() > 0) {
+                    isAppReviewing = list.get(0).isReviewing;
+                    SharedPreferences.Editor editor = mPreferences.edit();
+                    editor.putBoolean(APP_REVIEW_STATUS, isAppReviewing);
                     editor.commit();
                 }
             }

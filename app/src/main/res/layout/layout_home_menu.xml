@@ -164,6 +164,7 @@
                 android:background="@color/colorCommonDivider"/>
 
             <RelativeLayout
+                android:id="@+id/layout_home_menu_app"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/common_list_item_bg"
@@ -193,6 +194,7 @@
             </RelativeLayout>
 
             <ImageView
+                android:id="@+id/layout_home_menu_app_divider"
                 android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
