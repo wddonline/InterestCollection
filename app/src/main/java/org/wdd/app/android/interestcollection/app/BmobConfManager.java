@@ -28,8 +28,8 @@ class BmobConfManager {
     public BmobConfManager(Context context) {
         mSwitcher = new AdsSwitcher();
         mPreferences = context.getSharedPreferences("ads", Context.MODE_PRIVATE);
-        mSwitcher.isOpen = mPreferences.getBoolean(ADS_OPEN_STATUS, false);
-        isAppReviewing = mPreferences.getBoolean(APP_REVIEW_STATUS, true);
+        mSwitcher.isOpen = mPreferences.getBoolean(ADS_OPEN_STATUS, true);
+        isAppReviewing = mPreferences.getBoolean(APP_REVIEW_STATUS, false);
 
         mSwitcher.isOpen = true;
 //        mSwitcher.save(new SaveListener<String>() {

@@ -45,6 +45,7 @@ public class ImageDetailDateGetter {
     }
 
     public void requestImageDetailData(String url, ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setMethod(HttpRequestEntry.Method.GET);

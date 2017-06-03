@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.images.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -26,20 +27,31 @@ import com.umeng.socialize.utils.ShareBoardlistener;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.ActivityTaskStack;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.cache.DrawableCache;
 import org.wdd.app.android.interestcollection.database.model.ImageFavorite;
+import org.wdd.app.android.interestcollection.permission.PermissionListener;
+import org.wdd.app.android.interestcollection.permission.PermissionManager;
+import org.wdd.app.android.interestcollection.permission.Rationale;
+import org.wdd.app.android.interestcollection.permission.RationaleListener;
+import org.wdd.app.android.interestcollection.permission.SettingDialog;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.images.adapter.ImageDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.images.model.Image;
 import org.wdd.app.android.interestcollection.ui.images.model.ImageDetail;
 import org.wdd.app.android.interestcollection.ui.images.presenter.ImageDetailPresenter;
+import org.wdd.app.android.interestcollection.ui.main.activity.MainActivity;
+import org.wdd.app.android.interestcollection.ui.videos.activity.VideoDetailActivity;
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
+import java.util.List;
 
-public class ImageDetailActivity extends BaseActivity {
+public class ImageDetailActivity extends BaseActivity implements PermissionListener {
 
     public static void show(Activity activity, Image image) {
         Intent intent = new Intent(activity, ImageDetailActivity.class);
@@ -53,6 +65,8 @@ public class ImageDetailActivity extends BaseActivity {
         intent.putExtra("image", image);
         activity.startActivityForResult(intent, requestCode);
     }
+
+    private final int REQUEST_PERMISSION_CODE = 100;
 
     private Toolbar mToolbar;
     private ListView mListView;
@@ -71,6 +85,7 @@ public class ImageDetailActivity extends BaseActivity {
     private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
+    private boolean isCheckRequired = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +94,7 @@ public class ImageDetailActivity extends BaseActivity {
         initData();
         initTitles();
         initViews();
+        checkPermission();
     }
 
     private void initData() {
@@ -95,6 +111,11 @@ public class ImageDetailActivity extends BaseActivity {
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                    MainActivity.show(ImageDetailActivity.this);
+                } else {
+                    backAction();
+                }
                 finish();
             }
         });
@@ -104,10 +125,10 @@ public class ImageDetailActivity extends BaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_detail_collect:
-                        mPresenter.uncollectImage(mFavorite.id, host);
+                        mPresenter.collectImage(mImage.title, mImage.date, mImage.url, mImage.imgUrl, mImage.isGif, host);
                         return true;
                     case R.id.menu_detail_uncollect:
-                        mPresenter.collectImage(mImage.title, mImage.date, mImage.url, mImage.imgUrl, mImage.isGif, host);
+                        mPresenter.uncollectImage(mFavorite.id, host);
                         return true;
                     case R.id.menu_detail_share:
                         ShareBoardConfig config = new ShareBoardConfig();
@@ -137,8 +158,16 @@ public class ImageDetailActivity extends BaseActivity {
                 .setShareboardclickCallback(new ShareBoardlistener() {
                     @Override
                     public void onclick(SnsPlatform snsPlatform, SHARE_MEDIA share_media) {
-                        UMWeb web = new UMWeb("https://www.pgyer.com/QGM2");
-                        web.setTitle(getString(R.string.app_name));
+                        String url = "http://www.pgyer.com/QGM2";
+                        try {
+                            url += "?type=2&path=" + URLEncoder.encode(mImage.url, "utf-8") + "&name=" + mImage.title +
+                                    "&ico=" + URLEncoder.encode(mImage.imgUrl, "utf8") + "&date=" + mImage.date + "&gif=" +
+                                    (mImage.isGif ? 1 : 0);
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        UMWeb web = new UMWeb(url);
+                        web.setTitle(getString(R.string.image));
                         web.setDescription(mImage.title);
                         web.setThumb(new UMImage(getBaseContext(), mImage.imgUrl));
                         new ShareAction(ImageDetailActivity.this).withMedia(web)
@@ -147,8 +176,58 @@ public class ImageDetailActivity extends BaseActivity {
                                 .share();
                     }
                 });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isCheckRequired) {
+            checkPermission();
+            isCheckRequired = false;
+        }
+    }
+
+    private void checkPermission() {
+        PermissionManager.with(this)
+                .requestCode(REQUEST_PERMISSION_CODE)
+                .permission(Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .rationale(new RationaleListener() {
+                    @Override
+                    public void showRequestPermissionRationale(int requestCode, Rationale rationale) {
+                        PermissionManager.rationaleDialog(ImageDetailActivity.this, rationale).show();
+                    }
+                }).send();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        PermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onSucceed(int requestCode, List<String> grantPermissions) {
         mPresenter.getImageDetailData(mImage.url, host);
+    }
+
+    @Override
+    public void onFailed(int requestCode, List<String> deniedPermissions) {
+        if (PermissionManager.hasAlwaysDeniedPermission(this, deniedPermissions)) {
+            // 第一种：用默认的提示语。
+            PermissionManager.defaultSettingDialog(this)
+                    .setSettingDialogListener(new SettingDialog.SettingDialogListener() {
+                        @Override
+                        public void onSettingClicked() {
+                            isCheckRequired = true;
+                        }
+
+                        @Override
+                        public void onCancelClicked() {
+                            finish();
+                        }
+                    }).show();
+        } else {
+            finish();
+        }
     }
 
     private static class CustomShareListener implements UMShareListener {
@@ -187,7 +266,11 @@ public class ImageDetailActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        backAction();
+        if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+            MainActivity.show(ImageDetailActivity.this);
+        } else {
+            backAction();
+        }
         super.onBackPressed();
     }
 
@@ -295,23 +378,23 @@ public class ImageDetailActivity extends BaseActivity {
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(initCollectStatus);
     }
 
     public void updateImageCollectViews(ImageFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
     }
 
     public void showImageUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
         }
     }
 }

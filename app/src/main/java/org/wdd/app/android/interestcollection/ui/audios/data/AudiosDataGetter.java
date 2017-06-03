@@ -40,6 +40,7 @@ public class AudiosDataGetter {
     }
 
     public void requestAudiosListData(final boolean isAppend, ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         if (isAppend) {
             mPage++;
         } else {

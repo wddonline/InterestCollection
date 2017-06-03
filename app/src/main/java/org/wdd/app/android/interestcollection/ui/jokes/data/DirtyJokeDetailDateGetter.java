@@ -47,6 +47,7 @@ public class DirtyJokeDetailDateGetter {
     }
 
     public void requestDirtyJokeDetailData(String url, ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setMethod(HttpRequestEntry.Method.GET);

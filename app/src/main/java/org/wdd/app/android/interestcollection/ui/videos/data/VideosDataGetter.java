@@ -44,6 +44,7 @@ public class VideosDataGetter {
     }
 
     public void requestVideosListData(String url, final boolean isAppend, ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         String realUrl;
         if (isAppend) {
             realUrl = ServerApis.VIDEO_URL + url + "/" + mUrlPrefix + mPage + ".html";

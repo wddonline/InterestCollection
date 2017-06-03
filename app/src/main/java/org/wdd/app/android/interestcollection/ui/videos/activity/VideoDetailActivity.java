@@ -1,10 +1,10 @@
 package org.wdd.app.android.interestcollection.ui.videos.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.widget.Toolbar;
@@ -13,11 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,9 +32,16 @@ import com.youku.cloud.player.YoukuPlayerView;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.ActivityTaskStack;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.VideoFavorite;
+import org.wdd.app.android.interestcollection.permission.PermissionListener;
+import org.wdd.app.android.interestcollection.permission.PermissionManager;
+import org.wdd.app.android.interestcollection.permission.Rationale;
+import org.wdd.app.android.interestcollection.permission.RationaleListener;
+import org.wdd.app.android.interestcollection.permission.SettingDialog;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.ui.main.activity.MainActivity;
 import org.wdd.app.android.interestcollection.ui.videos.model.Video;
 import org.wdd.app.android.interestcollection.ui.videos.model.VideoDetail;
 import org.wdd.app.android.interestcollection.ui.videos.presenter.VideoDetailPresenter;
@@ -47,15 +49,17 @@ import org.wdd.app.android.interestcollection.utils.AppToaster;
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
+import java.util.List;
 
-public class VideoDetailActivity extends BaseActivity {
+public class VideoDetailActivity extends BaseActivity implements PermissionListener {
 
-    public static void show(Context context, Video video) {
-        Intent intent = new Intent(context, VideoDetailActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    public static void show(Activity activity, Video video) {
+        Intent intent = new Intent(activity, VideoDetailActivity.class);
         intent.putExtra("video", video);
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     public static void showForResult(Activity activity, int id, Video video, int requestCode) {
@@ -64,6 +68,8 @@ public class VideoDetailActivity extends BaseActivity {
         intent.putExtra("video", video);
         activity.startActivityForResult(intent, requestCode);
     }
+
+    private final int REQUEST_PERMISSION_CODE = 100;
 
     private View mVideoContainer;
     private View mHeaderView;
@@ -87,6 +93,7 @@ public class VideoDetailActivity extends BaseActivity {
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
     private boolean isSupported = false;
+    private boolean isCheckRequired = false;
 
     private Video mVideo;
     private VideoFavorite mFavorite;
@@ -98,6 +105,7 @@ public class VideoDetailActivity extends BaseActivity {
         initData();
         initTitles();
         initViews();
+        checkPermission();
     }
 
     private void initData() {
@@ -114,6 +122,11 @@ public class VideoDetailActivity extends BaseActivity {
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                    MainActivity.show(VideoDetailActivity.this);
+                } else {
+                    backAction();
+                }
                 finish();
             }
         });
@@ -164,8 +177,15 @@ public class VideoDetailActivity extends BaseActivity {
                 .setShareboardclickCallback(new ShareBoardlistener() {
                     @Override
                     public void onclick(SnsPlatform snsPlatform, SHARE_MEDIA share_media) {
-                        UMWeb web = new UMWeb("https://www.pgyer.com/QGM2");
-                        web.setTitle(getString(R.string.app_name));
+                        String url = "http://www.pgyer.com/QGM2";
+                        try {
+                            url += "?type=3&path=" + URLEncoder.encode(mVideo.url, "utf-8") + "&name=" + mVideo.title +
+                                    "&ico=" + URLEncoder.encode(mVideo.imgUrl, "utf8") + "&date=" + mVideo.date;
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        UMWeb web = new UMWeb(url);
+                        web.setTitle(getString(R.string.video));
                         web.setDescription(mVideo.title);
                         web.setThumb(new UMImage(getBaseContext(), mVideo.imgUrl));
                         new ShareAction(VideoDetailActivity.this).withMedia(web)
@@ -174,8 +194,59 @@ public class VideoDetailActivity extends BaseActivity {
                                 .share();
                     }
                 });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isSupported) mYoukuPlayerView.onResume();
+        if (isCheckRequired) {
+            checkPermission();
+            isCheckRequired = false;
+        }
+    }
+
+    private void checkPermission() {
+        PermissionManager.with(this)
+                .requestCode(REQUEST_PERMISSION_CODE)
+                .permission(Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .rationale(new RationaleListener() {
+                    @Override
+                    public void showRequestPermissionRationale(int requestCode, Rationale rationale) {
+                        PermissionManager.rationaleDialog(VideoDetailActivity.this, rationale).show();
+                    }
+                }).send();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        PermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onSucceed(int requestCode, List<String> grantPermissions) {
         mPresenter.getVideoDetailData(mVideo.url, host);
+    }
+
+    @Override
+    public void onFailed(int requestCode, List<String> deniedPermissions) {
+        if (PermissionManager.hasAlwaysDeniedPermission(this, deniedPermissions)) {
+            // 第一种：用默认的提示语。
+            PermissionManager.defaultSettingDialog(this)
+                    .setSettingDialogListener(new SettingDialog.SettingDialogListener() {
+                        @Override
+                        public void onSettingClicked() {
+                            isCheckRequired = true;
+                        }
+
+                        @Override
+                        public void onCancelClicked() {
+                            finish();
+                        }
+                    }).show();
+        } else {
+            finish();
+        }
     }
 
     private static class CustomShareListener implements UMShareListener {
@@ -210,12 +281,6 @@ public class VideoDetailActivity extends BaseActivity {
             if (platform == SHARE_MEDIA.QQ || platform == SHARE_MEDIA.QZONE) return;
             Toast.makeText(mActivity.get(), platform + " 分享取消了", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (isSupported) mYoukuPlayerView.onResume();
     }
 
     @Override
@@ -262,11 +327,19 @@ public class VideoDetailActivity extends BaseActivity {
             if (mYoukuPlayerView.isFullScreen()) {
                 mYoukuPlayerView.goSmallScreen();
             } else {
-                backAction();
+                if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                    MainActivity.show(VideoDetailActivity.this);
+                } else {
+                    backAction();
+                }
                 super.onBackPressed();
             }
         } else {
-            backAction();
+            if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                MainActivity.show(VideoDetailActivity.this);
+            } else {
+                backAction();
+            }
             super.onBackPressed();
         }
     }

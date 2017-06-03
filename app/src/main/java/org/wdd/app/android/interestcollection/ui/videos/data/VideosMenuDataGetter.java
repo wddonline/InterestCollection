@@ -39,6 +39,7 @@ public class VideosMenuDataGetter {
     }
 
     public void requestVideosMenuData(ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         HttpRequestEntry requestEntry = new HttpRequestEntry();
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
