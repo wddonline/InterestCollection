@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.audios.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -42,8 +43,14 @@ import com.umeng.socialize.utils.ShareBoardlistener;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.ActivityTaskStack;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.AudioFavorite;
+import org.wdd.app.android.interestcollection.permission.PermissionListener;
+import org.wdd.app.android.interestcollection.permission.PermissionManager;
+import org.wdd.app.android.interestcollection.permission.Rationale;
+import org.wdd.app.android.interestcollection.permission.RationaleListener;
+import org.wdd.app.android.interestcollection.permission.SettingDialog;
 import org.wdd.app.android.interestcollection.service.music.OnPlayerEventListener;
 import org.wdd.app.android.interestcollection.service.music.PlayService;
 import org.wdd.app.android.interestcollection.service.music.model.Music;
@@ -52,20 +59,23 @@ import org.wdd.app.android.interestcollection.ui.audios.model.Audio;
 import org.wdd.app.android.interestcollection.ui.audios.model.AudioDetail;
 import org.wdd.app.android.interestcollection.ui.audios.presenter.AudioDetailPresenter;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.ui.main.activity.MainActivity;
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 import org.wdd.app.android.interestcollection.views.RoundedNetworkImageView;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
+import java.util.List;
 import java.util.Locale;
 
-public class AudioDetailActivity extends BaseActivity implements View.OnClickListener, OnPlayerEventListener {
+public class AudioDetailActivity extends BaseActivity implements View.OnClickListener, OnPlayerEventListener, PermissionListener {
 
-    public static void show(Context context, Audio audio) {
-        Intent intent = new Intent(context, AudioDetailActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    public static void show(Activity activity, Audio audio) {
+        Intent intent = new Intent(activity, AudioDetailActivity.class);
         intent.putExtra("audio", audio);
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     public static void showForResult(Activity activity, int id, Audio audio, int requestCode) {
@@ -74,6 +84,8 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         intent.putExtra("audio", audio);
         activity.startActivityForResult(intent, requestCode);
     }
+
+    private final int REQUEST_PERMISSION_CODE = 100;
 
     private View mScrollView;
     private WebView mWebView;
@@ -94,6 +106,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
     private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
+    private boolean isCheckRequired = false;
 
     private Audio mAudio;
     private AudioFavorite mFavorite;
@@ -137,6 +150,7 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         initData();
         initTitles();
         initViews();
+        checkPermission();
     }
 
     private void initData() {
@@ -153,6 +167,11 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                    MainActivity.show(AudioDetailActivity.this);
+                } else {
+                    backAction();
+                }
                 finish();
             }
         });
@@ -162,10 +181,10 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_detail_collect:
-                        mPresenter.uncollectAudio(mFavorite.id, host);
+                        mPresenter.collectAudio(mAudio.title, mAudio.date, mAudio.url, mAudio.imgUrl, host);
                         return true;
                     case R.id.menu_detail_uncollect:
-                        mPresenter.collectAudio(mAudio.title, mAudio.date, mAudio.url, mAudio.imgUrl, host);
+                        mPresenter.uncollectAudio(mFavorite.id, host);
                         return true;
                     case R.id.menu_detail_share:
                         ShareBoardConfig config = new ShareBoardConfig();
@@ -257,8 +276,15 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
                 .setShareboardclickCallback(new ShareBoardlistener() {
                     @Override
                     public void onclick(SnsPlatform snsPlatform, SHARE_MEDIA share_media) {
-                        UMWeb web = new UMWeb("https://www.pgyer.com/QGM2");
-                        web.setTitle(getString(R.string.app_name));
+                        String url = "http://www.pgyer.com/QGM2";
+                        try {
+                            url += "?type=4&path=" + URLEncoder.encode(mAudio.url, "utf-8") + "&name=" + mAudio.title +
+                                    "&ico=" + URLEncoder.encode(mAudio.imgUrl, "utf8") + "&date=" + mAudio.date;
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        UMWeb web = new UMWeb(url);
+                        web.setTitle(getString(R.string.audio));
                         web.setDescription(mDetail.title);
                         web.setThumb(new UMImage(getBaseContext(), mAudio.imgUrl));
                         new ShareAction(AudioDetailActivity.this).withMedia(web)
@@ -267,8 +293,58 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
                                 .share();
                     }
                 });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isCheckRequired) {
+            checkPermission();
+            isCheckRequired = false;
+        }
+    }
+
+    private void checkPermission() {
+        PermissionManager.with(this)
+                .requestCode(REQUEST_PERMISSION_CODE)
+                .permission(Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .rationale(new RationaleListener() {
+                    @Override
+                    public void showRequestPermissionRationale(int requestCode, Rationale rationale) {
+                        PermissionManager.rationaleDialog(AudioDetailActivity.this, rationale).show();
+                    }
+                }).send();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        PermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onSucceed(int requestCode, List<String> grantPermissions) {
         mPresenter.getAudioDetailData(mAudio.url, host);
+    }
+
+    @Override
+    public void onFailed(int requestCode, List<String> deniedPermissions) {
+        if (PermissionManager.hasAlwaysDeniedPermission(this, deniedPermissions)) {
+            // 第一种：用默认的提示语。
+            PermissionManager.defaultSettingDialog(this)
+                    .setSettingDialogListener(new SettingDialog.SettingDialogListener() {
+                        @Override
+                        public void onSettingClicked() {
+                            isCheckRequired = true;
+                        }
+
+                        @Override
+                        public void onCancelClicked() {
+                            finish();
+                        }
+                    }).show();
+        } else {
+            finish();
+        }
     }
 
     private static class CustomShareListener implements UMShareListener {
@@ -334,7 +410,11 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
 
     @Override
     public void onBackPressed() {
-        backAction();
+        if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+            MainActivity.show(AudioDetailActivity.this);
+        } else {
+            backAction();
+        }
         super.onBackPressed();
     }
 
@@ -512,23 +592,23 @@ public class AudioDetailActivity extends BaseActivity implements View.OnClickLis
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(initCollectStatus);
     }
 
     public void updateAudioCollectViews(AudioFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
     }
 
     public void showAudioUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
         }
     }
 

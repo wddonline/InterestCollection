@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.jokes.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -25,19 +26,29 @@ import com.umeng.socialize.utils.ShareBoardlistener;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.ActivityTaskStack;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.DirtyJokeFavorite;
+import org.wdd.app.android.interestcollection.permission.PermissionListener;
+import org.wdd.app.android.interestcollection.permission.PermissionManager;
+import org.wdd.app.android.interestcollection.permission.Rationale;
+import org.wdd.app.android.interestcollection.permission.RationaleListener;
+import org.wdd.app.android.interestcollection.permission.SettingDialog;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
 import org.wdd.app.android.interestcollection.ui.jokes.adapter.DirtyJokeDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJoke;
 import org.wdd.app.android.interestcollection.ui.jokes.model.DirtyJokeDetail;
 import org.wdd.app.android.interestcollection.ui.jokes.presenter.DirtyJokeDetailPresenter;
+import org.wdd.app.android.interestcollection.ui.main.activity.MainActivity;
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
+import java.util.List;
 
-public class DirtyJokeDetailActivity extends BaseActivity {
+public class DirtyJokeDetailActivity extends BaseActivity implements PermissionListener {
 
     public static void show(Activity activity, DirtyJoke joke) {
         Intent intent = new Intent(activity, DirtyJokeDetailActivity.class);
@@ -51,6 +62,8 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         intent.putExtra("joke", joke);
         activity.startActivityForResult(intent, requestCode);
     }
+
+    private final int REQUEST_PERMISSION_CODE = 100;
 
     private ListView mListView;
     private LoadView mLoadView;
@@ -69,6 +82,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
     private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
+    private boolean isCheckRequired = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +91,7 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         initData();
         initTitles();
         initViews();
+        checkPermission();
     }
 
     private void initData() {
@@ -93,6 +108,11 @@ public class DirtyJokeDetailActivity extends BaseActivity {
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                    MainActivity.show(DirtyJokeDetailActivity.this);
+                } else {
+                    backAction();
+                }
                 finish();
             }
         });
@@ -102,10 +122,10 @@ public class DirtyJokeDetailActivity extends BaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_detail_collect:
-                        mPresenter.uncollectGirl(mFavorite.id, host);
+                        mPresenter.collectGirl(mJoke.title, mJoke.date, mJoke.url, mJoke.imgUrl, host);
                         return true;
                     case R.id.menu_detail_uncollect:
-                        mPresenter.collectGirl(mJoke.title, mJoke.date, mJoke.url, mJoke.imgUrl, host);
+                        mPresenter.uncollectGirl(mFavorite.id, host);
                         return true;
                     case R.id.menu_detail_share:
                         ShareBoardConfig config = new ShareBoardConfig();
@@ -136,8 +156,15 @@ public class DirtyJokeDetailActivity extends BaseActivity {
                 .setShareboardclickCallback(new ShareBoardlistener() {
                     @Override
                     public void onclick(SnsPlatform snsPlatform, SHARE_MEDIA share_media) {
-                        UMWeb web = new UMWeb("https://www.pgyer.com/QGM2");
-                        web.setTitle(getString(R.string.app_name));
+                        String url = "http://www.pgyer.com/QGM2";
+                        try {
+                            url += "?type=1&path=" + URLEncoder.encode(mJoke.url, "utf-8") + "&name=" + mJoke.title +
+                                    "&ico=" + URLEncoder.encode(mJoke.imgUrl, "utf8") + "&date=" + mJoke.date;
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        UMWeb web = new UMWeb(url);
+                        web.setTitle(getString(R.string.dirty_joke));
                         web.setDescription(mJoke.title);
                         web.setThumb(new UMImage(getBaseContext(), mJoke.imgUrl));
                         new ShareAction(DirtyJokeDetailActivity.this).withMedia(web)
@@ -146,8 +173,58 @@ public class DirtyJokeDetailActivity extends BaseActivity {
                                 .share();
                     }
                 });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isCheckRequired) {
+            checkPermission();
+            isCheckRequired = false;
+        }
+    }
+
+    private void checkPermission() {
+        PermissionManager.with(this)
+                .requestCode(REQUEST_PERMISSION_CODE)
+                .permission(Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .rationale(new RationaleListener() {
+                    @Override
+                    public void showRequestPermissionRationale(int requestCode, Rationale rationale) {
+                        PermissionManager.rationaleDialog(DirtyJokeDetailActivity.this, rationale).show();
+                    }
+                }).send();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        PermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onSucceed(int requestCode, List<String> grantPermissions) {
         mPresenter.getDirtyJokeDetailData(mJoke.url, host);
+    }
+
+    @Override
+    public void onFailed(int requestCode, List<String> deniedPermissions) {
+        if (PermissionManager.hasAlwaysDeniedPermission(this, deniedPermissions)) {
+            // 第一种：用默认的提示语。
+            PermissionManager.defaultSettingDialog(this)
+                    .setSettingDialogListener(new SettingDialog.SettingDialogListener() {
+                        @Override
+                        public void onSettingClicked() {
+                            isCheckRequired = true;
+                        }
+
+                        @Override
+                        public void onCancelClicked() {
+                            finish();
+                        }
+                    }).show();
+        } else {
+            finish();
+        }
     }
 
     private static class CustomShareListener implements UMShareListener {
@@ -186,7 +263,11 @@ public class DirtyJokeDetailActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        backAction();
+        if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+            MainActivity.show(DirtyJokeDetailActivity.this);
+        } else {
+            backAction();
+        }
         super.onBackPressed();
     }
 
@@ -288,23 +369,23 @@ public class DirtyJokeDetailActivity extends BaseActivity {
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(initCollectStatus);
     }
 
     public void updateDirtyJokeCollectViews(DirtyJokeFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
     }
 
     public void showDirtyJokeUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
         }
     }
 

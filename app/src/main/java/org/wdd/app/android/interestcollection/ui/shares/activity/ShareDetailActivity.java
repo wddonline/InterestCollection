@@ -1,5 +1,6 @@
 package org.wdd.app.android.interestcollection.ui.shares.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -26,9 +27,16 @@ import com.umeng.socialize.utils.ShareBoardlistener;
 
 import org.wdd.app.android.interestcollection.R;
 import org.wdd.app.android.interestcollection.ads.builder.BannerAdsBuilder;
+import org.wdd.app.android.interestcollection.app.ActivityTaskStack;
 import org.wdd.app.android.interestcollection.app.InterestCollectionApplication;
 import org.wdd.app.android.interestcollection.database.model.ShareFavorite;
+import org.wdd.app.android.interestcollection.permission.PermissionListener;
+import org.wdd.app.android.interestcollection.permission.PermissionManager;
+import org.wdd.app.android.interestcollection.permission.Rationale;
+import org.wdd.app.android.interestcollection.permission.RationaleListener;
+import org.wdd.app.android.interestcollection.permission.SettingDialog;
 import org.wdd.app.android.interestcollection.ui.base.BaseActivity;
+import org.wdd.app.android.interestcollection.ui.main.activity.MainActivity;
 import org.wdd.app.android.interestcollection.ui.shares.adapter.ShareDetailAdapter;
 import org.wdd.app.android.interestcollection.ui.shares.model.Share;
 import org.wdd.app.android.interestcollection.ui.shares.model.ShareDetail;
@@ -36,15 +44,17 @@ import org.wdd.app.android.interestcollection.ui.shares.presenter.ShareDetailPre
 import org.wdd.app.android.interestcollection.utils.Constants;
 import org.wdd.app.android.interestcollection.views.LoadView;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
+import java.util.List;
 
-public class ShareDetailActivity extends BaseActivity {
+public class ShareDetailActivity extends BaseActivity implements PermissionListener {
 
-    public static void show(Context context, Share share) {
-        Intent intent = new Intent(context, ShareDetailActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    public static void show(Activity activity, Share share) {
+        Intent intent = new Intent(activity, ShareDetailActivity.class);
         intent.putExtra("share", share);
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     public static void showForResult(Activity activity, int id, Share share, int requestCode) {
@@ -53,6 +63,8 @@ public class ShareDetailActivity extends BaseActivity {
         intent.putExtra("share", share);
         activity.startActivityForResult(intent, requestCode);
     }
+
+    private final int REQUEST_PERMISSION_CODE = 100;
 
     private Toolbar mToolbar;
     private ListView mListView;
@@ -71,6 +83,7 @@ public class ShareDetailActivity extends BaseActivity {
     private int id;
     private boolean initCollectStatus = false;
     private boolean currentCollectStatus = initCollectStatus;
+    private boolean isCheckRequired = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +92,7 @@ public class ShareDetailActivity extends BaseActivity {
         initData();
         initTitles();
         initViews();
+        checkPermission();
     }
 
     private void initData() {
@@ -95,6 +109,11 @@ public class ShareDetailActivity extends BaseActivity {
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+                    MainActivity.show(ShareDetailActivity.this);
+                } else {
+                    backAction();
+                }
                 finish();
             }
         });
@@ -104,10 +123,10 @@ public class ShareDetailActivity extends BaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_detail_collect:
-                        mPresenter.uncollectShare(mFavorite.id, host);
+                        mPresenter.collectShare(mShare.title, mShare.date, mShare.url, mShare.imgUrl, host);
                         return true;
                     case R.id.menu_detail_uncollect:
-                        mPresenter.collectShare(mShare.title, mShare.date, mShare.url, mShare.imgUrl, host);
+                        mPresenter.uncollectShare(mFavorite.id, host);
                         return true;
                     case R.id.menu_detail_share:
                         ShareBoardConfig config = new ShareBoardConfig();
@@ -137,8 +156,15 @@ public class ShareDetailActivity extends BaseActivity {
                 .setShareboardclickCallback(new ShareBoardlistener() {
                     @Override
                     public void onclick(SnsPlatform snsPlatform, SHARE_MEDIA share_media) {
-                        UMWeb web = new UMWeb("https://www.pgyer.com/QGM2");
-                        web.setTitle(getString(R.string.app_name));
+                        String url = "http://www.pgyer.com/QGM2";
+                        try {
+                            url += "?type=5&path=" + URLEncoder.encode(mShare.url, "utf-8") + "&name=" + mShare.title +
+                                    "&ico=" + URLEncoder.encode(mShare.imgUrl, "utf8") + "&date=" + mShare.date;
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        UMWeb web = new UMWeb(url);
+                        web.setTitle(getString(R.string.share));
                         web.setDescription(mShare.title);
                         web.setThumb(new UMImage(getBaseContext(), mShare.imgUrl));
                         new ShareAction(ShareDetailActivity.this).withMedia(web)
@@ -147,8 +173,58 @@ public class ShareDetailActivity extends BaseActivity {
                                 .share();
                     }
                 });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isCheckRequired) {
+            checkPermission();
+            isCheckRequired = false;
+        }
+    }
+
+    private void checkPermission() {
+        PermissionManager.with(this)
+                .requestCode(REQUEST_PERMISSION_CODE)
+                .permission(Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .rationale(new RationaleListener() {
+                    @Override
+                    public void showRequestPermissionRationale(int requestCode, Rationale rationale) {
+                        PermissionManager.rationaleDialog(ShareDetailActivity.this, rationale).show();
+                    }
+                }).send();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        PermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onSucceed(int requestCode, List<String> grantPermissions) {
         mPresenter.getShareDetailData(mShare.url, host);
+    }
+
+    @Override
+    public void onFailed(int requestCode, List<String> deniedPermissions) {
+        if (PermissionManager.hasAlwaysDeniedPermission(this, deniedPermissions)) {
+            // 第一种：用默认的提示语。
+            PermissionManager.defaultSettingDialog(this)
+                    .setSettingDialogListener(new SettingDialog.SettingDialogListener() {
+                        @Override
+                        public void onSettingClicked() {
+                            isCheckRequired = true;
+                        }
+
+                        @Override
+                        public void onCancelClicked() {
+                            finish();
+                        }
+                    }).show();
+        } else {
+            finish();
+        }
     }
 
     private static class CustomShareListener implements UMShareListener {
@@ -217,7 +293,11 @@ public class ShareDetailActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        backAction();
+        if (ActivityTaskStack.getInstance().getActivityCount() == 1) {
+            MainActivity.show(ShareDetailActivity.this);
+        } else {
+            backAction();
+        }
         super.onBackPressed();
     }
 
@@ -288,23 +368,23 @@ public class ShareDetailActivity extends BaseActivity {
             currentCollectStatus = true;
         }
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(initCollectStatus);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(!initCollectStatus);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(initCollectStatus);
     }
 
     public void updateShareCollectViews(ShareFavorite favorite) {
         currentCollectStatus = true;
         mFavorite = favorite;
-        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
-        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
+        mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
     }
 
     public void showShareUncollectViews(boolean success) {
         if (success) {
             currentCollectStatus = false;
             mFavorite = null;
-            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(false);
-            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_collect).setVisible(true);
+            mToolbar.getMenu().findItem(R.id.menu_detail_uncollect).setVisible(false);
         }
     }
 }

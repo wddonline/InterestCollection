@@ -1,9 +1,11 @@
 package org.wdd.app.android.interestcollection.views;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -196,6 +198,9 @@ public class NetworkImageView extends AppCompatImageView {
                         }
                         if (response.getBitmap() != null) {
                             setImageBitmap(response.getBitmap());
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                                ObjectAnimator.ofFloat(NetworkImageView.this, "alpha", 0f, 1f).setDuration(500).start();
+                            }
                         } else if (mDefaultImageId != 0) {
                             setImageResource(mDefaultImageId);
                         }

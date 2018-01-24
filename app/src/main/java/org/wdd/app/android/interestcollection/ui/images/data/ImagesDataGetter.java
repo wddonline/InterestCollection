@@ -40,6 +40,7 @@ public class ImagesDataGetter {
     }
 
     public void requestImagesListData(final boolean isAppend, ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         if (isAppend) {
             mPage++;
         } else {

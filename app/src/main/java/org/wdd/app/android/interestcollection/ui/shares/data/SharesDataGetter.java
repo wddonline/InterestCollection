@@ -40,6 +40,7 @@ public class SharesDataGetter {
     }
 
     public void requestSharesListData(final boolean isAppend, ActivityFragmentAvaliable host) {
+        if (mSession != null) mSession.cancelRequest();
         if (isAppend) {
             mPage++;
         } else {

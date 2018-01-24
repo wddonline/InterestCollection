@@ -1,9 +1,11 @@
 package org.wdd.app.android.interestcollection.views;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
@@ -203,6 +205,9 @@ public class GifNetworkImageView extends GifImageView {
                         }
                         if (response.getDrawable() != null) {
                             setImageDrawable(response.getDrawable());
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                                ObjectAnimator.ofFloat(GifNetworkImageView.this, "alpha", 0f, 1f).setDuration(500).start();
+                            }
                         } else if (mDefaultImageId != 0) {
                             setImageResource(mDefaultImageId);
                         }

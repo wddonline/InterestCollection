@@ -53,4 +53,8 @@ public class ActivityTaskStack {
             it.remove();
         }
     }
+
+    public int getActivityCount() {
+        return taskStack.size();
+    }
 }
