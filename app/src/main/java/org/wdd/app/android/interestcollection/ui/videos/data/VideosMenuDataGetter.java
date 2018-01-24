@@ -43,14 +43,14 @@ public class VideosMenuDataGetter {
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setUrl(ServerApis.VIDEO_URL);
-        mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
+        mSession = mManager.sendHtmlRequest("GB2312", host, requestEntry, new HttpConnectCallback() {
 
             @Override
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
                 Document document = (Document) res.getData();
                 List<HtmlHref> menus = null;
-                Elements nodes = document.getElementsByAttributeValue("class", "header_nav");
+                Elements nodes = document.getElementsByAttributeValue("id", "nav");
                 if (nodes.size() == 0) {
                     mCallback.onRequestError(mContext.getString(R.string.parse_error));
                     return;
@@ -64,10 +64,9 @@ public class VideosMenuDataGetter {
                 menus = new ArrayList<>();
                 HtmlHref href;
                 String name;
-                for (int i = 1; i < nodes.size(); i++) {
+                for (int i = 1; i < nodes.size() - 1; i++) {
                     node = nodes.get(i);
                     name = node.text();
-                    if (name.equals("动画")) continue;
                     href = new HtmlHref();
                     href.name = name;
                     href.url = node.attr("href");

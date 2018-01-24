@@ -21,9 +21,10 @@
                 android:id="@+id/fragment_video_main_tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:tabMode="fixed"
+                app:tabMode="scrollable"
                 app:tabSelectedTextColor="@color/white"
                 app:tabTextColor="@color/white"
+                app:tabIndicatorHeight="3dp"
                 android:background="@color/colorPrimary" />
 
         </android.support.design.widget.CollapsingToolbarLayout>

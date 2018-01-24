@@ -49,7 +49,7 @@ public class VideosDetailDataGetter {
         requestEntry.setMethod(HttpRequestEntry.Method.GET);
         requestEntry.addRequestHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
         requestEntry.setUrl("http://www.yiledao.com/" + url);
-        mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
+        mSession = mManager.sendHtmlRequest("GB2312", host, requestEntry, new HttpConnectCallback() {
 
             @Override
             public void onRequestOk(HttpResponseEntry res) {

@@ -55,37 +55,40 @@ public class VideosDataGetter {
         requestEntry.addRequestHeader("User-Agent", ServerApis.USER_AGENT);
         requestEntry.setUrl(realUrl);
         requestEntry.setShouldCached(false);
-        mSession = mManager.sendHtmlRequest(host, requestEntry, new HttpConnectCallback() {
+        mSession = mManager.sendHtmlRequest("GB2312", host, requestEntry, new HttpConnectCallback() {
 
             @Override
             public void onRequestOk(HttpResponseEntry res) {
                 mSession = null;
                 List<Video> videos;
                 Document document = (Document) res.getData();
-                Elements nodes = document.getElementsByAttributeValue("class", "item_list");
+                Elements nodes = document.getElementsByAttributeValue("class", "mod-pic");
+                if (nodes.size() == 0) {
+                    nodes = document.getElementsByAttributeValue("class", "item_list");
+                }
                 if (nodes.size() == 0) {
                     mCallback.onRequestError(mContext.getString(R.string.parse_error), isAppend);
                     return;
                 }
-                nodes = nodes.first().getElementsByTag("a");
+                nodes = nodes.first().getElementsByTag("li");
                 if (nodes.size() == 0) {
                     mCallback.onRequestError(mContext.getString(R.string.parse_error), isAppend);
                     return;
                 }
                 videos = new ArrayList<>();
                 Element node;
-                Element imgNode;
-                Element spanNode;
+                Element aNode;
                 Video video;
                 for (int i = 0; i < nodes.size(); i++) {
                     node = nodes.get(i);
                     video = new Video();
-                    video.url = node.attr("href");
-                    imgNode = node.getElementsByTag("img").first();
-                    video.title = imgNode.attr("alt");
-                    video.imgUrl = ServerApis.VIDEO_URL + imgNode.attr("src");
-                    spanNode = node.getElementsByTag("span").first();
-                    video.date = spanNode.text();
+                    aNode = node.getElementsByTag("a").first();
+                    video.url = aNode.attr("href");
+                    video.title = aNode.text();
+                    aNode = node.getElementsByTag("img").first();
+                    video.imgUrl = ServerApis.VIDEO_URL + aNode.attr("src");
+                    aNode = node.getElementsByTag("span").last();
+                    video.date = aNode.text();
                     videos.add(video);
                 }
 
@@ -94,7 +97,7 @@ public class VideosDataGetter {
                 }
                 boolean isLastPage = true;
                 if (mPageNum == -1 || TextUtils.isEmpty(mUrlPrefix)) {
-                    nodes = document.getElementsByTag("select");
+                    nodes = document.getElementsByAttributeValue("class", "mod-page2");
                     if (nodes.size() > 0) {
                         nodes = nodes.first().getElementsByTag("option");
                         if (nodes.size() > 0) {
