@@ -46,7 +46,7 @@ dependencies {
     compile(name: "gif-drawable", ext: "aar")
     compile(name: "volley", ext: "aar")
     compile(name: 'slidingMenu', ext: 'aar')
-    compile(name: 'YoukuPlayerOpenSDK', ext: 'aar')
+    compile(name: 'YoukuPlayerOpenSDK-release', ext: 'aar')
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.android.support:recyclerview-v7:25.2.0'

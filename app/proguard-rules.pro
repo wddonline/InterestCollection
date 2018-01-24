@@ -130,8 +130,6 @@
 -keep class com.alibaba.**{*;}
 -keep class com.youku.**{*;}
 
--keepattributes SourceFile,LineNumberTable
-
 -keep class cn.com.mma.** { *; }
 -keep class cn.mmachina.** { *; }
 -keep class com.nostra13.**{*;}
@@ -139,3 +137,11 @@
 -dontusemixedcaseclassnames
 -dontskipnonpubliclibraryclasses
 -verbose
+-dontwarn android.content.pm.**
+-dontwarn android.util.**
+
+-keepattributes SourceFile,LineNumberTable
+
+-keepclassmembers class * {
+   public <init>(org.json.JSONObject);
+}
